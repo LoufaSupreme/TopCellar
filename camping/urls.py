@@ -16,5 +16,6 @@ urlpatterns = [
     path('loadDatabase/attributes', views.load_attributes, name="load_attributes"),
     path('loadDatabase/feeCategories', views.load_fee_categories, name='load_fee_categories'), 
     path('loadDatabase/rootmaps', views.load_rootmaps, name='load_rootmaps'),
-    path('loadDatabase/sites', views.load_sites, name='load_sites')
+    path('loadDatabase/sites', views.load_sites, name='load_sites'),
+    path('getNumResults', views.get_num_results, name='get_num_results')
 ]

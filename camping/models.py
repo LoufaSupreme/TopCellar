@@ -119,5 +119,13 @@ class SiteAttribute(models.Model):
         return f"Site Specific Attribute for site {self.site.name} in {self.site.resource_location.short_name} - {self.attribute.attribute_definition_id}: {self.attribute.main_name}, Subclass: {self.attribute.subclass_name}, Value: {self.value}"
 
 
+# Used to store common query results that can take a long time
+class InUseOptions(models.Model):
+    name = models.CharField(max_length=24)
+    resource_locations = models.ManyToManyField(ResourceLocation, blank=True, related_name='inUseOptions')
+    resource_categories = models.ManyToManyField(ResourceCategory, blank=True, related_name='inUseOptions')
+    equipment = models.ManyToManyField(Equipment, blank=True, related_name='inUseOptions')
+    attributes = models.ManyToManyField(Attribute, blank=True, related_name='inUseOptions')
+
 
 

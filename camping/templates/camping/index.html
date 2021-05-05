@@ -1,6 +1,43 @@
 {% extends "camping/layout.html" %}
 
 {% block body %}
+<div class="dropdowns">
+    <form method="POST">
+        {% csrf_token %}
+        <label for='res-loc-dd'>Location:</label>
+        <select id="loc-select" name='res-loc-dd' onchange='numResults();' multiple>
+            {% for resloc in dd_opt.resource_locations.all %}
+            <option value='{{ resloc.full_name }}'>{{ resloc.full_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for='res-cat-dd'>Category:</label>
+        <select id="cat-select" name='res-cat-dd' onchange='numResults();'>
+            <option value='all'>All</option>
+            {% for rescat in dd_opt.resource_categories.all %}
+            <option value='{{ rescat.name }}'>{{ rescat.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for='equip-dd'>Equipment:</label>
+        <select id="equip-select" name='equip-dd' onchange='numResults();'>
+            <option value='all'>All</option>
+            {% for equip in dd_opt.equipment.all %}
+            <option value='{{ equip.name }}'>{{ equip.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for='attr-dd'>Features:</label>
+        <select id="attr-select" name='attr-dd' onchange='numResults();'>
+            <option value='all'>All</option>
+            {% for attr in dd_opt.attributes.all %}
+            <option value='{{ attr.main_name }}'>{{ attr.main_name }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value='submit'/>
+    </form>
+    <div id="num-results">{{ num_results }} matching sites.</div>
+</div>
 
 <div class="site-section">
     {% for site in page_obj %}
