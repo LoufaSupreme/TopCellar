@@ -120,3 +120,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# increased size to 10mb (default is 2.5mb) to allow for larger fetch requests (specifically for Campground Maps loading - which is 6.96mb)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760

@@ -109,6 +109,20 @@ class Site(models.Model):
         return f"{self.resource_id} - {self.resource_category.name} {self.name} in {self.resource_location.short_name}"
 
 
+class CampgroundMap(models.Model):
+    map_id = models.BigIntegerField()
+    is_disabled = models.BooleanField(default=False)
+    name = models.CharField(max_length=48, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    sites = models.ManyToManyField(Site, related_name='camp_map')
+    rootmap = models.ForeignKey(Rootmap, on_delete=models.CASCADE, blank=True, null=True, related_name='camp_map')
+    map_image_uid = models.CharField(max_length=48, blank=True, null=True)
+    resource_location = models.ForeignKey(ResourceLocation, on_delete=models.CASCADE, blank=True, null=True, related_name='camp_map')
+
+    def __str__(self):
+        return f"{self.map_id}:{self.name}"
+
+
 # these are the individual attributes for each site.  I need this so I can store the key:value pair of attribute sites (i.e. Quality = Good for one site, but Quality = Bad for another)
 class SiteAttribute(models.Model):
     site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='site_attributes')

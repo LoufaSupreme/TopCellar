@@ -178,39 +178,46 @@ async function loadSites() {
 
 
 async function loadSites_oneLocation() {
-        let resourceLocationId = -2147483646;
+    let resourceLocationId = -2147483646;
 
-        let allSiteInfoURL = `https://reservations.ontarioparks.com/api/resourcelocation/resources?resourceLocationId=${resourceLocationId}`;
+    let allSiteInfoURL = `https://reservations.ontarioparks.com/api/resourcelocation/resources?resourceLocationId=${resourceLocationId}`;
 
-        let allSiteInfo_response = await fetch(allSiteInfoURL);
-        let allSiteInfoList = await allSiteInfo_response.json();
-    
-        // send it to django server
-        const csrf_token = getCookie('csrftoken');
+    let allSiteInfo_response = await fetch(allSiteInfoURL);
+    let allSiteInfoList = await allSiteInfo_response.json();
 
-        fetch('/loadDatabase/sites', {
-            method: 'POST',
-            body: JSON.stringify({
-            allSites: allSiteInfoList
-            }),
-            headers: { "X-CSRFToken": csrf_token }
-        })
-        .then(response => response.json)
-        .then(res => console.log(res));
+    // send it to django server
+    const csrf_token = getCookie('csrftoken');
+
+    fetch('/loadDatabase/sites', {
+        method: 'POST',
+        body: JSON.stringify({
+        allSites: allSiteInfoList
+        }),
+        headers: { "X-CSRFToken": csrf_token }
+    })
+    .then(response => response.json)
+    .then(res => console.log(res));
 }
 
 
-async function test() {
-    const resourceLocationsURL = 'https://reservations.ontarioparks.com/api/resourcelocation/';
+async function load_camp_maps() {
+    const mapsURL = 'https://reservations.ontarioparks.com/api/maps';
 
     // get json from ontario parks
-    let resourceLocations_response = await fetch(resourceLocationsURL);
-    let resourceLocationsList = await resourceLocations_response.json();
+    let campMaps_response = await fetch(mapsURL);
+    let campMapsList = await campMaps_response.json();
 
-    // Get list of all sites within each resource location:
-    for (let i = 0; i < resourceLocationsList.length; i++) {
-        let resourceLocation = resourceLocationsList[i];
-        let resourceLocationId = resourceLocation['resourceLocationId'];
-        console.log(resourceLocationId);
-    }
+    // send it to django server
+    const csrf_token = getCookie('csrftoken');
+
+    fetch('/loadDatabase/campMaps', {
+        method: 'POST',
+        body: JSON.stringify({
+          allCampMaps: campMapsList
+        }),
+        headers: { "X-CSRFToken": csrf_token }
+    })
+    .then(response => response.json)
+    .then(res => console.log(res))
+    .catch(error => console.error(error));
 }

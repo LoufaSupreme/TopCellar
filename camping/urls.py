@@ -17,5 +17,6 @@ urlpatterns = [
     path('loadDatabase/feeCategories', views.load_fee_categories, name='load_fee_categories'), 
     path('loadDatabase/rootmaps', views.load_rootmaps, name='load_rootmaps'),
     path('loadDatabase/sites', views.load_sites, name='load_sites'),
+    path('loadDatabase/campMaps', views.load_camp_maps, name='load_camp_maps'),
     path('getNumResults', views.get_num_results, name='get_num_results')
 ]

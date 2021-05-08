@@ -42,7 +42,7 @@ function numResults() {
     let numResultsURL = `/getNumResults?${cat_q_string}${loc_q_string}&${equip_q_string}&${attr_q_string}`;
     // console.log(numResultsURL);
 
-    fetch(`${numResultsURL}`)
+    fetch(numResultsURL)
     .then(response => response.json())
     .then(response => {
         let numResults = response['num_results'];
@@ -58,8 +58,30 @@ function numResults() {
 //     }
 // })
 
-function getAvailability() {
-    const availabilityURL = 'https://reservations.ontarioparks.com/api/availability/map?mapId=-2147483376&bookingCategoryId=0&resourceLocationId=-2147483585&equipmentCategoryId=-32768&subEquipmentCategoryId=-32766&startDate=2021-06-16&endDate=2021-06-24&getDailyAvailability=true&isReserving=true&filterData=[]&boatLength=null&boatDraft=null&boatWidth=null&partySize=3&seed=2021-04-27T16:39:26.856Z'
+function getAvailability(locs, maps) {
+    // 'https://reservations.ontarioparks.com/api/availability/map?mapId=-2147483376&bookingCategoryId=0&resourceLocationId=-2147483585&equipmentCategoryId=-32768&subEquipmentCategoryId=-32766&startDate=2021-06-16&endDate=2021-06-24&getDailyAvailability=true&isReserving=true&filterData=[]&boatLength=null&boatDraft=null&boatWidth=null&partySize=3&seed=2021-04-27T16:39:26.856Z'
+
+    let partySize = 1;
+    let bookingCategory = 0;
+    // let mapId = -2147483376;
+    // let resourceLocationId = -2147483585;
+    let subEquipCatId = -32766;
+    let startDate = '2021-06-16';
+    let endDate = '2021-06-24';
+
+    let responses = [];
+    for (let i = 0; i < locs.length; i++) {
+        let mapId = maps[i];
+        let resourceLocationId = locs[i];
+
+        const availabilityURL = `https://reservations.ontarioparks.com/api/availability/map?partySize=${partySize}&bookingCategoryId=${bookingCategory}&mapId=${mapId}&equipmentCategoryId=-32768&getDailyAvailability=true&isReserving=true&resourceLocationId=${resourceLocationId}&subEquipmentCategoryId=${subEquipCatId}&startDate=${startDate}&endDate=${endDate}`;
+
+        fetch(availabilityURL)
+        .then(response => response.json())
+        .then(res => {
+            avail_list = { resourceLocationId: res }
+            responses.push(avail_list);
+            console.log(avail_list);
+        });
+    }
 }
-    
-'https://reservations.ontarioparks.com/api/availability/map?partySize=3&bookingCategoryId=0&mapId=-2147483376&equipmentCategoryId=-3276&getDailyAvailability=true&isReserving=true8&resourceLocationId=-2147483585&subEquipmentCategoryId=-32766&startDate=2021-06-16&endDate=2021-06-24'

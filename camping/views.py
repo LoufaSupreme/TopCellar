@@ -8,13 +8,14 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from .models import User, ResourceLocation, ResourceCategory, Equipment, Attribute, FeeCategory, Rootmap, Site, SiteAttribute, InUseOptions
+from .models import *
 
 
 def index(request):
 
     if request.method == 'GET':
         try:
+            # get the search query values
             locs = request.GET.getlist('res-loc-dd')
             cat = request.GET.get('res-cat-dd')
             equip = request.GET.get('equip-dd')
@@ -38,26 +39,36 @@ def index(request):
             else:
                 target_attr = 'all'
         except:
+            # if no search query parameters, set parameters to all:
             target_locs = []
             target_cat = 'all'
             target_equip = 'all'
             target_attr = 'all'
 
+        # filter sites by search parameters
         sites = filter(target_locs, target_cat, target_equip, target_attr)
-        # except:
-            # sites = Site.objects.all()
         num_results = len(sites)
 
         paginator = Paginator(sites, 50) # Show 50 sites per page.
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
+        # update the dropdown options to reflect new site list
         dropdown_options = get_dropdowns_fast(sites, target_locs, target_cat, target_equip, target_attr)
+
+        # get list of relevant location IDs and map IDs for availability fetch request
+        loc_id_list = []
+        map_id_list = []
+        for loc in target_locs:
+            loc_id_list.append(loc.resource_location_id)
+            map_id_list.append(loc.rootmap.get().map_id)
 
         return render(request, "camping/index.html", {
                 "page_obj": page_obj,
                 "num_results": num_results,
-                'dd_opt': dropdown_options
+                'dd_opt': dropdown_options,
+                'loc_id_list': loc_id_list,
+                'map_id_list': map_id_list
         })
     
 
@@ -98,12 +109,6 @@ def get_num_results(request):
     equip = request.GET.get('equip-dd')
     attr = request.GET.get('attr-dd')
     
-    # data = json.loads(request.body)
-    # locs = data.get('locSelects')
-    # cat = data.get('catSelect')
-    # equip = data.get('equipSelect')
-    # attr = data.get('attrSelect')
-
     print(f'Query Info: {locs}, {cat}, {equip}, {attr}')
     target_locs = []
     for loc in locs:  
@@ -556,6 +561,55 @@ def load_sites(request):
                                     except Exception as e:
                                         print(e)
         return JsonResponse({"success": f"Sites for Resource Location added."}, status=200)
+    else:
+        return JsonResponse({"error": "Post request required"}, status=400)
+
+
+def load_camp_maps(request):
+    if request.method == 'POST':
+        print('Loading campground maps into db.')
+        data = json.loads(request.body)
+        all_camp_maps = data.get('allCampMaps')
+
+        for camp_map in all_camp_maps:
+            map_id = camp_map['mapId']
+            name = camp_map['localizedValues'][0]['title']
+            description = camp_map['localizedValues'][0]['description']
+            is_disabled = camp_map['isDisabled']
+            map_image_uid = camp_map['mapImageUid']
+            try:
+                rootmap = Rootmap.objects.get(map_id=camp_map['parentMaps'][0])
+            except:
+                rootmap = None
+            try:
+                resource_location = ResourceLocation.objects.get(resource_location_id = camp_map['resourceLocationId'])
+            except:
+                resource_location = None
+            
+            all_db_camp_maps = CampgroundMap.objects.all()
+            if map_id in [db_camp_map.map_id for db_camp_map in all_db_camp_maps]:
+                print(f'Camp Map {map_id}:{name} already exists in db.')
+                continue
+            else:
+                print(f'Camp Map {map_id}:{name} is new; adding it to database now.')
+                new_camp_map = CampgroundMap.objects.create(
+                    map_id = map_id,
+                    name = name,
+                    description = description,
+                    resource_location = resource_location,
+                    is_disabled = is_disabled,
+                    rootmap = rootmap,
+                    map_image_uid = map_image_uid
+                )
+                if camp_map['mapResources'] != None:
+                    print(f'Loading sites for Camp Map {map_id}:{name}')
+                    for site in camp_map['mapResources']:
+                        try:
+                            new_camp_map.sites.add(Site.objects.get(resource_id = site['resourceId']))
+                        except:
+                            print(f'Campsite {site} not found. Ignoring it.')
+                            continue
+        return JsonResponse({"success": f"Maps added"}, status=200)
     else:
         return JsonResponse({"error": "Post request required"}, status=400)
 
