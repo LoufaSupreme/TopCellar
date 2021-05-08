@@ -2,8 +2,7 @@
 
 {% block body %}
 <div class="dropdowns">
-    <form method="POST">
-        {% csrf_token %}
+    <form method="GET">
         <label for='res-loc-dd'>Location:</label>
         <select id="loc-select" name='res-loc-dd' onchange='numResults();' multiple>
             {% for resloc in dd_opt.resource_locations.all %}

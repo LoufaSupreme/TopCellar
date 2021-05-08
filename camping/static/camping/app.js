@@ -30,29 +30,36 @@ function numResults() {
 
     localStorage.setItem('selected_cat', catSelect);
 
-    const csrf_token = getCookie('csrftoken');
+    let loc_q_string = '';
+    for (loc of locSelectOptions) {
+        loc_q_string += `&res-loc-dd=${loc}`;
+    }
 
-    fetch('/getNumResults', {
-        method: 'POST',
-        body: JSON.stringify({
-          locSelects: locSelectOptions,
-          catSelect: catSelect.value,
-          equipSelect: equipSelect.value,
-          attrSelect: attrSelect.value
-        }),
-        headers: { "X-CSRFToken": csrf_token }
-    })
+    let cat_q_string = `res-cat-dd=${catSelect.value}`;
+    let equip_q_string = `equip-dd=${equipSelect.value}`;
+    let attr_q_string = `attr-dd=${attrSelect.value}`
+
+    let numResultsURL = `/getNumResults?${cat_q_string}${loc_q_string}&${equip_q_string}&${attr_q_string}`;
+    // console.log(numResultsURL);
+
+    fetch(`${numResultsURL}`)
     .then(response => response.json())
     .then(response => {
         let numResults = response['num_results'];
         console.log(numResults);
         document.getElementById('num-results').innerText = `${numResults} matching sites.`
-    })
+    });
 } 
+ 
 
 // window.addEventListener('DOMContentLoaded', () => {
 //     if (localStorage.getItem('selected_loc') && document.getElementById('loc-select')) {
 //         document.getElementById('loc-select').options[localStorage.getItem('selected_loc')].selected = true;
 //     }
 // })
+
+function getAvailability() {
+    const availabilityURL = 'https://reservations.ontarioparks.com/api/availability/map?mapId=-2147483376&bookingCategoryId=0&resourceLocationId=-2147483585&equipmentCategoryId=-32768&subEquipmentCategoryId=-32766&startDate=2021-06-16&endDate=2021-06-24&getDailyAvailability=true&isReserving=true&filterData=[]&boatLength=null&boatDraft=null&boatWidth=null&partySize=3&seed=2021-04-27T16:39:26.856Z'
+}
     
+'https://reservations.ontarioparks.com/api/availability/map?partySize=3&bookingCategoryId=0&mapId=-2147483376&equipmentCategoryId=-3276&getDailyAvailability=true&isReserving=true8&resourceLocationId=-2147483585&subEquipmentCategoryId=-32766&startDate=2021-06-16&endDate=2021-06-24'

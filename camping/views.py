@@ -13,60 +13,53 @@ from .models import User, ResourceLocation, ResourceCategory, Equipment, Attribu
 
 def index(request):
 
-    if request.method == 'POST':
-        locs = request.POST.getlist('res-loc-dd')
-        cat = request.POST.get('res-cat-dd')
-        equip = request.POST.get('equip-dd')
-        attr = request.POST.get('attr-dd')
+    if request.method == 'GET':
+        try:
+            locs = request.GET.getlist('res-loc-dd')
+            cat = request.GET.get('res-cat-dd')
+            equip = request.GET.get('equip-dd')
+            attr = request.GET.get('attr-dd')
 
-        target_locs = []
-        for loc in locs:  
-            target_loc = ResourceLocation.objects.get(full_name=loc)
-            target_locs.append(target_loc)
+            target_locs = []
+            for loc in locs:  
+                target_loc = ResourceLocation.objects.get(full_name=loc)
+                target_locs.append(target_loc)
 
-        if cat != 'all':
-            target_cat = ResourceCategory.objects.get(name=cat)
-        else:
+            if cat != 'all':
+                target_cat = ResourceCategory.objects.get(name=cat)
+            else:
+                target_cat = 'all'
+            if equip != 'all':
+                target_equip = Equipment.objects.get(name=equip)
+            else:
+                target_equip = 'all'
+            if attr != 'all':
+                target_attr = attr
+            else:
+                target_attr = 'all'
+        except:
+            target_locs = []
             target_cat = 'all'
-        if equip != 'all':
-            target_equip = Equipment.objects.get(name=equip)
-        else:
             target_equip = 'all'
-        if attr != 'all':
-            target_attr = attr
-        else:
             target_attr = 'all'
 
         sites = filter(target_locs, target_cat, target_equip, target_attr)
+        # except:
+            # sites = Site.objects.all()
         num_results = len(sites)
 
-    # resloc = ResourceLocation.objects.get(resource_location_id = -2147483648)
-    # sites = Site.objects.filter(resource_location=resloc)
-    # sites = Site.objects.all()
-        paginator = Paginator(sites, 50) # Show 50 posts per page.
+        paginator = Paginator(sites, 50) # Show 50 sites per page.
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        dropdown_options = get_dropdowns_fast(sites)
+        dropdown_options = get_dropdowns_fast(sites, target_locs, target_cat, target_equip, target_attr)
 
         return render(request, "camping/index.html", {
                 "page_obj": page_obj,
-                "dd_opt": dropdown_options,
-                "num_results": num_results
+                "num_results": num_results,
+                'dd_opt': dropdown_options
         })
-    else:
-        sites = Site.objects.all()
-        num_results = len(sites)
-        paginator = Paginator(sites, 50) # Show 50 posts per page.
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        dropdown_options = InUseOptions.objects.get(name='everything')
-
-        return render(request, "camping/index.html", {
-                "page_obj": page_obj,
-                "dd_opt": dropdown_options,
-                "num_results": num_results
-        })
+    
 
 def filter(target_locs, target_cat, target_equip, target_attr_name):
     print(target_locs,target_cat,target_equip,target_attr_name)
@@ -75,7 +68,7 @@ def filter(target_locs, target_cat, target_equip, target_attr_name):
     # target_attr = Attribute.objects.get(pk=c)
     # target_equip = Equipment.objects.get(pk=d)
 
-    loc_query = Q() # a Q object is use to do OR queries
+    loc_query = Q() # a Q object is used to do OR queries
     for loc in target_locs:
         loc_query |= Q(resource_location=loc)
 
@@ -91,21 +84,27 @@ def filter(target_locs, target_cat, target_equip, target_attr_name):
     if target_attr_name != 'all':
         attr_query = Q(site_attributes__attribute__main_name=target_attr_name) 
 
-    # filtering a Q() objects separated by commas is an AND query
+    # filtering a Q() object separated by commas is an AND query
     sites = Site.objects.filter(loc_query, cat_query, equip_query, attr_query).distinct().order_by('resource_location')
     # sites = Site.objects.filter(loc_query, resource_category=target_cat, allowed_equipment=target_equ, site_attributes__attribute__main_name=target_attr_name,).order_by('name')
-    print(len(sites))
+    print(f'Number of Matching Sites: {len(sites)}')
     return sites
 
 
+# gets the number of query results via JS fetch call
 def get_num_results(request):
-    data = json.loads(request.body)
-    locs = data.get('locSelects')
-    cat = data.get('catSelect')
-    equip = data.get('equipSelect')
-    attr = data.get('attrSelect')
+    locs = request.GET.getlist('res-loc-dd')
+    cat = request.GET.get('res-cat-dd')
+    equip = request.GET.get('equip-dd')
+    attr = request.GET.get('attr-dd')
+    
+    # data = json.loads(request.body)
+    # locs = data.get('locSelects')
+    # cat = data.get('catSelect')
+    # equip = data.get('equipSelect')
+    # attr = data.get('attrSelect')
 
-    print(locs, cat, equip, attr)
+    print(f'Query Info: {locs}, {cat}, {equip}, {attr}')
     target_locs = []
     for loc in locs:  
         target_loc = ResourceLocation.objects.get(full_name=loc)
@@ -132,82 +131,49 @@ def get_num_results(request):
     }, status=200)
 
 
-def get_dropdowns_fast(sites):
-
-    # create a new 'current' InUseOptions object to store the relevant
-    # dropdown options for this list of sites
+def get_dropdowns_fast(sites, target_locs, target_cat, target_equip, target_attr):
+    current_dropdowns = {}
+    query_name = f'{target_locs}, {target_cat}, {target_equip}, {target_attr}'
+    
+    """
+    Create a new 'current' InUseOptions object to store the relevant
+    dropdown options for this list of sites, if it doesn't already exist.
+    """
     try:
-        current_dropdowns = InUseOptions.objects.get(name='current')
-        current_dropdowns.delete()
-        current_dropdowns = InUseOptions.objects.create(name='current')
+        current_dropdowns = InUseOptions.objects.get(name=query_name)
+        print('Query exists in database - getting query results.')
     except:
-        current_dropdowns = InUseOptions.objects.create(name='current')
+        print('Query is new - making new InUseOptions object.')
+        current_dropdowns = InUseOptions.objects.create(name=query_name)
     
-    # get a list of all possible Attributes that distinct main_names
-    # in format {'main_name': 'Attribute.main_name'}
-    all_unique_attrs = Attribute.objects.values('main_name').distinct()
-    
-    # further filter the sites list to figure out which of the unique attributes
-    # are actually represented in the list of sites.  Add them to the InUseOptions obj.
-    attrs = []
-    for attr in all_unique_attrs:
-        x = sites.filter(site_attributes__attribute__main_name=attr['main_name'])
-        if len(x) > 0:
-            current_dropdowns.attributes.add(Attribute.objects.filter(main_name=attr['main_name']).first())
-    
-    # do same for other InUseOptions fields:
-    for loc in ResourceLocation.objects.all():
-        x = sites.filter(resource_location=loc)
-        if len(x) > 0:
-            current_dropdowns.resource_locations.add(loc)
-    
-    for cat in ResourceCategory.objects.all():
-        x = sites.filter(resource_category=cat)
-        if len(x) > 0:
-            current_dropdowns.resource_categories.add(cat)
-    
-    for equip in Equipment.objects.all():
-        x = sites.filter(allowed_equipment=equip)
-        if len(x) > 0:
-            current_dropdowns.equipment.add(equip)
+        # get a list of all possible Attributes that have distinct main_names
+        # in format {'main_name': 'Attribute.main_name'}
+        all_unique_attrs = Attribute.objects.values('main_name').distinct()
+        
+        # further filter the sites list to figure out which of the unique attributes
+        # are actually represented in the list of sites.  Add them to the InUseOptions obj.
+        for attr in all_unique_attrs:
+            x = sites.filter(site_attributes__attribute__main_name=attr['main_name'])
+            if len(x) > 0:
+                current_dropdowns.attributes.add(Attribute.objects.filter(main_name=attr['main_name']).first())
+        
+        # do same for other InUseOptions fields:
+        for loc in ResourceLocation.objects.all():
+            x = sites.filter(resource_location=loc)
+            if len(x) > 0:
+                current_dropdowns.resource_locations.add(loc)
+        
+        for cat in ResourceCategory.objects.all():
+            x = sites.filter(resource_category=cat)
+            if len(x) > 0:
+                current_dropdowns.resource_categories.add(cat)
+        
+        for equip in Equipment.objects.all():
+            x = sites.filter(allowed_equipment=equip)
+            if len(x) > 0:
+                current_dropdowns.equipment.add(equip)
 
     return current_dropdowns
-
-# deprecated - this is 5x slower than the get_dropdowns_fast method above.
-# def get_dropdowns(sites):
-#     res_locs = set()
-#     res_cats = set()
-#     equipment_list = set()
-#     attributes = set()
-#     for site in sites:
-#         res_locs.add(site.resource_location.full_name)
-#         res_cats.add(site.resource_category.name)
-#         for equip in site.allowed_equipment.all():
-#             equipment_list.add(equip.name)
-#         for attr in site.site_attributes.all():
-#             attributes.add(attr.attribute.main_name)
-    
-#     try:
-#         current_dropdowns = InUseOptions.objects.get(name='current')
-#         current_dropdowns.delete()
-#         current_dropdowns = InUseOptions.objects.create(name='current')
-#     except:
-#         current_dropdowns = InUseOptions.objects.create(name='current')
-    
-#     for resloc in res_locs:
-#         loc = ResourceLocation.objects.get(full_name=resloc)
-#         current_dropdowns.resource_locations.add(loc)
-#     for rescat in res_cats:
-#         cat = ResourceCategory.objects.get(name=rescat)
-#         current_dropdowns.resource_categories.add(cat)
-#     for equip in equipment_list:
-#         e = Equipment.objects.get(name=equip)
-#         current_dropdowns.equipment.add(e)
-#     for attr in attributes:
-#         a = Attribute.objects.filter(main_name=attr).first()
-#         current_dropdowns.attributes.add(a)
-
-#     return current_dropdowns
 
 
 def load_resource_locations(request):
