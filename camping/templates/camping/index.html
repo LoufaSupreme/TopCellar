@@ -76,21 +76,21 @@
         <ul class="pagination">
         <li class="page-item">
             {% if page_obj.has_previous %}
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                <a class="page-link" href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous">
                     <section aria-hidden="true">&laquo;</section>
                 </a>
             {% endif %}
         </li>
         {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
-                <li class="page-item active"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                <li class="page-item active"><a class="page-link" href="?{% if query %}{{ query }}&{% endif %}page={{ num }}">{{ num }}</a></li>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <li class="page-item "><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                <li class="page-item "><a class="page-link" href="?{% if query %}{{ query }}&{% endif %}page={{ num }}">{{ num }}</a></li>
             {% endif %}
         {% endfor %}
         {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                <a class="page-link" href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next">
                 <section aria-hidden="true">&raquo;</section>
                 </a>
             </li>

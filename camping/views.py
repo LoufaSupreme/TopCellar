@@ -21,6 +21,14 @@ def index(request):
             equip = request.GET.get('equip-dd')
             attr = request.GET.get('attr-dd')
 
+            # create query string:
+            query = ''
+            query += f'res-cat-dd={cat}&'
+            query += f'equip-dd={equip}&'
+            for loc in locs:
+                query += f'res-loc-dd={loc}&'
+            query += f'attr-dd={attr}'
+
             target_locs = []
             for loc in locs:  
                 target_loc = ResourceLocation.objects.get(full_name=loc)
@@ -49,8 +57,9 @@ def index(request):
         sites = filter(target_locs, target_cat, target_equip, target_attr)
         num_results = len(sites)
 
-        paginator = Paginator(sites, 50) # Show 50 sites per page.
-        page_number = request.GET.get('page')
+        paginator = Paginator(sites, 10) # Show 10 sites per page.
+        # get the current page in html query string.  If no current page in url, default to 1
+        page_number = request.GET.get('page', 1)
         page_obj = paginator.get_page(page_number)
 
         # update the dropdown options to reflect new site list
@@ -63,14 +72,13 @@ def index(request):
             loc_id_list.append(loc.resource_location_id)
             map_id_list.append(loc.rootmap.get().map_id)
 
-        
-
         return render(request, "camping/index.html", {
                 "page_obj": page_obj,
                 "num_results": num_results,
                 'dd_opt': dropdown_options,
                 'loc_id_list': loc_id_list,
-                'map_id_list': map_id_list
+                'map_id_list': map_id_list,
+                'query': query
         })
     
 
