@@ -63,6 +63,8 @@ def index(request):
             loc_id_list.append(loc.resource_location_id)
             map_id_list.append(loc.rootmap.get().map_id)
 
+        
+
         return render(request, "camping/index.html", {
                 "page_obj": page_obj,
                 "num_results": num_results,

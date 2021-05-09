@@ -40,22 +40,31 @@
 
 <div class="site-section">
     {% for site in page_obj %}
-    Campsite {{ site.name }} ({{ site.resource_id }}) of {{ site.resource_location.full_name }}
-    <ul>
-        <li>Resource Location: {{ site.resource_location.short_name }} ({{ site.resource_location.resource_location_id }})</li>
-        {% if site.site_attributes.count > 0 %}
-        <li>Attributes:</li>
+    <div class='site-container' data-res-loc='{{ site.resource_location.resource_location_id }}' data-map-id='{{ site.camp_map.map_id }}' data-res-id='{{ site.resource_id }}'>
+        Campsite {{ site.name }} ({{ site.resource_id }}) of {{ site.resource_location.full_name }}
         <ul>
-            {% for attr in site.site_attributes.all %}
-            <li>{{ attr.attribute.main_name }}: {{ attr.value }}</li>
-            {% endfor %}
+            {% if site.site_attributes.count > 0 %}
+            <li>Attributes:</li>
+            <ul>
+                {% for attr in site.site_attributes.all %}
+                <li>{{ attr.attribute.main_name }}: {{ attr.value }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <li>Resource Category: {{ site.resource_category.name }}</li>
+            <li>Max Capacity: {{ site.max_capacity }}</li>
+            {% if site.allowed_equipment.count > 0 %}
+            <li>Allowed Equipment:</li>
+            <ul>
+                {% for equip in site.allowed_equipment.all %}
+                <li>{{ equip.name }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <li>Availability:</li>
+                <ul id='{{ site.resource_id }}-availability-list'></ul>
         </ul>
-        {% endif %}
-        <li>Fee Category: {{ site.fee_category.name }}</li>
-        <li></li>
-        <li></li>
-        <li></li>
-    </ul>
+    </div>
     {% endfor %}
 </div>
 
@@ -91,7 +100,7 @@
 </div> 
 
 <script>
-    getAvailability({{ loc_id_list }}, {{ map_id_list }});
+    addAvailability({{ loc_id_list }}, {{ map_id_list }});
 </script>
 
 {% endblock %}

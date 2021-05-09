@@ -58,7 +58,7 @@ function numResults() {
 //     }
 // })
 
-function getAvailability(locs, maps) {
+async function getAvailability(locs, maps) {
     // 'https://reservations.ontarioparks.com/api/availability/map?mapId=-2147483376&bookingCategoryId=0&resourceLocationId=-2147483585&equipmentCategoryId=-32768&subEquipmentCategoryId=-32766&startDate=2021-06-16&endDate=2021-06-24&getDailyAvailability=true&isReserving=true&filterData=[]&boatLength=null&boatDraft=null&boatWidth=null&partySize=3&seed=2021-04-27T16:39:26.856Z'
 
     let partySize = 1;
@@ -69,19 +69,53 @@ function getAvailability(locs, maps) {
     let startDate = '2021-06-16';
     let endDate = '2021-06-24';
 
-    let responses = [];
+    let responses = {};
     for (let i = 0; i < locs.length; i++) {
+        console.log(locs.length);
         let mapId = maps[i];
         let resourceLocationId = locs[i];
 
-        const availabilityURL = `https://reservations.ontarioparks.com/api/availability/map?partySize=${partySize}&bookingCategoryId=${bookingCategory}&mapId=${mapId}&equipmentCategoryId=-32768&getDailyAvailability=true&isReserving=true&resourceLocationId=${resourceLocationId}&subEquipmentCategoryId=${subEquipCatId}&startDate=${startDate}&endDate=${endDate}`;
+        let availabilityURL = `https://reservations.ontarioparks.com/api/availability/map?partySize=${partySize}&bookingCategoryId=${bookingCategory}&mapId=${mapId}&equipmentCategoryId=-32768&getDailyAvailability=true&isReserving=true&resourceLocationId=${resourceLocationId}&subEquipmentCategoryId=${subEquipCatId}&startDate=${startDate}&endDate=${endDate}`;
 
-        fetch(availabilityURL)
-        .then(response => response.json())
-        .then(res => {
-            avail_list = { resourceLocationId: res }
-            responses.push(avail_list);
-            console.log(avail_list);
-        });
+        let mapinfo_response = await fetch(availabilityURL);
+        let maplist = await mapinfo_response.json();
+
+        for (let campMap in maplist['mapLinkAvailabilities']) {
+            mapId = campMap;
+            availabilityURL = `https://reservations.ontarioparks.com/api/availability/map?partySize=${partySize}&bookingCategoryId=${bookingCategory}&mapId=${mapId}&equipmentCategoryId=-32768&getDailyAvailability=true&isReserving=true&resourceLocationId=${resourceLocationId}&subEquipmentCategoryId=${subEquipCatId}&startDate=${startDate}&endDate=${endDate}`;
+
+            let avail_response = await fetch(availabilityURL);
+            let avail_list = await avail_response.json();
+
+            for (site in avail_list['resourceAvailabilities']) {
+                responses[site] = avail_list['resourceAvailabilities'][site];
+            }
+        }
+    }
+    return responses;
+}
+
+
+async function addAvailability(locs, maps) {
+    let responses = await getAvailability(locs, maps);  
+    siteContainers = document.getElementsByClassName('site-container');
+    for (site of siteContainers) {
+        let resLoc = site.getAttribute('data-res-loc');
+        let mapId = site.getAttribute('data-map-id');
+        let siteId = site.getAttribute('data-res-id');
+        let siteAvailList = responses[parseInt(siteId)];
+        
+        let siteAvailUL = document.getElementById(`${siteId}-availability-list`);
+        for (day in siteAvailList) {
+            dayAvail = document.createElement('li');
+            let status = 'Unknown';
+            if (parseInt(siteAvailList[day]['availability']) > 0){
+                status = 'Yes';
+            } else {
+                status = 'No';
+            }
+            dayAvail.innerText = `Day ${day}: ${status}`;
+            siteAvailUL.append(dayAvail);
+        }
     }
 }
