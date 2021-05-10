@@ -7,6 +7,7 @@ import json
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models import *
 
@@ -333,11 +334,10 @@ def load_attributes(request):
                     subclass_is_active = sub_attr['isActive']
 
                     # check if attribute already exists in database
-                    all_db_attrs = Attribute.objects.all()
-                    if attribute_definition_id in [db_attr.attribute_definition_id for db_attr in all_db_attrs] and subclass_name in [db_attr.subclass_name for db_attr in all_db_attrs]:
+                    try:
+                        Attribute.objects.filter(attribute_definition_id=attribute_definition_id, subclass_name=subclass_name).get()
                         print(f'Attribute {attribute_definition_id}:{main_name}, Subclass:{subclass_name} already exists in db.')
-                        continue
-                    else:   # if not, then add it to database
+                    except:
                         # create a new attribute:
                         print(f'Attribute {attribute_definition_id}:{main_name}, Subclass:{subclass_name} is new; adding it to database now.')
                         new_attribute = Attribute.objects.create(
@@ -445,10 +445,12 @@ def load_rootmaps(request):
 
 def load_sites(request):
     if request.method == 'POST':
+        # create a bucket to store any errors, so we can review them later:
+        error_bucket = []
+
         print('Loading Sites into db.')
         data = json.loads(request.body)
         all_sites = data.get('allSites')
-        # note that all_attributes is a dict in this case, not a list of dicts.
         
         # get all the sites already loaded into the database
         db_all_sites = Site.objects.all()
@@ -458,39 +460,44 @@ def load_sites(request):
             # ignore sites with "deleted" in their name
             if 'Deleted' in name:
                 continue
+            # otherwise continue
             resource_id = site['resourceId']
             version_id = site['versionId']
             version_date = site['versionDate']
             is_disabled = site['isDisabled']
-            try:
-                resource_location = ResourceLocation.objects.get(resource_location_id=site['resourceLocationId'])
-            except Exception as e:
-                print(e)
-                resource_location = None
-            try:
-                resource_category = ResourceCategory.objects.get(resource_category_id=site['resourceCategoryId'])
-            except Exception as e:
-                print(e)
-                resource_category = None
-            # try:
-            #     fee_category = FeeCategory.objects.get(fee_category_id=site['feeScheduleId'])
-            # except Exception as e:
-                # print(e)
-                # fee_category = None
-
             date_schedule_id = site['dateScheduleId']
             description = site['localizedValues'][0]['description']
             order = site['order']
             max_stay = site['maxStay']
             min_capacity = site['minCapacity']
             max_capacity = site['maxCapacity']
-            
-            if resource_id in [db_site.resource_id for db_site in db_all_sites]:
-                print(f'Site {resource_id}:{name} already exists in db.')
-            elif is_disabled == True:
-                print(f'Site {resource_id}:{name} is not active; ignoring.')
+
+            try:
+                resource_location = ResourceLocation.objects.get(resource_location_id=site['resourceLocationId'])
+            except Exception as e:
+                print(e)
+                error_bucket.append(f"{e}: Couldn't find ResLoc {site['resourceLocationId']} for site {resource_id}")
+                resource_location = None
+            try:
+                resource_category = ResourceCategory.objects.get(resource_category_id=site['resourceCategoryId'])
+            except Exception as e:
+                print(e)
+                error_bucket.append(f"{e}: Couldn't find ResCat {site['resourceCategoryId']} for site {resource_id}")
+                resource_category = None
+                       
+            # check if site already in db. If it is, delete it so we can make it new. 
+            try: 
+                existing_site = Site.objects.get(resource_id=resource_id)
+                print(f'OLD: {resource_id}:{name} found; updating.')
+                existing_site.delete()
+            except Site.DoesNotExist as e:
+                print(e)
+
+            # create new site: 
+            if is_disabled == True:
+                print(f'INACTIVE: Site {resource_id}:{name}; ignoring.')
             else:
-                print(f'Site {resource_id}:{name} is new and active; adding it to database now.')
+                print(f'Adding {resource_id}:{name} to database now.')
                 new_site = Site.objects.create(
                     resource_id = resource_id,
                     version_id = version_id,
@@ -507,6 +514,7 @@ def load_sites(request):
                     min_capacity = min_capacity,
                     max_capacity = max_capacity
                 )
+                # add equipment to the site:
                 if site['allowedEquipment'] != None:
                     for equip in site['allowedEquipment']:
                         all_site_equipment = new_site.allowed_equipment.all()
@@ -518,38 +526,42 @@ def load_sites(request):
                             )
                         except Exception as e:
                             print(e)
+                            error_bucket.append(f"{e}: Site {resource_id}")
+
+                # add site attributes:
                 if site['definedAttributes'] != None:
                     for attr in site['definedAttributes']:
                         if attr['attributeVisibility'] == 0:
                             # check if the attribute has a "value" field or a "values" field
                             if 'values' in attr:
                                 for value in attr['values']:
-                                    # look up associated attribute and make new SiteAttribute object:
                                     try:
+                                        # look up associated attribute:
                                         attribute = Attribute.objects.get(attribute_definition_id=attr['attributeDefinitionId'], subclass_enum=value)
                                         attr_val_name = attribute.subclass_name
-                                        # check if siteattribute already exists:
-                                        if len(SiteAttribute.objects.filter(
-                                            site = new_site,
-                                            attribute = attribute,
-                                            value = attr_val_name
-                                        )) == 0:
-                                        # if no query results for this siteattr then make a new one:
-                                            try:
-                                                new_site_attr = SiteAttribute.objects.create(
-                                                    site = new_site,
-                                                    attribute = attribute,
-                                                    value = attr_val_name
-                                                )
-                                                print(f'Adding new "enum" site specific attribute {attribute} for site {new_site}')
-                                            except Exception as e:
-                                                print(e)
+                                    except Exception as e:
+                                        print(e)
+                                        error_bucket.append(f"{e}: Attribute {attr['attributeDefinitionId']}")
+                                    # check if siteattribute already exists:
+                                    try:
+                                        existing_attr = SiteAttribute.objects.get(site=new_site, attribute=attribute, value=attr_val_name)
+                                        print(f"SiteAttr {existing_attr} already exists; ignoring")
                                     except Exception as e:
                                         print(e)
 
+                                    # if no query results for this siteattr then make a new one:
+                                        try:
+                                            new_site_attr = SiteAttribute.objects.create(
+                                                site = new_site,
+                                                attribute = attribute,
+                                                value = attr_val_name
+                                            )
+                                            print(f'Adding new "enum" site specific attribute {attribute} for site {new_site}')
+                                        except Exception as e:
+                                            print(e)
+                                
                             else: # if 'values' is not in attr (i.e. 'value' instead)
                                 # create a new SiteAttribute object
-                                print('adding new "non-enum" site specific attribute')
                                 try:
                                     attribute = Attribute.objects.get(attribute_definition_id=attr['attributeDefinitionId'])
                                 except Exception as e:
@@ -568,13 +580,15 @@ def load_sites(request):
                                             attribute = attribute,
                                             value = attr_val
                                         )
+                                        print('Adding new site attribute {attribute} for {new_site}')
                                     except Exception as e:
                                         print(e)
+        print(error_bucket)
         return JsonResponse({"success": f"Sites for Resource Location added."}, status=200)
     else:
         return JsonResponse({"error": "Post request required"}, status=400)
 
-
+                
 def load_camp_maps(request):
     if request.method == 'POST':
         print('Loading campground maps into db.')
