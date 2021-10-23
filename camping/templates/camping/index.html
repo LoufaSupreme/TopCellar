@@ -40,30 +40,63 @@
 
 <div class="site-section">
     {% for site in page_obj %}
-    <div class='site-container' data-res-loc='{{ site.resource_location.resource_location_id }}' data-map-id='{{ site.camp_map.map_id }}' data-res-id='{{ site.resource_id }}'>
-        Campsite {{ site.name }} ({{ site.resource_id }}) of {{ site.resource_location.full_name }}
-        <ul>
-            {% if site.site_attributes.count > 0 %}
-            <li>Attributes:</li>
-            <ul>
+    <div class='container site-container' data-res-loc='{{ site.resource_location.resource_location_id }}' data-map-id='{{ site.camp_map.map_id }}' data-res-id='{{ site.resource_id }}'>
+        <div class='attribute-container'>
+            <div class='header'><span>Site Info</span></div>
+            <div class='content'>
+                <div class='attr-box' id='site-num'>{{ site.name }}</div>
+                <div class='attr-box' id='park-name'>{{ site.resource_location.full_name }}</div>
+                <div class='attr-box' id='res-id'> {{ site.resource_id }}</div>
+            </div>
+        </div>
+
+        <div class='attribute-container'>
+            <div class='header'><span>Key Attributes:</span></div>
+            <div class='content'>
+                {% if site.site_attributes.count > 0 %}
                 {% for attr in site.site_attributes.all %}
-                <li>{{ attr.attribute.main_name }}: {{ attr.value }}</li>
+                    <div class='attr-box'>
+                        <span>{{ attr.attribute.main_name }}:</span>
+                        <span>{{ attr.value }}</span>
+                    </div>
                 {% endfor %}
-            </ul>
-            {% endif %}
-            <li>Resource Category: {{ site.resource_category.name }}</li>
-            <li>Max Capacity: {{ site.max_capacity }}</li>
-            {% if site.allowed_equipment.count > 0 %}
-            <li>Allowed Equipment:</li>
-            <ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class='attribute-container'>
+            <div class='header'><span>Allowed Equipment:</span></div>
+            <div class='content'>
+                {% if site.allowed_equipment.count > 0 %}
                 {% for equip in site.allowed_equipment.all %}
-                <li>{{ equip.name }}</li>
+                <div class='attr-box'>
+                    <span>{{ equip.name }}</span>
+                </div>
                 {% endfor %}
-            </ul>
-            {% endif %}
-            <li>Availability:</li>
-                <ul id='{{ site.resource_id }}-availability-list'></ul>
-        </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class='attribute-container'>
+            <div class='header'><span>Other Info:</span></div>
+            <div class='content'>
+                <div class='attr-box'>
+                    <span>Max Capacity:</span>
+                    <span>{{ site.max_capacity }}</span>
+                </div>
+                <div class='attr-box'>
+                    <span>Resource Category:</span>
+                    <span>{{ site.resource_category.name }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class='attribute-container'>
+            <div class='header'><span>Availability:</span></div>
+            <div class='content'>
+                <div class='attr-box' id='{{ site.resource_id }}-availability-list'></div>
+            </div>
+        </div>
     </div>
     {% endfor %}
 </div>
