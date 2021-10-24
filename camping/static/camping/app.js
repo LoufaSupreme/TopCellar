@@ -48,7 +48,8 @@ function numResults() {
         let numResults = response['num_results'];
         console.log(numResults);
         document.getElementById('num-results').innerText = `${numResults} matching sites.`
-    });
+    })
+    .catch(err => console.log(err));
 } 
  
 
@@ -80,19 +81,28 @@ async function getAvailability(locs, maps) {
 
         let availabilityURL = `https://reservations.ontarioparks.com/api/availability/map?partySize=${partySize}&bookingCategoryId=${bookingCategory}&mapId=${mapId}&equipmentCategoryId=-32768&getDailyAvailability=true&isReserving=true&resourceLocationId=${resourceLocationId}&subEquipmentCategoryId=${subEquipCatId}&startDate=${startDate}&endDate=${endDate}`;
 
-        let mapinfo_response = await fetch(availabilityURL);
-        let maplist = await mapinfo_response.json();
+        try {
+            let mapinfo_response = await fetch(availabilityURL);
+            let maplist = await mapinfo_response.json();
 
-        for (let campMap in maplist['mapLinkAvailabilities']) {
-            mapId = campMap;
-            availabilityURL = `https://reservations.ontarioparks.com/api/availability/map?partySize=${partySize}&bookingCategoryId=${bookingCategory}&mapId=${mapId}&equipmentCategoryId=-32768&getDailyAvailability=true&isReserving=true&resourceLocationId=${resourceLocationId}&subEquipmentCategoryId=${subEquipCatId}&startDate=${startDate}&endDate=${endDate}`;
+            for (let campMap in maplist['mapLinkAvailabilities']) {
+                mapId = campMap;
+                availabilityURL = `https://reservations.ontarioparks.com/api/availability/map?partySize=${partySize}&bookingCategoryId=${bookingCategory}&mapId=${mapId}&equipmentCategoryId=-32768&getDailyAvailability=true&isReserving=true&resourceLocationId=${resourceLocationId}&subEquipmentCategoryId=${subEquipCatId}&startDate=${startDate}&endDate=${endDate}`;
+                try {
+                    let avail_response = await fetch(availabilityURL);
+                    let avail_list = await avail_response.json();
 
-            let avail_response = await fetch(availabilityURL);
-            let avail_list = await avail_response.json();
-
-            for (site in avail_list['resourceAvailabilities']) {
-                responses[site] = avail_list['resourceAvailabilities'][site];
+                    for (site in avail_list['resourceAvailabilities']) {
+                        responses[site] = avail_list['resourceAvailabilities'][site];
+                    }
+                }
+                catch(err) {
+                    console.log(err);
+                }
             }
+        }
+        catch(err) {
+            console.log(err);
         }
     }
     return responses;
