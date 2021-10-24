@@ -14,8 +14,8 @@
 
         <div class="single-dd-container">
             <label for='res-cat-dd'>Category:</label>
-            <select id="cat-select" name='res-cat-dd' onchange='numResults();'>
-                <option value='all'>All</option>
+            <select id="cat-select" name='res-cat-dd' onchange='numResults();' multiple>
+                <!-- <option value='all'>All</option> -->
                 {% for rescat in dd_opt.resource_categories.all %}
                 <option value='{{ rescat.name }}'>{{ rescat.name }}</option>
                 {% endfor %}
@@ -24,8 +24,8 @@
 
         <div class="single-dd-container">
             <label for='equip-dd'>Equipment:</label>
-            <select id="equip-select" name='equip-dd' onchange='numResults();'>
-                <option value='all'>All</option>
+            <select id="equip-select" name='equip-dd' onchange='numResults();' multiple>
+                <!-- <option value='all'>All</option> -->
                 {% for equip in dd_opt.equipment.all %}
                 <option value='{{ equip.name }}'>{{ equip.name }}</option>
                 {% endfor %}

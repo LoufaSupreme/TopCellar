@@ -26,7 +26,9 @@ function numResults() {
 
     // https://stackoverflow.com/questions/5866169/how-to-get-all-selected-values-of-a-multiple-select-box
     //  Get all the selected options of a multiselect into a list
-    let locSelectOptions = [...locSelect.options].filter(option => option.selected).map(option => option.value);
+    const locSelectOptions = [...locSelect.options].filter(option => option.selected).map(option => option.value);
+    const catSelectOptions = [...catSelect.options].filter(option => option.selected).map(option => option.value);
+    const equipSelectOptions = [...equipSelect.options].filter(option => option.selected).map(option => option.value);
 
     localStorage.setItem('selected_cat', catSelect);
 
@@ -35,11 +37,24 @@ function numResults() {
         loc_q_string += `&res-loc-dd=${loc}`;
     }
 
-    let cat_q_string = `res-cat-dd=${catSelect.value}`;
-    let equip_q_string = `equip-dd=${equipSelect.value}`;
+    let cat_q_string = '';
+    if (catSelectOptions.length > 0) {
+        cat_q_string = `res-cat-dd=${catSelectOptions[0]}`;
+    }
+    for (let i = 1; i < catSelectOptions.length; i++) {
+        cat_q_string += `&res-cat-dd=${catSelectOptions[i]}`;
+    }
+
+    let equip_q_string = '';
+    for (equip of equipSelectOptions) {
+        equip_q_string += `&$equip-dd=${equip}`;
+    }
+
+    // let cat_q_string = `res-cat-dd=${catSelect.value}`;
+    // let equip_q_string = `equip-dd=${equipSelect.value}`;
     let attr_q_string = `attr-dd=${attrSelect.value}`
 
-    let numResultsURL = `/getNumResults?${cat_q_string}${loc_q_string}&${equip_q_string}&${attr_q_string}`;
+    let numResultsURL = `/getNumResults?${cat_q_string}${loc_q_string}${equip_q_string}&${attr_q_string}`;
     // console.log(numResultsURL);
 
     fetch(numResultsURL)

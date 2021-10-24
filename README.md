@@ -44,12 +44,13 @@ This project makes the API calls that the ontarioparks website uses, and takes t
 
 #### Backend Design
 ##### Filter Views
-- [x] Filter by One attribute/value pair at a time
-- [ ] Multiple attribute/value pair at a time   
-- [ ] Filter by what's NOT there (i.e. all sites WITHOUT "adjacent to toilets"
 - [x] Filter by Resource Location
 - [x] Filter by Resource Category
 - [x] Filter by Equipment
+- [x] Filter by combinations of the above
+- [ ] Filter by One attribute (feature)/value pair at a time
+- [ ] Multiple attribute (feature)/value pair at a time   
+- [ ] Filter by what's NOT there (i.e. all sites WITHOUT "adjacent to toilets"
  
 ##### Frontend Design:
 - [ ] User Profile (create, edit, add photo, see all liked sites, see all comments)

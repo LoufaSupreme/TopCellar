@@ -195,16 +195,17 @@ async function loadSites() {
             const csrf_token = getCookie('csrftoken');
 
             let finished_response = await fetch('/loadDatabase/sites', {
-                                    method: 'POST',
-                                    body: JSON.stringify({
-                                    allSites: allSiteInfoList,
-                                    resLoc: resourceLocationId
-                                    }),
-                                    headers: { "X-CSRFToken": csrf_token }
-                                }).catch(error => console.error(error));
+                method: 'POST',
+                body: JSON.stringify({
+                allSites: allSiteInfoList,
+                resLoc: resourceLocationId
+                }),
+                headers: { "X-CSRFToken": csrf_token }
+            }).catch(error => console.error(error));
+
             let finished_status = await finished_response.json();
             console.log(finished_status);
-            console.log(`Finished loading sites of ResLoc ${resourceLocationId}`);
+            console.log(`Finished loading sites of ResLoc ${resourceLocationId}: ${(i/resourceLocationsList.length*100).toFixed(0)}% done.`);
         }
     }
     catch(err) {

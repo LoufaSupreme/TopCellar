@@ -15,48 +15,55 @@ from .models import *
 def index(request):
 
     if request.method == 'GET':
-        try:
-            # get the search query values
-            locs = request.GET.getlist('res-loc-dd')
-            cat = request.GET.get('res-cat-dd')
-            equip = request.GET.get('equip-dd')
-            attr = request.GET.get('attr-dd')
+        # target_locs = []
+        # target_cat = []
+        # target_equip = []
+        # target_attr = 'all'
+        
+        # try:
+        #     # get the search query values
+        #     locs = request.GET.getlist('res-loc-dd')
+        #     cat = request.GET.getlist('res-cat-dd')
+        #     equip = request.GET.getlist('equip-dd')
+        #     attr = request.GET.getlist('attr-dd')
 
-            # create query string:
-            query = ''
-            query += f'res-cat-dd={cat}&'
-            query += f'equip-dd={equip}&'
-            for loc in locs:
-                query += f'res-loc-dd={loc}&'
-            query += f'attr-dd={attr}'
+            # # create query string:
+            # query = ''
+            # query += f'res-cat-dd={cat}&'
+            # query += f'equip-dd={equip}&'
+            # for loc in locs:
+            #     query += f'res-loc-dd={loc}&'
+            # query += f'attr-dd={attr}'
 
-            target_locs = []
-            for loc in locs:  
-                target_loc = ResourceLocation.objects.get(full_name=loc)
-                target_locs.append(target_loc)
+        #     target_locs = []
+        #     for loc in locs:  
+        #         target_loc = ResourceLocation.objects.get(full_name=loc)
+        #         target_locs.append(target_loc)
 
-            if cat != 'all':
-                target_cat = ResourceCategory.objects.get(name=cat)
-            else:
-                target_cat = 'all'
-            if equip != 'all':
-                target_equip = Equipment.objects.get(name=equip)
-            else:
-                target_equip = 'all'
-            if attr != 'all':
-                target_attr = attr
-            else:
-                target_attr = 'all'
-        except:
-            # if no search query parameters, set parameters to all:
-            target_locs = []
-            target_cat = 'all'
-            target_equip = 'all'
-            target_attr = 'all'
+        #     if cat != 'all':
+        #         target_cat = ResourceCategory.objects.get(name=cat)
+        #     else:
+        #         target_cat = 'all'
+        #     if equip != 'all':
+        #         target_equip = Equipment.objects.get(name=equip)
+        #     else:
+        #         target_equip = 'all'
+        #     if attr != 'all':
+        #         target_attr = attr
+        #     else:
+        #         target_attr = 'all'
+        # except:
+        #     # if no search query parameters, set parameters to all:
+        #     target_locs = []
+        #     target_cat = []
+        #     target_equip = []
+        #     target_attr = 'all'
 
-        # filter sites by search parameters
-        sites = filter(target_locs, target_cat, target_equip, target_attr)
-        num_results = len(sites)
+        # # filter sites by search parameters
+        # sites = filter(target_locs, target_cat, target_equip, target_attr)
+
+        query = parseURLQuery(request)
+        sites = custom_filter(query['target_locs'], query['target_cats'], query['target_equips'], query['target_attr'])
 
         paginator = Paginator(sites, 10) # Show 10 sites per page.
         # get the current page in html query string.  If no current page in url, default to 1
@@ -64,27 +71,27 @@ def index(request):
         page_obj = paginator.get_page(page_number)
 
         # update the dropdown options to reflect new site list
-        dropdown_options = get_dropdowns_fast(sites, target_locs, target_cat, target_equip, target_attr)
+        dropdown_options = get_dropdowns_fast(sites, query['target_locs'], query['target_cats'], query['target_equips'], query['target_attr'])
 
         # get list of relevant location IDs and map IDs for availability fetch request
         loc_id_list = []
         map_id_list = []
-        for loc in target_locs:
+        for loc in query['target_locs']:
             loc_id_list.append(loc.resource_location_id)
             map_id_list.append(loc.rootmap.get().map_id)
 
         return render(request, "camping/index.html", {
                 "page_obj": page_obj,
-                "num_results": num_results,
+                "num_results": len(sites),
                 'dd_opt': dropdown_options,
                 'loc_id_list': loc_id_list,
                 'map_id_list': map_id_list,
-                'query': query
+                'query': query['query_string']
         })
     
 
-def filter(target_locs, target_cat, target_equip, target_attr_name):
-    print(target_locs,target_cat,target_equip,target_attr_name)
+def custom_filter(target_locs, target_cats, target_equips, target_attr_name):
+    print('Filtering:', target_locs,target_cats,target_equips,target_attr_name)
     # target_loc = ResourceLocation.objects.get(pk=a)
     # target_cat = ResourceCategory.objects.get(pk=b)
     # target_attr = Attribute.objects.get(pk=c)
@@ -94,13 +101,21 @@ def filter(target_locs, target_cat, target_equip, target_attr_name):
     for loc in target_locs:
         loc_query |= Q(resource_location=loc)
 
-    cat_query = Q()
-    if target_cat != 'all':
-        cat_query = Q(resource_category=target_cat) 
+    cat_query = Q() # a Q object is used to do OR queries
+    for cat in target_cats:
+        cat_query |= Q(resource_category=cat)
+
+    equip_query = Q() # a Q object is used to do OR queries
+    for e in target_equips:
+        equip_query |= Q(allowed_equipment=e)
+
+    # cat_query = Q()
+    # if target_cat != 'all':
+    #     cat_query = Q(resource_category=target_cat) 
     
-    equip_query = Q()
-    if target_equip != 'all':
-        equip_query = Q(allowed_equipment=target_equip) 
+    # equip_query = Q()
+    # if target_equip != 'all':
+    #     equip_query = Q(allowed_equipment=target_equip) 
 
     attr_query = Q()
     if target_attr_name != 'all':
@@ -113,34 +128,60 @@ def filter(target_locs, target_cat, target_equip, target_attr_name):
     return sites
 
 
-# gets the number of query results via JS fetch call
-def get_num_results(request):
+def parseURLQuery(request):
     locs = request.GET.getlist('res-loc-dd')
-    cat = request.GET.get('res-cat-dd')
-    equip = request.GET.get('equip-dd')
+    cats = request.GET.getlist('res-cat-dd')
+    equips = request.GET.getlist('equip-dd')
     attr = request.GET.get('attr-dd')
     
-    print(f'Query Info: {locs}, {cat}, {equip}, {attr}')
+    print(f'Query Info: {locs}, {cats}, {equips}, {attr}')
+
+    # create query string:
+    query = f'attr-dd={attr}&'
+    for loc in locs:
+        query += f'res-loc-dd={loc}&'
+    for cat in cats:
+        query += f'res-cat-dd={cat}&'
+    for e in equips:
+        query += f'equip-dd={e}&'
+    
     target_locs = []
     for loc in locs:  
         target_loc = ResourceLocation.objects.get(full_name=loc)
         target_locs.append(target_loc)
 
-    if cat != 'all':
+    target_cats = []
+    for cat in cats:  
         target_cat = ResourceCategory.objects.get(name=cat)
-    else:
-        target_cat = 'all'
-    if equip != 'all':
+        target_cats.append(target_cat)
+
+
+    target_equips = []
+    for equip in equips:  
         target_equip = Equipment.objects.get(name=equip)
-    else:
-        target_equip = 'all'
-    if attr != 'all':
+        target_equips.append(target_equip)
+
+    if attr != None:
         target_attr = attr
     else:
         target_attr = 'all'
 
-    sites = filter(target_locs, target_cat, target_equip, target_attr)
-    # sites = filter(*filter_list)
+    query = {
+        "query_string": query,
+        "target_locs": target_locs,
+        "target_cats": target_cats,
+        "target_equips": target_equips,
+        "target_attr": target_attr
+    }
+
+    return query
+    
+
+# gets the number of query results via JS fetch call
+def get_num_results(request):
+    
+    query = parseURLQuery(request)
+    sites = custom_filter(query['target_locs'], query['target_cats'], query['target_equips'], query['target_attr'])
 
     return JsonResponse({
         "num_results": sites.count()
@@ -259,10 +300,10 @@ def load_resource_categories(request):
             # check if resource category already exists in database
             all_rescats = ResourceCategory.objects.all()
             if resource_category_id in [rescat.resource_category_id for rescat in all_rescats]:
-                print(f'Resource Category {resource_category_id}:{name} already exists in db.')
+                print(f'Already Exists: Resource Category {resource_category_id}:{name} already exists in db.')
                 continue
             else:   # if not, then add it to database
-                print(f'Resource Category {resource_category_id}:{name} is new; adding it to database now.')
+                print(f'New: Resource Category {resource_category_id}:{name} is new; adding it to database now.')
                 new_resource_category = ResourceCategory.objects.create(
                     resource_category_id = resource_category_id,
                     version_id = version_id,
@@ -292,10 +333,10 @@ def load_equipment(request):
             # check if equipment already exists in database
             all_equips = Equipment.objects.all()
             if equipment_category_id in [equip.equipment_category_id for equip in all_equips]:
-                print(f'Equipment Category {equipment_category_id}:{name} already exists in db.')
+                print(f'Already Exists: Equipment Category {equipment_category_id}:{name} already exists in db.')
                 continue
             else:   # if not, then add it to database
-                print(f'Equipment Category {equipment_category_id}:{name} is new; adding it to database now.')
+                print(f'New: Equipment Category {equipment_category_id}:{name} is new; adding it to database now.')
                 new_equipment_category = Equipment.objects.create(
                     equipment_category_id = equipment_category_id,
                     order = order,
@@ -336,10 +377,10 @@ def load_attributes(request):
                     # check if attribute already exists in database
                     try:
                         Attribute.objects.filter(attribute_definition_id=attribute_definition_id, subclass_name=subclass_name).get()
-                        print(f'Attribute {attribute_definition_id}:{main_name}, Subclass:{subclass_name} already exists in db.')
+                        print(f'Already Exists: Attribute {attribute_definition_id}:{main_name}, Subclass:{subclass_name} already exists in db.')
                     except:
                         # create a new attribute:
-                        print(f'Attribute {attribute_definition_id}:{main_name}, Subclass:{subclass_name} is new; adding it to database now.')
+                        print(f'New: Attribute {attribute_definition_id}:{main_name}, Subclass:{subclass_name} is new; adding it to database now.')
                         new_attribute = Attribute.objects.create(
                             attribute_definition_id = attribute_definition_id,
                             main_name = main_name,
@@ -355,10 +396,10 @@ def load_attributes(request):
             else:
                 all_db_attrs = Attribute.objects.all()
                 if attribute_definition_id in [db_attr.attribute_definition_id for db_attr in all_db_attrs]:
-                    print(f'Attribute {attribute_definition_id}:{main_name} already exists in db.')
+                    print(f'Already Exists: Attribute {attribute_definition_id}:{main_name} already exists in db.')
                     continue
                 else:
-                    print(f'Attribute {attribute_definition_id}:{main_name} is new; adding it to database now.')        
+                    print(f'New: Attribute {attribute_definition_id}:{main_name} is new; adding it to database now.')        
                     new_attribute = Attribute.objects.create(
                         attribute_definition_id = attribute_definition_id,
                         main_name = main_name,
@@ -424,10 +465,10 @@ def load_rootmaps(request):
             
             all_db_rootmaps = Rootmap.objects.all()
             if map_id in [db_rootmap.map_id for db_rootmap in all_db_rootmaps]:
-                print(f'Rootmap {map_id}:{name} already exists in db.')
+                print(f'Already Exists: Rootmap {map_id}:{name} already exists in db.')
                 continue
             else:
-                print(f'Rootmap {map_id}:{name} is new; adding it to database now.')
+                print(f'New: Rootmap {map_id}:{name} is new; adding it to database now.')
                 new_rootmap = Rootmap.objects.create(
                     map_id = map_id,
                     name = name,
@@ -519,7 +560,7 @@ def load_sites(request):
                     for equip in site['allowedEquipment']:
                         all_site_equipment = new_site.allowed_equipment.all()
                         if equip['item2'] in [db_site_equip.equipment_category_id for db_site_equip in all_site_equipment]:
-                            print(f'Site equipment {db_site_equip} already exists for site {new_site}')
+                            print(f'Already Exists: Site equipment {db_site_equip} already exists for site {new_site}')
                         try:
                             new_site.allowed_equipment.add(
                                 Equipment.objects.get(equipment_category_id = equip['item2'])
@@ -545,7 +586,7 @@ def load_sites(request):
                                     # check if siteattribute already exists:
                                     try:
                                         existing_attr = SiteAttribute.objects.get(site=new_site, attribute=attribute, value=attr_val_name)
-                                        print(f"SiteAttr {existing_attr} already exists; ignoring")
+                                        print(f"Already Exists: SiteAttr {existing_attr} already exists; ignoring")
                                     except Exception as e:
                                         print(e)
 
@@ -556,7 +597,7 @@ def load_sites(request):
                                                 attribute = attribute,
                                                 value = attr_val_name
                                             )
-                                            print(f'Adding new "enum" site specific attribute {attribute} for site {new_site}')
+                                            print(f'NEW: Adding new "enum" site specific attribute {attribute} for site {new_site}')
                                         except Exception as e:
                                             print(e)
                                 
@@ -580,10 +621,10 @@ def load_sites(request):
                                             attribute = attribute,
                                             value = attr_val
                                         )
-                                        print('Adding new site attribute {attribute} for {new_site}')
+                                        print(f'NEW: Adding new site attribute {attribute} for {new_site}')
                                     except Exception as e:
                                         print(e)
-        print(error_bucket)
+        print('Finished.  Errors:', error_bucket)
         return JsonResponse({"success": f"Sites for Resource Location added."}, status=200)
     else:
         return JsonResponse({"error": "Post request required"}, status=400)
@@ -612,10 +653,10 @@ def load_camp_maps(request):
             
             all_db_camp_maps = CampgroundMap.objects.all()
             if map_id in [db_camp_map.map_id for db_camp_map in all_db_camp_maps]:
-                print(f'Camp Map {map_id}:{name} already exists in db.')
+                print(f'Already Exists: Camp Map {map_id}:{name} already exists in db.')
                 continue
             else:
-                print(f'Camp Map {map_id}:{name} is new; adding it to database now.')
+                print(f'NEW: Camp Map {map_id}:{name} is new; adding it to database now.')
                 new_camp_map = CampgroundMap.objects.create(
                     map_id = map_id,
                     name = name,
@@ -633,7 +674,7 @@ def load_camp_maps(request):
                         except:
                             print(f'Campsite {site} not found. Ignoring it.')
                             continue
-        return JsonResponse({"success": f"Maps added"}, status=200)
+        return JsonResponse({"success": "Maps added"}, status=200)
     else:
         return JsonResponse({"error": "Post request required"}, status=400)
 
