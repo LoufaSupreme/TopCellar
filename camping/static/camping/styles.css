@@ -113,6 +113,20 @@ form {
     font-size: 1rem;
 }
 
+.paginator-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.current-page {
+    disply: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
 @media (max-width: 600px) {
 
 }
