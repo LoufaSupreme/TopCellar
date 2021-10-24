@@ -9,6 +9,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    width: 100vw;
 }
 
 .navbar {
@@ -18,12 +19,16 @@ body {
 .dropdowns {
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 form {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+    width: 100%;
+
 }
 
 .single-dd-container {
