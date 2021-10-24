@@ -66,8 +66,11 @@ async function getAvailability(locs, maps) {
     // let mapId = -2147483376;
     // let resourceLocationId = -2147483585;
     let subEquipCatId = -32766;
-    let startDate = '2021-06-16';
-    let endDate = '2021-06-24';
+    let now = new Date();
+    startDate = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+    let endDate = new Date();
+    endDate.setDate(now.getDate() + 7);
+    endDate = `${endDate.getFullYear()}-${endDate.getMonth()+1}-${endDate.getDate()}`;
 
     let responses = {};
     for (let i = 0; i < locs.length; i++) {
@@ -109,12 +112,16 @@ async function addAvailability(locs, maps) {
         for (day in siteAvailList) {
             dayAvail = document.createElement('li');
             let status = 'Unknown';
+            let target_date = new Date();
+            target_date.setDate(target_date.getDate() + parseInt(day));
+            target_date = `${target_date.getFullYear()}-${target_date.getMonth()+1}-${target_date.getDate()}`;
+        
             if (parseInt(siteAvailList[day]['availability']) > 0){
                 status = 'Yes';
             } else {
                 status = 'No';
             }
-            dayAvail.innerText = `Day ${day}: ${status}`;
+            dayAvail.innerText = `${target_date}: ${status}`;
             siteAvailUL.append(dayAvail);
         }
     }
