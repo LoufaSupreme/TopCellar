@@ -12,6 +12,27 @@ This project makes the API calls that the ontarioparks website uses, and takes t
 - Distinct: This project is unlike any other project in the CS50W 2020 project list.
 - Complex: This project uses a series of async Javascript API calls to an external, undocumented API, then parses those responses and passes them to a Django backend server.  The Django server then parses them, loads them into a complicated database structure (consisting of 11+ models), sorts and filters the data, and passes back to the frontend.  Collecting the site data is very complex in of itself, since it requires multiple API calls to collect the various information associated with a site (location, category, attributes, fees, maps, equipment, etc.) Also, the info is not easily connected, as each of the aforementioned info is identified with an integer instead of by name. Thus connecting all the info to one site requires several nested fetch calls, and a SQL database structure with several many-to-many and one-to-many relationships. It also makes querying the database very complex (Q() queries in Django were helpful here).
 
+## How it Works
+- **loadDatabase.js:** Makes a series of clientside Fetch get calls to all of the relevant Ontario Campground API endpoints.  Each function is responsible for getting info corresponding to one of the Django Models associated with a campsite.  These include: Resource Location, Resource Category, Equipment, Attributes, Fee Categories, Rootmaps, Campmaps and the Sites themselves. Once the data is loaded into memory clientside, it is sent via a fetch post call to one of the Django API endpoints (outlined in the urls.py file) to load this data into the SQL database.  Most of these fetch sequences is 2 steps - once to get data from Ontario Parks, and once to send to the Django server.  However, the loadSites function is more complicated than the rest in that it must make a get request for every resource location that exists (each resource location contains a list of sites within it).  This requires an iterative fetch call, to collect all the sites from a resource location, send it to the Django database, and then move on to the next resource location.  As such, it is important that this process uses the async/await so that the next set of sites is sent to the backend server ONLY after the previous set completes.
+
+- **app.js:** Clientside functionality to dynamically modify the DOM without refreshing the page. numResults() constructs a URL with query strings from the user input fields, and then sends it to the backend to determine how many sites match the query strings.  It then updates the DOM to reflect that.  getAvailability and setAvailability make asynchronous fetch calls to the Ontario Campground availability API endpoint for each site displayed on the screen, and displays the availability of those sites on the screen for today to 7 days from today.
+
+- **models.py:** A model that represents a SQL database table is created for each aforementioned property fetched from the API endpoints in loadDatabase.js.  All models are independent from eachother except for Sites and SiteAttributes, which use several foreign keys and many to many relationships to link all the tables (models) together. This way all information associated with a campsite can be queried just by knowing the site ID.
+
+- **urls.py:** Routing for the URLs.  Most paths are API calls to load the database or query sites that match a query string.
+
+- **views.py:** All of the backend logic in the form of function views. Key functions include:
+    - custom_filter: takes a list of target locations, site categories, equipment and attributes (from the user inputs) and queries the database for matches. Returns the list of matching sites.
+    - parseURLQuery: creates and returns a custom object (dict) of target locations, categories, equipment and attributes from a URL query string.
+    - get_num_results: sends a JSON response to the frontend that includes the number of matching sites from the custom_filter function.
+    - get_dropdowns_fast: returns an updated list for each dropdown menu based on what is available to search.  e.g., if you filter all sites by only one location, then the dropdown list for available equipment to choose from updates based on the equipment that is available in that location only.
+    - load_[property]: parses the response of a fetch call that was sent as a post request to the database (from loadDatabase.js) and loads it into the database.  If an item to be entered already exists in the database, it is either skipped or updated.  If it does not exist, it's added.  There is extensive logic in the load_sites function to link all the models to each site. 
+    - index: renders index.html by sending a list of sites, dropdown options, etc.
+
+- **layout.html:** Main html template that houses the navbar.
+
+- **index.html:** Generates the body of the main page by displaying: a set of user inputs, a list of sites that match the criteria along with their properties, a pagination section that limits how many sites are displayed.
+
 ## File Structure
 - camping (root)
     - camping (project)
