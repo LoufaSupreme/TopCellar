@@ -20,6 +20,9 @@ class Customer(models.Model):
     address = models.CharField(max_length=255, null=True, blank=True)
     industry = models.CharField(max_length=255, null=True, blank=True)
 
+    def __str__(self):
+        return f'{self.name}' 
+
 
 class Contact(models.Model):
     name = models.CharField(max_length=255)
@@ -28,24 +31,28 @@ class Contact(models.Model):
     phone_office = PositiveBigIntegerField(null=True, blank=True)
     company = models.ForeignKey(Customer, blank=True, on_delete=models.PROTECT, related_name='contacts')
 
+    def __str__(self):
+        return f'{self.name} ({self.company})' 
+
+
 
 class Entry(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='entries')
     description = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, related_name='entries')
-    contact = models.ManyToManyField(Contact, null=True, blank=True, related_name='entries')
+    contact = models.ManyToManyField(Contact, blank=True, related_name='entries')
     priority = models.PositiveIntegerField(null=True, blank=True)
     completed = models.BooleanField(default=False)
     archived = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Entry {self.id} - {self.user.username}'
+        return f'Entry {self.id} - {self.author.username}'
 
     def serialize(self):
         return {
             "id": self.id,
-            "author": self.user.username,
+            "author": self.author.username,
             "description": self.description,
             "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p"),
             "customer": self.customer.name,
