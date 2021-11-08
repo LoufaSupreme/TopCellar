@@ -82,6 +82,9 @@ DATABASES = {
     }
 }
 
+# User model to use:
+AUTH_USER_MODEL = "cellar.User"
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
