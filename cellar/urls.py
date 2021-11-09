@@ -21,4 +21,5 @@ urlpatterns = [
     path('api/entry/<str:pk>', views.entryDetail, name='entryDetail'),
     path('api/contact/<str:pk>', views.contactDetail, name='contactDetail'),
     path('api/customer/<str:pk>', views.customerDetail, name='customerDetail'),
+    path('api/newEntry/', views.newEntry, name='newEntry'),
 ]

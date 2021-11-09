@@ -11,6 +11,8 @@ from .models import User, Profile, Entry, Customer, Contact
 
 def index(request):
 
+    user = request.user
+
     # trigger the register modal if "new_register" is set to True as a sesssion variable.
     # immediately pop it from the session upon redirect form the register view function.
     # https://stackoverflow.com/questions/29673537/django-redirect-with-context
@@ -20,7 +22,10 @@ def index(request):
     else:
         new_register = False
 
-    return HttpResponse("Hello, world. You're at the cellar index.")
+    return render(request, "cellar/index.html", {
+        "new_register": new_register,
+        "user": user.username
+    })
 
 # API route
 # send list of all entries for the user
@@ -71,7 +76,30 @@ def customerDetail(request, pk):
     return JsonResponse(customer.serialize(), safe=False)
 
 
-    
+# API route
+# create new entry
+def newEntry(request):
+    if request.method == 'POST':
+        user = request.user
+        data = json.loads(request.body)
+        # print(data.get('customer').strip())
+        customer = Customer.objects.get(name=data.get('customer').strip())
+        contact = data.get('contact').strip()
+        date = data.get('date').strip()
+        descrip = data.get('description').strip()
+
+        entry = Entry(
+            author=user,
+            customer=customer,
+            description=descrip
+        )
+        entry.save()
+
+        return JsonResponse({"message": "Entry saved successfully."}, status=201)
+    else:
+        return JsonResponse({"error": "Post method required"}, status=400)
+
+
 def login_view(request):
     if request.method == "POST":
 
