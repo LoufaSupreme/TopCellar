@@ -24,8 +24,28 @@ const getEntries = async () => {
     const res = await fetch('api/allEntries/');
     const entries = await res.json();
 
-    console.log({entries});
+    // console.log({entries});
     return entries;
+}
+
+// fetch all user's customers from db:
+const getCustomers = async () => {
+    console.log('Fetching Customers...');
+    const res = await fetch('api/allCustomers/');
+    const customers = await res.json();
+
+    // console.log({entries});
+    return customers;
+}
+
+// fetch all user's contacts from db:
+const getContacts = async () => {
+    console.log('Fetching Contacts...');
+    const res = await fetch('api/allContacts/');
+    const contacts = await res.json();
+
+    // console.log({entries});
+    return contacts;
 }
 
 // filter array of entries based on criteria
@@ -68,6 +88,7 @@ const collateEntries = (entries) => {
     },'')
 }
 
+// append entry list into document body:
 const displayEntries = async () => {
     const body = document.querySelector('body');
     const entries = await getEntries();
