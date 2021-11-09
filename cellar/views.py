@@ -1,13 +1,25 @@
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.urls import reverse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.db import IntegrityError
 import json
 
-from .models import User, Entry, Customer, Contact
+from .models import User, Profile, Entry, Customer, Contact
 
 
 
 def index(request):
+
+    # trigger the register modal if "new_register" is set to True as a sesssion variable.
+    # immediately pop it from the session upon redirect form the register view function.
+    # https://stackoverflow.com/questions/29673537/django-redirect-with-context
+    new_register = request.session.pop('new_register', False)
+    if new_register:
+        new_register = True
+    else:
+        new_register = False
+
     return HttpResponse("Hello, world. You're at the cellar index.")
 
 # API route
@@ -57,3 +69,70 @@ def customerDetail(request, pk):
     customer = Customer.objects.get(id=pk)
 
     return JsonResponse(customer.serialize(), safe=False)
+
+
+    
+def login_view(request):
+    if request.method == "POST":
+
+        # Attempt to sign user in
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+
+        # Check if authentication successful
+        if user is not None:
+            login(request, user)
+            return HttpResponseRedirect(reverse("cellar:index"))
+        else:
+            return render(request, "cellar/login.html", {
+                "message": "Invalid username and/or password."
+            })
+    else:
+        return render(request, "cellar/login.html")
+
+
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("cellar:index"))
+
+
+def register(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        email = request.POST["email"]
+
+        # Ensure password matches confirmation
+        password = request.POST["password"]
+        confirmation = request.POST["confirmation"]
+        if password != confirmation:
+            return render(request, "cellar/register.html", {
+                "message": "Passwords must match."
+            })
+        
+        if password == "" or username == "" or email == "":
+            return render(request, "cellar/register.html", {
+                "message": "Input the required fields."
+            })
+
+        # Attempt to create new user
+        try:
+            user = User.objects.create_user(username, email, password)
+            user.save()
+            # assign profile to user
+            profile = Profile(user=user)
+            profile.save()
+        except IntegrityError:
+            return render(request, "cellar/register.html", {
+                "message": "Username already taken."
+            })
+        login(request, user)
+        
+        # https://stackoverflow.com/questions/29673537/django-redirect-with-context
+        # add "new_register" item to session, to trigger registration modal once.  It gets popped in the index function immediately. 
+        request.session['new_register'] = True
+
+        return HttpResponseRedirect(reverse("cellar:index"))
+        
+    else:
+        return render(request, "cellar/register.html")
