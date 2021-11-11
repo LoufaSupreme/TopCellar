@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
 import json
 
-from .models import User, Profile, Entry, Customer, Contact
+from .models import User, Profile, Entry, Address, Customer, Contact, Tag
 
 
 

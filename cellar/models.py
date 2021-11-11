@@ -16,12 +16,12 @@ class Profile(models.Model):
 
 
 class Address(models.Model):
-    street_addr_1: models.CharField(max_length=255)
-    street_addr_2: models.CharField(max_length=255, blank=True)
-    city: models.CharField(max_length=255)
-    province: models.CharField(max_length=50)
-    postal_code: models.CharField(max_length=7)
-    country: models.CharField(max_length=128, default="Canada")
+    street_addr_1 = models.CharField(max_length=255)
+    street_addr_2 = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=255)
+    province = models.CharField(max_length=50)
+    postal_code = models.CharField(max_length=7)
+    country = models.CharField(max_length=128, default="Canada")
 
     def __str__(self):
         return f'{self.street_addr_1}, {self.street_addr_2}, {self.city}, {self.province}' 
@@ -56,14 +56,26 @@ class Customer(models.Model):
         return f'{self.name}' 
 
     def serialize(self):
-        return {
+        serialized = {
             "user": self.user.id,
             "name": self.name,
-            "address": self.address,
+            "address": None,
             "industry": self.industry,
             "notes": self.notes,
             "tags": [tag.tag for tag in self.tags.all()]
         }
+
+        if self.address != None:
+            serialized['address'] = {
+                "street_addr_1": self.address.street_addr_1,
+                "street_addr_2": self.address.street_addr_2,
+                "city": self.address.city,
+                "province": self.address.province,
+                "postal_code": self.address.postal_code,
+                "country": self.address.country
+            }
+
+        return serialized
 
 
 class Contact(models.Model):
@@ -78,19 +90,24 @@ class Contact(models.Model):
     notes = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f'{self.name} ({self.company})' 
+        return f'{self.first_name} {self.last_name} ({self.company})' 
 
     def serialize(self):
-        return {
+        serialized = {
             "user": self.user.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.email,
             "phone_cell": self.phone_cell,
             "phone_office": self.phone_office,
-            "company": self.company.name,
+            "company": None,
             "notes": self.notes,
         }
+
+        if self.company != None:
+            serialized['company'] = self.company.name
+
+        return serialized
 
 
 class Entry(models.Model):
@@ -105,7 +122,7 @@ class Entry(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, related_name="entries")
 
     def __str__(self):
-        return f'Entry {self.id} - {self.author.username}'
+        return f'{self.id} - {self.description[0:10]}...({self.author.username})'
 
     def serialize(self):
         
