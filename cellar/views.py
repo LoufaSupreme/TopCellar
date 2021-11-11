@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
-import json, time, datetime
+import json, datetime
 
 from .models import User, Profile, Entry, Address, Customer, Contact, Tag
 
@@ -112,14 +112,16 @@ def newEntry(request):
             
             # get date and make datetime object:
             entry_date = data.get('date')
-            entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"])
+            now = datetime.datetime.now()
+            # use current time for the datetime instance.
+            entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], now.hour, now.minute, now.second)
 
             # get description, completed status, archived status:
             descrip = data.get('description').strip()
             completed = data.get('completed')
             archived = data.get('archived')
 
-            # get tags:
+            # get tags. If the tag doesn't exist, create it:
             raw_tags = data.get('tags')
             tags = []
             for t in raw_tags:
