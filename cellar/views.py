@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
-import json
+import json, time, datetime
 
 from .models import User, Profile, Entry, Address, Customer, Contact, Tag
 
@@ -77,30 +77,82 @@ def customerDetail(request, pk):
 
 
 # API route
+# send list of all tags for the user
+def getTags(request):
+    user = request.user
+    tags = Tag.objects.filter(user=user).all()
+
+    return JsonResponse([tag.tag for tag in tags], safe=False)
+
+# API route
 # create new entry
 def newEntry(request):
     if request.method == 'POST':
-        user = request.user
-        data = json.loads(request.body)
-        # print(data.get('customer').strip())
-        customer = data.get('customer').strip()
         try:
-            customer = Customer.objects.get(name=customer)
-        except Customer.DoesNotExist:
-            customer = makeCustomerFromName(user, customer)
-        
-        contacts = data.get('contact').strip()
-        date = data.get('date').strip()
-        descrip = data.get('description').strip()
+            user = request.user
+            data = json.loads(request.body)
+            print(f'Creating new Entry: {data}')
+            # get customer object:
+            customer = data.get('customer').strip()
+            try:
+                customer = Customer.objects.get(name=customer)
+            except Customer.DoesNotExist:
+                customer = makeCustomerFromName(user, customer)
+            
+            # get contact object for each contact:
+            contact_names = data.get('contacts')
+            contacts = []
+            for c in contact_names:
+                try:
+                    contact = Contact.objects.get(first_name=c['first_name'], last_name=c['last_name'])
+                    contacts.append(contact)
+                except Contact.DoesNotExist:
+                    contact = makeContactFromName(user, c)
+                    contacts.append(contact)
+            
+            # get date and make datetime object:
+            entry_date = data.get('date')
+            entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"])
 
-        entry = Entry(
-            author=user,
-            customer=customer,
-            description=descrip
-        )
-        entry.save()
+            # get description, completed status, archived status:
+            descrip = data.get('description').strip()
+            completed = data.get('completed')
+            archived = data.get('archived')
 
-        return JsonResponse({"message": "Entry saved successfully."}, status=201)
+            # get tags:
+            raw_tags = data.get('tags')
+            tags = []
+            for t in raw_tags:
+                try:
+                    tag = Tag.objects.get(tag=t)
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    tag = Tag(tag=t)
+                    tag.save()
+                    tags.append(tag)
+
+            # create new entry:
+            entry = Entry(
+                author=user,
+                customer=customer,
+                description=descrip,
+                timestamp=entry_date,
+                completed=completed,
+                archived=archived,
+            )
+            entry.save()
+
+            # update the new entry to include the tags and contacts:
+            for contact in contacts:
+                entry.contacts.add(contact)
+            for tag in tags:
+                entry.tags.add(tag)
+
+            entry.save()
+
+            return JsonResponse({"message": "Entry saved successfully."}, status=201)
+        except Exception as e:
+            return JsonResponse({"error": e}, status=500)
     else:
         return JsonResponse({"error": "Post method required"}, status=400)
 
@@ -111,7 +163,12 @@ def makeCustomerFromName(user, name):
     customer.save()
     return customer
 
-
+# utility function
+# create a new contact using only the contact's name
+def makeContactFromName(user, name):
+    contact = Contact(user=user, first_name=name["first_name"], last_name=name["last_name"])
+    contact.save()
+    return contact
 
 
 def login_view(request):

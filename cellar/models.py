@@ -37,7 +37,9 @@ class Address(models.Model):
         }
 
 
+# descriptive words that act as optional parameters to sort data by
 class Tag(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tags')
     tag = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):

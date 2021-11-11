@@ -48,6 +48,15 @@ const getContacts = async () => {
     return contacts;
 }
 
+// fetch all user's tags from db:
+const getTags = async () => {
+    console.log('Fetching Tags...');
+    const res = await fetch('api/allTags/');
+    const tags = await res.json();
+
+    return tags;
+}
+
 // filter array of entries based on criteria
 // criteria is an object with key:value pairs of what to filter {"author.name": 'Jane Doe', "user.id": 1}
 const filterEntries = (entries, criteria) => {
@@ -96,23 +105,45 @@ const displayEntries = async () => {
     body.innerHTML = html;
 }
 
-// create a new entry instance in the db:
-const newEntry = async () => {
-    const details = {
-        "customer": "Knoll",
-        "contact": "Big Chungus",
-        "date": "Jan 25, 2021",
-        "description": "Sooooo much fuggin text holy cow."
+const contacts = [
+    {
+        "first_name": "Jane",
+        "last_name": "Doe" 
+    },
+    {
+        "first_name": "Big",
+        "last_name": "Chungus"
     }
+]
+
+const date = {
+    "day": 25,
+    "month": 1,
+    "year": 2021
+}
+
+const newEntryDetails = {
+    "customer": "Knoll",
+    "contacts": contacts,
+    "date": date,
+    "description": "Sooooo much fuggin text holy cow.",
+    "completed": false,
+    "archived": false, 
+    "tags": ['Urgent', 'Boring']
+}
+
+// create a new entry instance in the db:
+const newEntry = async (details) => {
 
     // get csrf token for put request
     const csrf_token = getCookie('csrftoken');
 
-    const res = await fetch('api/newEntry/', {
+    fetch('api/newEntry/', {
         method: 'POST',
         body: JSON.stringify(details),
         headers: { "X-CSRFToken": csrf_token }
     })
-    const response = await res.json();
-    console.log(response);
+    .then(res => res.json())
+    .then(res => console.log(res))
+    .catch(err => console.error(err))
 }
