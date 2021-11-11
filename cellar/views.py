@@ -84,6 +84,7 @@ def getTags(request):
 
     return JsonResponse([tag.tag for tag in tags], safe=False)
 
+
 # API route
 # create new entry
 def newEntry(request):
@@ -99,7 +100,7 @@ def newEntry(request):
             except Customer.DoesNotExist:
                 customer = makeCustomerFromName(user, customer)
             
-            # get contact object for each contact:
+            # get contact object for each contact. If it doesn't exist, create one:
             contact_names = data.get('contacts')
             contacts = []
             for c in contact_names:
