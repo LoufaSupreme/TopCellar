@@ -83,8 +83,13 @@ def newEntry(request):
         user = request.user
         data = json.loads(request.body)
         # print(data.get('customer').strip())
-        customer = Customer.objects.get(name=data.get('customer').strip())
-        contact = data.get('contact').strip()
+        customer = data.get('customer').strip()
+        try:
+            customer = Customer.objects.get(name=customer)
+        except Customer.DoesNotExist:
+            customer = makeCustomerFromName(user, customer)
+        
+        contacts = data.get('contact').strip()
         date = data.get('date').strip()
         descrip = data.get('description').strip()
 
@@ -98,6 +103,15 @@ def newEntry(request):
         return JsonResponse({"message": "Entry saved successfully."}, status=201)
     else:
         return JsonResponse({"error": "Post method required"}, status=400)
+
+# utility function
+# create a new customer using only the customer's name
+def makeCustomerFromName(user, name):
+    customer = Customer(user=user, name=name)
+    customer.save()
+    return customer
+
+
 
 
 def login_view(request):
