@@ -122,10 +122,8 @@ def newEntry(request):
             # use current time for the datetime instance.
             entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], now.hour, now.minute, now.second)
 
-            # get description, completed status, archived status:
+            # get description:
             descrip = data.get('description').strip()
-            completed = data.get('completed')
-            archived = data.get('archived')
 
             # get tags. If the tag doesn't exist, create it:
             raw_tags = data.get('tags')
@@ -145,8 +143,6 @@ def newEntry(request):
                 customer=customer,
                 description=descrip,
                 timestamp=entry_date,
-                completed=completed,
-                archived=archived,
             )
             entry.save()
 

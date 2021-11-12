@@ -21,9 +21,8 @@ const App = async (state) => {
             Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${await getUser()}!</span>
         </div>
 
-        <div class='container flex' id='entries-container'>
-            ${await displayEntries()}
-        </div>
+        <div class='form-container'>${makeEntryForm()}</div>
+        <div class='container flex' id='entries-container'>${await displayEntries()}</div>
         `;
     }
 }
@@ -91,6 +90,59 @@ const getUser = async () => {
     return username;
 }
 
+
+//////////////////////////////////////
+// HTML COMPONENTS ///////////////////
+//////////////////////////////////////
+
+// append entry list into document body:
+const displayEntries = async () => {
+    // const container = document.querySelector('#entries-container');
+    const entries = await getEntries();
+    const html = collateEntries(entries);
+    // container.innerHTML = html;
+    return html;
+}
+
+// make html to render a new Entry form:
+const makeEntryForm = () => {
+    return `
+        <form class='text-dark' id='entry-form'>
+            <fieldset>
+                <legend>New Sales Entry:</legend>
+                <input type="text" placeholder="Account" name="customer">
+                <input type="text" placeholder="Contact Name" name="contacts">
+                <textarea placeholder="Description" name="description"></textarea>
+                <input type="number" placeholder="Rank" name="rank">
+                <input type="text" placeholder="Tags" name="tags">
+                <input type="submit" value="Create" id="entry-submit-btn">
+            </fieldset>
+        </form>
+    `;
+}
+
+//////////////////////////////////////
+// HELPER FUNCTIONS /////////////////
+//////////////////////////////////////
+
+// handles clicks anywhere on the document.  Called on window load. 
+// this is to avoid having to make new event handlers for dynamic content (like the form)
+const handleClicks = (e) => {
+    if (e.target.id === 'entry-submit-btn') {
+        e.preventDefault();
+        getFormData();
+    }
+}
+
+
+const getFormData = () => {
+    const form = document.getElementById('entry-form');
+    const inputs = form.querySelectorAll('input, textarea');
+    let values = {};
+    inputs.forEach(input => values[input.name] = input.value);
+    console.log(values);
+}
+
 // filter array of entries based on criteria
 // criteria is an object with key:value pairs of what to filter {"author.name": 'Jane Doe', "user.id": 1}
 const filterEntries = (entries, criteria) => {
@@ -141,14 +193,7 @@ const collateEntries = (entries) => {
     },'')
 }
 
-// append entry list into document body:
-const displayEntries = async () => {
-    // const container = document.querySelector('#entries-container');
-    const entries = await getEntries();
-    const html = collateEntries(entries);
-    // container.innerHTML = html;
-    return html;
-}
+
 
 const contacts = [
     {
@@ -195,5 +240,6 @@ const newEntry = async (details) => {
 
 // run on DOM content loaded:
 window.addEventListener('load', () => {
+    document.addEventListener('click', handleClicks);
     render(root, store);
 });
