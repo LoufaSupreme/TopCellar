@@ -84,6 +84,11 @@ def getTags(request):
 
     return JsonResponse([tag.tag for tag in tags], safe=False)
 
+# API Route
+# send user info to frontend
+def getUser(request):
+    return JsonResponse(request.user.username, safe=False)
+
 
 # API route
 # create new entry

@@ -1,4 +1,32 @@
 
+// global state 
+let store = {
+    "page": "index",
+    "user": null,
+}
+
+// grab the root element which all html will be appended to:
+const root = document.getElementById('root');
+
+// render html:
+const render = async (root, state) => {
+    root.innerHTML = await App(state);
+}
+
+// create content
+const App = async (state) => {
+    if (state.page === 'index') {
+        return `
+        <div class='fs-700 ff-sans-cond letter-spacing-1 text-dark uppercase'>
+            Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${await getUser()}!</span>
+        </div>
+
+        <div class='container flex' id='entries-container'>
+            ${await displayEntries()}
+        </div>
+        `;
+    }
+}
 
 // from Django docs - get CSRF token from cookies
 function getCookie(name) {
@@ -24,7 +52,6 @@ const getEntries = async () => {
     const res = await fetch('api/allEntries/');
     const entries = await res.json();
 
-    // console.log({entries});
     return entries;
 }
 
@@ -34,7 +61,6 @@ const getCustomers = async () => {
     const res = await fetch('api/allCustomers/');
     const customers = await res.json();
 
-    // console.log({entries});
     return customers;
 }
 
@@ -44,7 +70,6 @@ const getContacts = async () => {
     const res = await fetch('api/allContacts/');
     const contacts = await res.json();
 
-    // console.log({entries});
     return contacts;
 }
 
@@ -55,6 +80,15 @@ const getTags = async () => {
     const tags = await res.json();
 
     return tags;
+}
+
+// fetch current user's username:
+const getUser = async () => {
+    console.log('Fetching Username...');
+    const res = await fetch('api/currentUser/');
+    const username = await res.json();
+
+    return username;
 }
 
 // filter array of entries based on criteria
@@ -109,10 +143,11 @@ const collateEntries = (entries) => {
 
 // append entry list into document body:
 const displayEntries = async () => {
-    const container = document.querySelector('#entries-container');
+    // const container = document.querySelector('#entries-container');
     const entries = await getEntries();
     const html = collateEntries(entries);
-    container.innerHTML = html;
+    // container.innerHTML = html;
+    return html;
 }
 
 const contacts = [
@@ -157,3 +192,8 @@ const newEntry = async (details) => {
     .then(res => console.log(res))
     .catch(err => console.error(err))
 }
+
+// run on DOM content loaded:
+window.addEventListener('load', () => {
+    render(root, store);
+});

@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/allContacts/', views.getContacts, name='allContacts'),
     path('api/allCustomers/', views.getCustomers, name='allCustomers'),
     path('api/allTags/', views.getTags, name='allTags'),
+    path('api/currentUser/', views.getUser, name='getUser'),
     path('api/entry/<str:pk>', views.entryDetail, name='entryDetail'),
     path('api/contact/<str:pk>', views.contactDetail, name='contactDetail'),
     path('api/customer/<str:pk>', views.customerDetail, name='customerDetail'),
