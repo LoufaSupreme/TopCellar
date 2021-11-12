@@ -202,5 +202,18 @@
 }
 
 /* ------------------------------------------ */
-/*     ---------------------------- */
+/* COMPONENTS --------------------------------- */
 /* ------------------------------------------ */
+
+body {
+  background-color: white;
+}
+
+#entries-container {
+  flex-direction: column;
+}
+
+.entry-container {
+  flex-direction: column;
+  min-width: 80vw;
+}

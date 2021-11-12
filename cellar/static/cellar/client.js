@@ -81,28 +81,38 @@ const filterEntries = (entries, criteria) => {
     return filteredEntries;
 }
 
+
 // display each entry on the page:
 const collateEntries = (entries) => {
     console.log('Collating Entries...');
-    return entries = entries.map(entry => {
-        return `
-            <ul>
-                <li>ID: ${entry.id}</li>
-                <li>Description: ${entry.description}</li>
-            </ul>
-        `;
+    return entries.map(entry => {
+        try {
+            const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name}`);
+            return `
+                <div class='flex entry-container container bg-dark text-white'>
+                    <div>ID: ${entry.id}</div>
+                    ${entry.customer !== null ? `<div>${entry.customer.name}</div>` : ''}
+                    ${contacts.length > 0 ? `<div>${contacts.join(', ')}</div>` : ''}
+                    <div>${entry.description}</div>
+                    ${entry.tags.length > 0 ? `<div>Tags: ${entry.tags.join(', ')}</div>` : ''}
+                </div>
+            `;
+        } 
+        catch (err) {
+            console.error(err);
+        }
     })
     .reduce((acc, entry) => {
-        return acc += entry;
+        return acc + entry;
     },'')
 }
 
 // append entry list into document body:
 const displayEntries = async () => {
-    const body = document.querySelector('body');
+    const container = document.querySelector('#entries-container');
     const entries = await getEntries();
     const html = collateEntries(entries);
-    body.innerHTML = html;
+    container.innerHTML = html;
 }
 
 const contacts = [

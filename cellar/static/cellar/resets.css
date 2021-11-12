@@ -61,6 +61,10 @@ select {
   font: inherit;
 }
 
+ul li {
+  list-style: none;
+}
+
 /* remove animations for ppl who turn them off */
 @media (prefers-reduced-motion: reduce) {
   *,
