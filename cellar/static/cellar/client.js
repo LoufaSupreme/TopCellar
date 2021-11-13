@@ -31,7 +31,7 @@ const App = async (state) => {
             Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
         </div>
 
-        <div class='form-container'>${makeEntryForm()}</div>
+        ${makeEntryForm()}
         <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
         `;
     }
@@ -129,16 +129,20 @@ const loadStore = async (state) => {
 // make html to render a new Entry form:
 const makeEntryForm = () => {
     return `
-        <div class="form-container">
-            <input type="text" data-accountID="" data-list="customers" placeholder="Account">
-            <div class="suggestions" style="display: none">DUMMY TEXT</div>
+        <div class="form-container" id="entry-form-container">
+
+            <div class="suggestions" style="display:none">DUMMY TEXT</div>
+    
             <div class="tag-container">
-                <input class="tag-input" type="text" data-list="contacts" placeholder="Contact Name">
+                <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+            </div>
+            <div class="tag-container">
+                <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
             </div>
             <textarea placeholder="Description" name="description"></textarea>
             <input type="number" placeholder="Rank">
             <div class="tag-container">
-                <input class="tag-input" type="text" data-list="tags" placeholder="Tag">
+                <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
             </div>
         </div>
         <button type="buton" id="entry-submit-btn">CREATE</button>
@@ -155,15 +159,18 @@ const handleClicks = (e) => {
     
     // fires when the entry submit button is clicked:
     if (e.target.id === 'entry-submit-btn') {
-        e.preventDefault();
-        getFormData();
+        const form = document.querySelector('#entry-form-container');
+        getFormData(form);
     }
 
-    // fires when a dropdown selection is clicked:
-    if (e.target.dataset.owner) {
-        const input = document.querySelector(`[data-list="${e.target.dataset.owner}"]`);
-        input.value = e.target.innerHTML;
-        input.dataset.accountID = e.target.dataset.id;
+    // fires when a dropdown suggestion is clicked:
+    if (e.target.classList.contains('suggestion')) {
+         // get the input field corresponding to the clicked elements data-owner attribute:
+        const input = document.querySelector(`#${e.target.dataset.owner}-input`);
+        input.value = e.target.innerHTML;  // load the input 
+        input.dataset.id = e.target.dataset.id; // set the data-id of the input to the same as the value object
+        addTag(input);
+        input.focus(); // resume focus on the input box
     }
 }
 
@@ -188,14 +195,47 @@ const displaySuggestions = (options, owner) => {
         .join('');
 }
 
+// inserts a new element in the DOM with ".tag" classname
+// used for customers, contacts and tags
+const addTag = (inputField) => {
+    const parent = inputField.parentElement; // container div
+
+    // if there's already a customer name in the parent div, remove it.
+    // only want one customer to be able to be selected at a time
+    if (inputField.dataset.list === 'customers' && parent.firstChild) {
+        parent.firstChild.remove();
+    }
+
+    // make new tag:
+    const tag = document.createElement('div'); // make new tag div
+    tag.classList.add('tag'); // add "tag" to classname list
+    tag.dataset.id = inputField.dataset.id;  // id of the value (i.e. if customer name, then customer.id)
+    tag.dataset.list = inputField.dataset.list; // take the input's data-list (e.g. "customers") and set to the tag
+    tag.innerHTML = inputField.value; // value of input
+
+    // check if this tag already exists:
+    const tagExists = Array.from(parent.querySelectorAll('.tag'))
+        .filter(el => {
+            return el.dataset.id === tag.dataset.id && el.innerHTML === tag.innerHTML;
+        }).length > 0;
+
+    // if tag doesn't exist, add it:
+    if (!tagExists) {
+        parent.insertBefore(tag, inputField); // add input value as new '.tag' element before
+    }
+
+    inputField.value = ''; // reset input box
+}
+
 // handles keyup events anywhere on the document.  Called on window load. 
 // this is to avoid having to make new event handlers for dynamic content (like the form)
-const handleKeyUp = async (e) => {
+const handleKeyUp = (e) => {
 
     if (e.target.dataset.list) {
         const targetList = e.target.dataset.list;
         const listItems = store[targetList];  // grab the list of items for targetList from store
 
+        // the below is now not needed since all have 'name' properties:
         let options = [];
         if (targetList === 'customers') {
             options = findMatches(e.target.value, listItems, ['name']);
@@ -206,8 +246,6 @@ const handleKeyUp = async (e) => {
         else {
             options = findMatches(e.target.value, listItems, ['name']);
         }
-        // listItems = await getList(`${e.target.dataset.list}`);
-        console.log(options);
 
         const suggestionArea = document.querySelector('.suggestions');
         suggestionArea.style.display = 'block';
@@ -217,22 +255,53 @@ const handleKeyUp = async (e) => {
 
     // if user hits enter while inside an input box 'tag-input', create a new tag element:
     if (e.target.classList.contains('tag-input') && e.key === 'Enter' ) {
-        const val = document.createElement('div');  
-        val.classList.add('tag');
-        val.innerHTML = e.target.value; // value of input
-        const parent = e.target.parentElement; // container div
-        parent.insertBefore(val, e.target); // add input value as new '.tag' element
-        e.target.value = ''; // reset input box
+        addTag(e.target);
     }
 }
 
 
-const getFormData = () => {
-    const form = document.getElementById('entry-form');
-    const inputs = form.querySelectorAll('input, textarea');
-    let values = {};
-    inputs.forEach(input => values[input.name] = input.value);
-    console.log(values);
+const getFormData = (form) => {
+    const tagElements = Array.from(form.querySelectorAll('.tag'));
+    
+    const newEntry = {
+        "customer": {},
+        "contacts": [],
+        "tags": [],
+        "description": null,
+        "rank": null,
+    };
+    
+    const customer = tagElements.filter(tag => tag.dataset.list === 'customers')
+        .forEach(cust => {
+            newEntry.customer.id = cust.dataset.id;
+            newEntry.customer.name = cust.innerHTML;
+        });
+    const contacts = tagElements.filter(tag => tag.dataset.list === 'contacts')
+        .forEach(cont => {
+            const names = cont.innerHTML.split(' ');
+            const first_name = names[0];
+            const last_name = names.length > 1 ? names[1] : "";
+            
+            newEntry.contacts.push({
+                "id": cont.dataset.id,
+                "first_name": first_name,
+                "last_name": last_name,
+            })
+        });
+    const tags = tagElements.filter(tag => tag.dataset.list === 'tags')
+        .forEach(tag => {
+            newEntry.tags.push({
+                "id": tag.dataset.id,
+                "name": tag.innerHTML,
+            })
+        });
+    const description = form.querySelector('textarea').value;
+    const rank = form.querySelector('input[type="number"]').value;
+
+    newEntry.description = description;
+    newEntry.rank = rank;
+
+    console.log(newEntry);
 }
 
 // filter array of entries based on criteria
