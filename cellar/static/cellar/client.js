@@ -105,7 +105,7 @@ const displayEntries = async () => {
 }
 
 // make html to render a new Entry form:
-const makeEntryForm = () => {
+const makeEntryForm2 = () => {
     return `
         <form class='text-dark' id='entry-form'>
             <fieldset>
@@ -121,6 +121,23 @@ const makeEntryForm = () => {
     `;
 }
 
+const makeEntryForm = () => {
+    return `
+        <div class="form-container">
+            <input type="text" placeholder="Account" name="customer-input">
+            <div class="tag-container">
+                <input type="text" placeholder="Contact Name" name="contact-input" class="tag-input">
+            </div>
+            <textarea placeholder="Description" name="description"></textarea>
+            <input type="number" placeholder="Rank" name="rank">
+            <div class="tag-container">
+                <input type="text" placeholder="Tag" name="tag-input" class="tag-input">
+            </div>
+        </div>
+        <button type="buton" id="entry-submit-btn">CREATE</button>
+    `;
+}
+
 //////////////////////////////////////
 // HELPER FUNCTIONS /////////////////
 //////////////////////////////////////
@@ -132,6 +149,19 @@ const handleClicks = (e) => {
         e.preventDefault();
         getFormData();
     }
+}
+
+const handleKeyUp = (e) => {
+    // if user hits enter while inside an input box 'tag-input', create a new tag element:
+    if (e.target.classList.contains('tag-input') && e.key === 'Enter' ) {
+        const val = document.createElement('div');  
+        val.classList.add('tag');
+        val.innerHTML = e.target.value; // value of input
+        const parent = e.target.parentElement; // container div
+        parent.insertBefore(val, e.target); // add input value as new '.tag' element
+        e.target.value = ''; // reset input box
+    }
+    // console.log(e);
 }
 
 
@@ -241,5 +271,6 @@ const newEntry = async (details) => {
 // run on DOM content loaded:
 window.addEventListener('load', () => {
     document.addEventListener('click', handleClicks);
+    document.addEventListener('keyup', handleKeyUp);
     render(root, store);
 });

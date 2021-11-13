@@ -207,6 +207,7 @@
 
 body {
   background-color: white;
+  color: hsl(var(--clr-dark));
 }
 
 #entries-container {
