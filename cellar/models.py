@@ -28,6 +28,7 @@ class Address(models.Model):
     
     def serialize(self):
         return {
+            "id": self.id,
             "street_addr_1": self.street_addr_1,
             "street_addr_2": self.street_addr_2,
             "city": self.city,
@@ -45,6 +46,12 @@ class Tag(models.Model):
     def __str__(self):
         return f'{self.name}' 
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+        }
+
 
 class Customer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customers')
@@ -59,6 +66,7 @@ class Customer(models.Model):
 
     def serialize(self):
         serialized = {
+            "id": self.id,
             "user": self.user.id,
             "name": self.name,
             "address": None,
@@ -84,7 +92,6 @@ class Contact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contacts')
     first_name = models.CharField(max_length=55)
     last_name = models.CharField(max_length=55, null=True, blank=True)
-    name = f'{first_name} {last_name}'
     position = models.CharField(max_length=155, null=True, blank=True)
     email = EmailField(max_length=254, null=True, blank=True)
     phone_cell = PositiveBigIntegerField(null=True, blank=True)
@@ -97,9 +104,11 @@ class Contact(models.Model):
 
     def serialize(self):
         serialized = {
+            "id": self.id,
             "user": self.user.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
+            "name": f'{self.first_name}',
             "email": self.email,
             "phone_cell": self.phone_cell,
             "phone_office": self.phone_office,
@@ -109,6 +118,9 @@ class Contact(models.Model):
 
         if self.company != None:
             serialized['company'] = self.company.name
+
+        if self.last_name != None:
+            serialized['name'] = f'{self.first_name} {self.last_name}'
 
         return serialized
 

@@ -25,8 +25,8 @@ const render = async (root, state) => {
 // create content
 const App = async (state) => {
     if (state.page === 'index') {
+        await loadStore(state)
         return `
-        ${await loadStore(state)}
         <div class='fs-700 ff-sans-cond letter-spacing-1 text-dark uppercase'>
             Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
         </div>
@@ -152,9 +152,18 @@ const makeEntryForm = () => {
 // handles clicks anywhere on the document.  Called on window load. 
 // this is to avoid having to make new event handlers for dynamic content (like the form)
 const handleClicks = (e) => {
+    
+    // fires when the entry submit button is clicked:
     if (e.target.id === 'entry-submit-btn') {
         e.preventDefault();
         getFormData();
+    }
+
+    // fires when a dropdown selection is clicked:
+    if (e.target.dataset.owner) {
+        const input = document.querySelector(`[data-list="${e.target.dataset.owner}"]`);
+        input.value = e.target.innerHTML;
+        input.dataset.accountID = e.target.dataset.id;
     }
 }
 
@@ -171,10 +180,10 @@ const findMatches = (targetWord, arr, propertyList) => {
     })   
 }
 
-const displaySuggestions = (options) => {
+const displaySuggestions = (options, owner) => {
     return options
         .map(option => {
-            `<li>${option}</li>`
+            return `<li class="suggestion ${owner}-suggestion" data-owner="${owner}" data-id="${option.id}">${option.name}</li>`
         })
         .join('');
 }
@@ -195,14 +204,14 @@ const handleKeyUp = async (e) => {
             options = findMatches(e.target.value, listItems, ['first_name', 'last_name']);
         }
         else {
-            options = findMatches(e.target.value, listItems, ['tag']);
+            options = findMatches(e.target.value, listItems, ['name']);
         }
         // listItems = await getList(`${e.target.dataset.list}`);
         console.log(options);
 
         const suggestionArea = document.querySelector('.suggestions');
         suggestionArea.style.display = 'block';
-        suggestionArea.innerHTML = `<ul>${displaySuggestions(options)}</ul>`
+        suggestionArea.innerHTML = `<ul>${displaySuggestions(options, targetList)}</ul>`
 
     }
 

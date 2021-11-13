@@ -82,7 +82,7 @@ def getTags(request):
     user = request.user
     tags = Tag.objects.filter(user=user).all()
 
-    return JsonResponse([tag.tag for tag in tags], safe=False)
+    return JsonResponse([tag.serialize() for tag in tags], safe=False)
 
 # API Route
 # send user info to frontend
@@ -130,10 +130,10 @@ def newEntry(request):
             tags = []
             for t in raw_tags:
                 try:
-                    tag = Tag.objects.get(tag=t)
+                    tag = Tag.objects.get(name=t)
                     tags.append(tag)
                 except Tag.DoesNotExist:
-                    tag = Tag(tag=t)
+                    tag = Tag(name=t)
                     tag.save()
                     tags.append(tag)
 
