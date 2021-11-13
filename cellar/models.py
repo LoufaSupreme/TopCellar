@@ -40,10 +40,10 @@ class Address(models.Model):
 # descriptive words that act as optional parameters to sort data by
 class Tag(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tags')
-    tag = models.CharField(max_length=100, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.tag}' 
+        return f'{self.name}' 
 
 
 class Customer(models.Model):
@@ -64,7 +64,7 @@ class Customer(models.Model):
             "address": None,
             "industry": self.industry,
             "notes": self.notes,
-            "tags": [tag.tag for tag in self.tags.all()]
+            "tags": [tag.name for tag in self.tags.all()]
         }
 
         if self.address != None:
@@ -84,6 +84,7 @@ class Contact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contacts')
     first_name = models.CharField(max_length=55)
     last_name = models.CharField(max_length=55, null=True, blank=True)
+    name = f'{first_name} {last_name}'
     position = models.CharField(max_length=155, null=True, blank=True)
     email = EmailField(max_length=254, null=True, blank=True)
     phone_cell = PositiveBigIntegerField(null=True, blank=True)
@@ -150,7 +151,7 @@ class Entry(models.Model):
             "rank": self.rank,
             "completed": self.completed,
             "archived": self.archived,
-            "tags": [tag.tag for tag in self.tags.all()],
+            "tags": [tag.name for tag in self.tags.all()],
         }
 
         if self.customer != None:

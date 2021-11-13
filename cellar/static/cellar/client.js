@@ -3,6 +3,15 @@
 let store = {
     "page": "index",
     "user": null,
+    "entries": null,
+    "customers": null,
+    "contacts": null,
+    "tags": null,
+}
+
+// not currently in use...
+const updateStore = (state, newState) => {
+    store = Object.assign(newState, state);
 }
 
 // grab the root element which all html will be appended to:
@@ -17,12 +26,13 @@ const render = async (root, state) => {
 const App = async (state) => {
     if (state.page === 'index') {
         return `
+        ${await loadStore(state)}
         <div class='fs-700 ff-sans-cond letter-spacing-1 text-dark uppercase'>
-            Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${await getUser()}!</span>
+            Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
         </div>
 
         <div class='form-container'>${makeEntryForm()}</div>
-        <div class='container flex' id='entries-container'>${await displayEntries()}</div>
+        <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
         `;
     }
 }
@@ -90,48 +100,45 @@ const getUser = async () => {
     return username;
 }
 
+// fetch whatever API call is passed as a targer:
+const getList = async (target) => {
+    const res = await fetch(`api/all${target}/`);
+    const listItems = await res.json();
+
+    return listItems;
+}
+
+// loads relevant user data into the global store:
+const loadStore = async (state) => {
+    state.user = await getUser();
+    state.entries = await getEntries();
+    state.customers = await getCustomers();
+    state.contacts = await getContacts();
+    state.tags = await getTags();
+
+    console.log({store});
+    // updateStore(state, store);
+}
+
 
 //////////////////////////////////////
 // HTML COMPONENTS ///////////////////
 //////////////////////////////////////
 
-// append entry list into document body:
-const displayEntries = async () => {
-    // const container = document.querySelector('#entries-container');
-    const entries = await getEntries();
-    const html = collateEntries(entries);
-    // container.innerHTML = html;
-    return html;
-}
 
 // make html to render a new Entry form:
-const makeEntryForm2 = () => {
-    return `
-        <form class='text-dark' id='entry-form'>
-            <fieldset>
-                <legend>New Sales Entry:</legend>
-                <input type="text" placeholder="Account" name="customer">
-                <input type="text" placeholder="Contact Name" name="contacts">
-                <textarea placeholder="Description" name="description"></textarea>
-                <input type="number" placeholder="Rank" name="rank">
-                <input type="text" placeholder="Tags" name="tags">
-                <input type="submit" value="Create" id="entry-submit-btn">
-            </fieldset>
-        </form>
-    `;
-}
-
 const makeEntryForm = () => {
     return `
         <div class="form-container">
-            <input type="text" placeholder="Account" name="customer-input">
+            <input type="text" data-accountID="" data-list="customers" placeholder="Account">
+            <div class="suggestions" style="display: none">DUMMY TEXT</div>
             <div class="tag-container">
-                <input type="text" placeholder="Contact Name" name="contact-input" class="tag-input">
+                <input class="tag-input" type="text" data-list="contacts" placeholder="Contact Name">
             </div>
             <textarea placeholder="Description" name="description"></textarea>
-            <input type="number" placeholder="Rank" name="rank">
+            <input type="number" placeholder="Rank">
             <div class="tag-container">
-                <input type="text" placeholder="Tag" name="tag-input" class="tag-input">
+                <input class="tag-input" type="text" data-list="tags" placeholder="Tag">
             </div>
         </div>
         <button type="buton" id="entry-submit-btn">CREATE</button>
@@ -151,7 +158,54 @@ const handleClicks = (e) => {
     }
 }
 
-const handleKeyUp = (e) => {
+// returns a filtered array
+// for each el[prop] combination of el in arr and prop in propertyList, checks whether targetWord matches:
+const findMatches = (targetWord, arr, propertyList) => {
+    return arr.filter(el => {
+        const regex = new RegExp(targetWord, 'gi');
+        return propertyList
+            .map( prop => {
+                return el[prop] !== null ? el[prop].match(regex) : null;
+            })
+            .filter(prop => prop !== null)[0];
+    })   
+}
+
+const displaySuggestions = (options) => {
+    return options
+        .map(option => {
+            `<li>${option}</li>`
+        })
+        .join('');
+}
+
+// handles keyup events anywhere on the document.  Called on window load. 
+// this is to avoid having to make new event handlers for dynamic content (like the form)
+const handleKeyUp = async (e) => {
+
+    if (e.target.dataset.list) {
+        const targetList = e.target.dataset.list;
+        const listItems = store[targetList];  // grab the list of items for targetList from store
+
+        let options = [];
+        if (targetList === 'customers') {
+            options = findMatches(e.target.value, listItems, ['name']);
+        }
+        else if (targetList === 'contacts') {
+            options = findMatches(e.target.value, listItems, ['first_name', 'last_name']);
+        }
+        else {
+            options = findMatches(e.target.value, listItems, ['tag']);
+        }
+        // listItems = await getList(`${e.target.dataset.list}`);
+        console.log(options);
+
+        const suggestionArea = document.querySelector('.suggestions');
+        suggestionArea.style.display = 'block';
+        suggestionArea.innerHTML = `<ul>${displaySuggestions(options)}</ul>`
+
+    }
+
     // if user hits enter while inside an input box 'tag-input', create a new tag element:
     if (e.target.classList.contains('tag-input') && e.key === 'Enter' ) {
         const val = document.createElement('div');  
@@ -161,7 +215,6 @@ const handleKeyUp = (e) => {
         parent.insertBefore(val, e.target); // add input value as new '.tag' element
         e.target.value = ''; // reset input box
     }
-    // console.log(e);
 }
 
 
@@ -199,8 +252,8 @@ const filterEntries = (entries, criteria) => {
 
 
 // display each entry on the page:
-const collateEntries = (entries) => {
-    console.log('Collating Entries...');
+const displayEntries = (entries) => {
+    console.log('Displaying Entries...');
     return entries.map(entry => {
         try {
             const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name}`);
