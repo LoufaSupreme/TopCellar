@@ -108,6 +108,23 @@ const getList = async (target) => {
     return listItems;
 }
 
+
+// create a new entry instance in the db:
+const newEntry = async (details) => {
+
+    // get csrf token for put request
+    const csrf_token = getCookie('csrftoken');
+
+    fetch('api/newEntry/', {
+        method: 'POST',
+        body: JSON.stringify(details),
+        headers: { "X-CSRFToken": csrf_token }
+    })
+    .then(res => res.json())
+    .then(res => console.log(res))
+    .catch(err => console.error(err))
+}
+
 // loads relevant user data into the global store:
 const loadStore = async (state) => {
     state.user = await getUser();
@@ -128,6 +145,7 @@ const loadStore = async (state) => {
 
 // make html to render a new Entry form:
 const makeEntryForm = () => {
+    const now = new Date();
     return `
         <div class="form-container" id="entry-form-container">
 
@@ -140,6 +158,7 @@ const makeEntryForm = () => {
                 <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
             </div>
             <textarea placeholder="Description" name="description"></textarea>
+            <input type="date" value="${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}">
             <input type="number" placeholder="Rank">
             <div class="tag-container">
                 <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
@@ -160,7 +179,8 @@ const handleClicks = (e) => {
     // fires when the entry submit button is clicked:
     if (e.target.id === 'entry-submit-btn') {
         const form = document.querySelector('#entry-form-container');
-        getFormData(form);
+        const newEntryData = getFormData(form);
+        newEntry(newEntryData);
     }
 
     // fires when a dropdown suggestion is clicked:
@@ -261,20 +281,22 @@ const handleKeyUp = (e) => {
 
 
 const getFormData = (form) => {
-    const tagElements = Array.from(form.querySelectorAll('.tag'));
     
-    const newEntry = {
+    const newEntryDetails = {
         "customer": {},
         "contacts": [],
         "tags": [],
         "description": null,
         "rank": null,
+        "date": {},
     };
-    
+
+    const tagElements = Array.from(form.querySelectorAll('.tag'));
+
     const customer = tagElements.filter(tag => tag.dataset.list === 'customers')
         .forEach(cust => {
-            newEntry.customer.id = cust.dataset.id;
-            newEntry.customer.name = cust.innerHTML;
+            newEntryDetails.customer.id = cust.dataset.id;
+            newEntryDetails.customer.name = cust.innerHTML;
         });
     const contacts = tagElements.filter(tag => tag.dataset.list === 'contacts')
         .forEach(cont => {
@@ -282,7 +304,7 @@ const getFormData = (form) => {
             const first_name = names[0];
             const last_name = names.length > 1 ? names[1] : "";
             
-            newEntry.contacts.push({
+            newEntryDetails.contacts.push({
                 "id": cont.dataset.id,
                 "first_name": first_name,
                 "last_name": last_name,
@@ -290,18 +312,23 @@ const getFormData = (form) => {
         });
     const tags = tagElements.filter(tag => tag.dataset.list === 'tags')
         .forEach(tag => {
-            newEntry.tags.push({
-                "id": tag.dataset.id,
+            newEntryDetails.tags.push({
+                "id": tag.dataset.id !== undefined ? tag.dataset.id : 0,
                 "name": tag.innerHTML,
             })
         });
     const description = form.querySelector('textarea').value;
     const rank = form.querySelector('input[type="number"]').value;
+    const date = form.querySelector('input[type="date"]').value.split('-');
 
-    newEntry.description = description;
-    newEntry.rank = rank;
+    newEntryDetails.date.year = parseInt(date[0]);
+    newEntryDetails.date.month = parseInt(date[1]);
+    newEntryDetails.date.day = parseInt(date[2]);
+    newEntryDetails.description = description;
+    newEntryDetails.rank = rank;
 
-    console.log(newEntry);
+    console.log(newEntryDetails);
+    return newEntryDetails;
 }
 
 // filter array of entries based on criteria
@@ -355,49 +382,6 @@ const displayEntries = (entries) => {
 }
 
 
-
-const contacts = [
-    {
-        "first_name": "Jane",
-        "last_name": "Doe" 
-    },
-    {
-        "first_name": "Big",
-        "last_name": "Chungus"
-    }
-]
-
-const date = {
-    "day": 25,
-    "month": 1,
-    "year": 2021
-}
-
-const newEntryDetails = {
-    "customer": "Knoll",
-    "contacts": contacts,
-    "date": date,
-    "description": "Sooooo much fuggin text holy cow.",
-    "completed": false,
-    "archived": false, 
-    "tags": ['Urgent', 'Boring']
-}
-
-// create a new entry instance in the db:
-const newEntry = async (details) => {
-
-    // get csrf token for put request
-    const csrf_token = getCookie('csrftoken');
-
-    fetch('api/newEntry/', {
-        method: 'POST',
-        body: JSON.stringify(details),
-        headers: { "X-CSRFToken": csrf_token }
-    })
-    .then(res => res.json())
-    .then(res => console.log(res))
-    .catch(err => console.error(err))
-}
 
 // run on DOM content loaded:
 window.addEventListener('load', () => {

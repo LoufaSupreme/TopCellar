@@ -99,9 +99,9 @@ def newEntry(request):
             data = json.loads(request.body)
             print(f'Creating new Entry: {data}')
             # get customer object:
-            customer = data.get('customer').strip()
+            customer = data.get('customer')
             try:
-                customer = Customer.objects.get(name=customer)
+                customer = Customer.objects.get(id=customer['id'], name=customer['name'])
             except Customer.DoesNotExist:
                 customer = makeCustomerFromName(user, customer)
             
@@ -110,7 +110,7 @@ def newEntry(request):
             contacts = []
             for c in contact_names:
                 try:
-                    contact = Contact.objects.get(first_name=c['first_name'], last_name=c['last_name'])
+                    contact = Contact.objects.get(id=c['id'], first_name=c['first_name'], last_name=c['last_name'])
                     contacts.append(contact)
                 except Contact.DoesNotExist:
                     contact = makeContactFromName(user, c)
@@ -130,10 +130,10 @@ def newEntry(request):
             tags = []
             for t in raw_tags:
                 try:
-                    tag = Tag.objects.get(name=t)
+                    tag = Tag.objects.get(id=t['id'], name=t['name'])
                     tags.append(tag)
                 except Tag.DoesNotExist:
-                    tag = Tag(name=t)
+                    tag = Tag(user=user, name=t)
                     tag.save()
                     tags.append(tag)
 
