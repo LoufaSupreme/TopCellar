@@ -191,53 +191,54 @@ const handleKeyUp = (e) => {
     }
 }
 
-
+// capture the inputted values for new entry:
 const getFormData = (form) => {
     
-    const newEntryDetails = {
-        "customer": {},
-        "contacts": [],
-        "tags": [],
-        "description": null,
-        "rank": null,
-        "date": {},
-    };
-
     const tagElements = Array.from(form.querySelectorAll('.tag'));
 
     const customer = tagElements.filter(tag => tag.dataset.list === 'customers')
-        .forEach(cust => {
-            newEntryDetails.customer.id = cust.dataset.id;
-            newEntryDetails.customer.name = cust.innerHTML;
+        .map(cust => {
+            return {
+                "id": cust.dataset.id,
+                "name": cust.innerHTML,
+            };
         });
     const contacts = tagElements.filter(tag => tag.dataset.list === 'contacts')
-        .forEach(cont => {
+        .map(cont => {
             const names = cont.innerHTML.split(' ');
             const first_name = names[0];
             const last_name = names.length > 1 ? names[1] : "";
             
-            newEntryDetails.contacts.push({
+            return {
                 "id": cont.dataset.id,
                 "first_name": first_name,
                 "last_name": last_name,
-            })
+            };
         });
     const tags = tagElements.filter(tag => tag.dataset.list === 'tags')
-        .forEach(tag => {
-            newEntryDetails.tags.push({
+        .map(tag => {
+            return {
                 "id": tag.dataset.id !== undefined ? tag.dataset.id : -1,
                 "name": tag.innerHTML,
-            })
+            };
         });
     const description = form.querySelector('textarea').value;
     const rank = form.querySelector('input[type="number"]').value;
     const date = form.querySelector('input[type="date"]').value.split('-');
 
-    newEntryDetails.date.year = parseInt(date[0]);
-    newEntryDetails.date.month = parseInt(date[1]);
-    newEntryDetails.date.day = parseInt(date[2]);
-    newEntryDetails.description = description;
-    newEntryDetails.rank = rank;
+    // create details for new entry:
+    const newEntryDetails = {
+        "customer": customer,
+        "contacts": contacts,
+        "tags": tags,
+        "description": description,
+        "rank": rank,
+        "date": {
+            "year": parseInt(date[0]),
+            "month": parseInt(date[1]),
+            "day": parseInt(date[2]),
+        },
+    };
 
     console.log(newEntryDetails);
     return newEntryDetails;
