@@ -17,129 +17,80 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// fetch all user's entries from db:
+const getEntries = async () => {
+    console.log('Fetching Entries...');
+    const res = await fetch('api/allEntries/');
+    const entries = await res.json();
+
+    return entries;
+}
+
+// fetch all user's customers from db:
+const getCustomers = async () => {
+    console.log('Fetching Customers...');
+    const res = await fetch('api/allCustomers/');
+    const customers = await res.json();
+
+    return customers;
+}
+
+// fetch all user's contacts from db:
+const getContacts = async () => {
+    console.log('Fetching Contacts...');
+    const res = await fetch('api/allContacts/');
+    const contacts = await res.json();
+
+    return contacts;
+}
+
+// fetch all user's tags from db:
+const getTags = async () => {
+    console.log('Fetching Tags...');
+    const res = await fetch('api/allTags/');
+    const tags = await res.json();
+
+    return tags;
+}
 
 // fetch current user's username:
 const getUser = async () => {
-    try {
-        console.log('Fetching Username...');
-        const res = await fetch('api/currentUser/');
-        const username = await res.json();
+    console.log('Fetching Username...');
+    const res = await fetch('api/currentUser/');
+    const username = await res.json();
 
-        return username;
-    }
-    catch (err) {
-        console.error(err);
-    }
+    return username;
 }
 
-
-// fetch one instance of type "target" ('entry', 'contact', 'customer'):
-const getInstance = async (target, id) => {
-    try {
-        console.log(`Fetching details for ${target}: ${id}`);
-        const res = await fetch(`api/${target}/${id}`);
-        const instance = await res.json();
-
-        return instance;
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
-
-// send put request to update an instance:
-// keywords: 'entry', 'customer', 'contact'
-const updateInstance = async (details, keyword, id) => {
-    console.log(`Updating ${keyword} ${id}...`);
-    console.log(details)
-    // get csrf token for put request
-    const csrf_token = getCookie('csrftoken');
-
-    try {
-        const res = await fetch(`api/${keyword}/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(details),
-            headers: { "X-CSRFToken": csrf_token }
-        });
-        const obj = await res.json();
-        if (obj.error) {
-            throw `DJANGO: ${obj.error}`;
-        }
-        else {
-            console.log(`Success! ${keyword} ${id} updated.`);
-            console.log(obj);
-            return obj;
-        }
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
-
-// send delete request to delete an instance:
-const deleteInstance = async (keyword, id) => {
-    console.log(`Deleting ${keyword} ${id}...`)
-    // get csrf token for put request
-    const csrf_token = getCookie('csrftoken');
-
-    try {
-        const res = await fetch(`api/${keyword}/${id}`, {
-            method: 'DELETE',
-            headers: { "X-CSRFToken": csrf_token }
-        });
-        const obj = await res.json();
-        if (obj.error) {
-            throw `DJANGO: ${obj.error}`;
-        }
-        else {
-            console.log(`Success! ${keyword} ${id} deleted.`);
-        }
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
-
-
-// fetch whatever API call is passed as a target ('Entries', 'Customers', 'Tags'):
+// fetch whatever API call is passed as a targer:
 const getList = async (target) => {
-    try {
-        const res = await fetch(`api/all${target}/`);
-        const listItems = await res.json();
-        return listItems;
-    }
-    catch (err) {
-        console.error(err);
-    }
+    const res = await fetch(`api/all${target}/`);
+    const listItems = await res.json();
+
+    return listItems;
 }
 
 
-// create a new model instance in the db:
-// returns newly created object(s)
-// keywords: entry, customer, contact
-const newInstance = async (details, keyword) => {
+// create a new entry instance in the db:
+const newEntry = async (details) => {
 
-    console.log(`Creating new ${keyword} instance...`)
     // get csrf token for put request
     const csrf_token = getCookie('csrftoken');
 
-    try {
-        const res = await fetch(`api/new_${keyword}/`, {
-            method: 'POST',
-            body: JSON.stringify(details),
-            headers: { "X-CSRFToken": csrf_token }
-        });
-        const obj = await res.json();
-        if (obj.error) {
-            throw `DJANGO: ${obj.error}`;
+    fetch('api/newEntry/', {
+        method: 'POST',
+        body: JSON.stringify(details),
+        headers: { "X-CSRFToken": csrf_token }
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.error) {
+            throw `DJANGO: ${res.error}`;
         }
         else {
-            console.log(`Success! ${keyword} created:`);
-            console.log(obj);
-            return obj;
+            console.log(res);
+            return res;
         }
-    }
-    catch (err) {
-        console.error(err);
-    }
+    })
+    .catch(err => console.error(err))
 }

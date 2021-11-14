@@ -10,6 +10,9 @@ class User(AbstractUser):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    # done_tutorial
+    # theme
+    # sorting_preference
     
     def __str__(self):
         return f'{self.user.username} Profile' 
