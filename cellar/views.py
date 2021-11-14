@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -97,14 +98,20 @@ def newEntry(request):
         try:
             user = request.user
             data = json.loads(request.body)
-            print(f'Creating new Entry: {data}')
+            print(f'Creating new Entry for {user}: {data}')
             # get customer object:
             customer = data.get('customer')
+            # try to get the exact customer (e.g. if they chose one of the dropdown options)
             try:
                 customer = Customer.objects.get(id=customer['id'], name=customer['name'])
             except Customer.DoesNotExist:
-                customer = makeCustomerFromName(user, customer)
-            
+                # something went wrong.  Frontend needs to send a request to make the customer first. 
+                print('Customer does not exist.') 
+                return JsonResponse({"error": "This customer doesn't exist."}, status=500)
+            except Exception as e:
+                print(f'Error: {e}')
+                return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
             # get contact object for each contact. If it doesn't exist, create one:
             contact_names = data.get('contacts')
             contacts = []
@@ -113,9 +120,11 @@ def newEntry(request):
                     contact = Contact.objects.get(id=c['id'], first_name=c['first_name'], last_name=c['last_name'])
                     contacts.append(contact)
                 except Contact.DoesNotExist:
-                    contact = makeContactFromName(user, c)
-                    contacts.append(contact)
-            
+                    # something went wrong.  Frontend needs to send a request to make the contact first.  
+                    return JsonResponse({"error": "This contact doesn't exist."}, status=500)
+                except Exception as e:
+                    return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
             # get date and make datetime object:
             entry_date = data.get('date')
             now = datetime.datetime.now()
@@ -133,9 +142,11 @@ def newEntry(request):
                     tag = Tag.objects.get(id=t['id'], name=t['name'])
                     tags.append(tag)
                 except Tag.DoesNotExist:
-                    tag = Tag(user=user, name=t)
+                    tag = Tag(user=user, name=t['name'])
                     tag.save()
                     tags.append(tag)
+                except Exception as e:
+                    return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
 
             # create new entry:
             entry = Entry(
@@ -156,7 +167,7 @@ def newEntry(request):
 
             return JsonResponse({"message": "Entry saved successfully."}, status=201)
         except Exception as e:
-            return JsonResponse({"error": e}, status=500)
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
     else:
         return JsonResponse({"error": "Post method required"}, status=400)
 
