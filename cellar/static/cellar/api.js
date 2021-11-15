@@ -71,26 +71,31 @@ const getList = async (target) => {
 }
 
 
-// create a new entry instance in the db:
-const newEntry = async (details) => {
+// create a new model instance in the db:
+// returns newly created object(s)
+const newInstance = async (details, keyword) => {
 
+    console.log(`Creating new ${keyword} instance...`)
     // get csrf token for put request
     const csrf_token = getCookie('csrftoken');
 
-    fetch('api/newEntry/', {
-        method: 'POST',
-        body: JSON.stringify(details),
-        headers: { "X-CSRFToken": csrf_token }
-    })
-    .then(res => res.json())
-    .then(res => {
-        if (res.error) {
-            throw `DJANGO: ${res.error}`;
+    try {
+        const res = await fetch(`api/new${keyword}/`, {
+            method: 'POST',
+            body: JSON.stringify(details),
+            headers: { "X-CSRFToken": csrf_token }
+        });
+        const obj = await res.json();
+        if (obj.error) {
+            throw `DJANGO: ${obj.error}`;
         }
         else {
-            console.log(res);
-            return res;
+            console.log(`Success! ${keyword} created:`);
+            console.log(obj);
+            return obj;
         }
-    })
-    .catch(err => console.error(err))
+    }
+    catch (err) {
+        console.error(err);
+    }
 }

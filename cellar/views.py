@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import render
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -133,13 +133,15 @@ def newEntry(request):
 
             # get description:
             descrip = data.get('description').strip()
+            if descrip == "":
+                raise ValidationError('Description is blank')
 
             # get tags. If the tag doesn't exist, create it:
             raw_tags = data.get('tags')
             tags = []
             for t in raw_tags:
                 try:
-                    tag = Tag.objects.get(id=t['id'], name=t['name'])
+                    tag = Tag.objects.get(name__iexact=t['name']) # case insensitive
                     tags.append(tag)
                 except Tag.DoesNotExist:
                     tag = Tag(user=user, name=t['name'])
@@ -165,25 +167,54 @@ def newEntry(request):
 
             entry.save()
 
-            return JsonResponse({"message": "Entry saved successfully."}, status=201)
+            return JsonResponse(entry.serialize(), safe=False, status=201)
         except Exception as e:
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
     else:
         return JsonResponse({"error": "Post method required"}, status=400)
 
-# utility function
-# create a new customer using only the customer's name
-def makeCustomerFromName(user, name):
-    customer = Customer(user=user, name=name)
-    customer.save()
-    return customer
 
-# utility function
-# create a new contact using only the contact's name
-def makeContactFromName(user, name):
-    contact = Contact(user=user, first_name=name["first_name"], last_name=name["last_name"])
-    contact.save()
-    return contact
+# create new customer instance
+def newCustomer(request):
+    if request.method == 'POST':
+        try:
+            user = request.user
+            data = json.loads(request.body)
+            print(f'Creating new Customer for {user}: {data}')
+            
+            # get customer object:
+            customer_name = data.get('name')
+            # create new 
+            new_customer = Customer(user=user, name=customer_name)
+            new_customer.save()
+
+            return JsonResponse(new_customer.serialize(), safe=False, status=201)
+        except Exception as e:
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+    else:
+        return JsonResponse({"error": "Post method required"}, status=400)
+
+# create new contact instance(s)
+def newContacts(request):
+    if request.method == 'POST':
+        try:
+            user = request.user
+            contacts = json.loads(request.body)
+            print(f'Creating new Contact(s) for {user}: {contacts}')
+
+            # create new 
+            new_contacts = []
+            for c in contacts:
+                new_contact = Contact(user=user, first_name=c['first_name'], last_name=c['last_name'])
+                new_contact.save()
+                new_contacts.append(new_contact)
+
+            return JsonResponse([contact.serialize() for contact in new_contacts], safe=False, status=201)
+        
+        except Exception as e:
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+    else:
+        return JsonResponse({"error": "Post method required"}, status=400)
 
 
 def login_view(request):

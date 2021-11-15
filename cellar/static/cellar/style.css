@@ -218,3 +218,11 @@ body {
   flex-direction: column;
   min-width: 80vw;
 }
+
+.modal {
+  display: none;
+}
+
+.open {
+  display: block;
+}

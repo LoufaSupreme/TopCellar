@@ -1,12 +1,13 @@
 
 // global state 
 let store = {
-    "page": "index",
-    "user": null,
-    "entries": null,
-    "customers": null,
-    "contacts": null,
-    "tags": null,
+    "page": "index",        // determines what html to generate
+    "user": null,           // username
+    "entries": null,        // list of all user's entries
+    "customers": null,      // list of all user's customers
+    "contacts": null,       // list of all user's contacts
+    "tags": null,           // list of all user's tags
+    "uncreated": null,      // uncreated object instances (from user input)
 }
 
 // not currently in use...
@@ -26,7 +27,9 @@ const render = async (root, state) => {
 const App = async (state) => {
     if (state.page === 'index') {
         await loadStore(state)
+        
         return `
+        ${makeModal()}
         <div class='fs-700 ff-sans-cond letter-spacing-1 text-dark uppercase'>
             Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
         </div>
@@ -80,9 +83,194 @@ const makeEntryForm = () => {
     `;
 }
 
+// create a modal div (for pop up user prompts)
+const makeModal = () => {
+    return `
+        <div class="modal">
+            <div class="promptContainer"></div>
+        </div>
+    `;
+}
+
 //////////////////////////////////////
 // HELPER FUNCTIONS /////////////////
 //////////////////////////////////////
+
+// creates a new entry:
+// fired if user clicks on the accept btn in the popup modal (when creating entries with new customer or contacts):
+const handleModalAccept = async () => {
+    if (store.uncreated) {
+
+        if (store.uncreated.customer) {
+            const newCustomer = await newInstance(store.uncreated.customer, 'Customer');
+            store.uncreated.customer.id = await newCustomer.id;        
+        }
+
+        if (store.uncreated.contacts) {
+            const newContacts = await newInstance(store.uncreated.contacts, 'Contacts'); // create new contacts in db
+            newContacts.forEach(c => {
+                const target = store.uncreated.contacts.find(el => c.first_name === el.first_name && c.last_name === el.last_name);
+                target.id = c.id; 
+            });
+        }
+    }
+
+        
+    // make a new entry from the stored new entry details:
+    newInstance(store.uncreated.entry, 'Entry');
+
+    store.uncreated = null; // reset store.uncreated to null
+}
+
+// generates HTML for the popup modal with details on the to-be-created customer and/or contacts:
+const generateModalText = (customer, contacts) => {
+    
+    let promptText = '';
+    if (customer) {
+        promptText += `
+            <div>We couldn't find the following customer in your Rolodex</div>
+            <div>${customer.name}</div>
+        `;
+    }
+
+    if (contacts) {
+        const contactText = contacts.map(contact => {
+            return `
+                <div>${contact.first_name} ${contact.last_name}</div>
+            `
+        }).join('');
+
+        promptText += `
+            <div>We couldn't find the following contacts in your Rolodex</div>
+            ${contactText}
+        `;
+    }
+
+    promptText += `
+        <div>Would you like to add them now?</div>
+        <button id='modal-accept-btn' class='accept-btn modal-btn'>ACCEPT</button>
+        <button id='modal-cancel-btn' class='cancel-btn modal-btn'>CANCEL AND MAKE CHANGES</button>
+    `
+
+    return promptText;
+}
+
+const promptUserMakeObj = (newObjects) => {
+    const modal = document.querySelector('.modal');
+    const container = modal.querySelector('.promptContainer');
+
+    const modalText = generateModalText(newObjects.customer, newObjects.contacts);
+    
+    container.innerHTML = modalText;
+    modal.classList.add('open');
+}
+
+const initiateNewEntry = (form) => {
+    console.log('Initiated new entry...');
+
+    // get all the inputted data from the entry form
+    const newEntryData = getFormData(form); 
+    const customer = newEntryData.customer;
+    const contacts = newEntryData.contacts;
+    
+    // check for inputted customers or contacts that don't yet exist and add them to a newObjects object
+    const newContacts = contactExists(contacts);
+
+    const newObjects = {
+        "customer": !customerExists(customer) ? customer : null,
+        "contacts": newContacts.length > 0 ? newContacts : null,
+        "entry": newEntryData,
+    };
+
+    // if there are some new objects, let the user know:
+    if (newObjects.customer !== null || newObjects.contacts !== null) {
+        console.log('Found new Customer or Contact instances. Prompting user...');
+        store.uncreated = newObjects;  // load new objects into store so they can be created if the user wishes
+        promptUserMakeObj(newObjects); // create a modal user prompt to ask them if they want to create the new objects
+    }
+    else {
+        // otherwise send post request to DB to make new entry:
+        newInstance(newEntryData, 'Entry');
+    }
+}
+
+
+// checks if a passed customer object already exists:
+// returns boolean
+const customerExists = (customer) => {
+    const existingCustomers = store.customers;
+
+    return existingCustomers.filter(el => {
+        return el.id === customer.id && el.name.toLowerCase() === customer.name.toLowerCase();
+    }).length > 0;
+}
+
+// checks if a passed array of contact objects already exists:
+// returns a filtered array of the contacts that don't exist:
+const contactExists = (contacts) => {
+    const existingContacts = store.contacts;
+
+    return contacts.filter(elem => {
+        return !existingContacts.find(x => {
+            return elem.id === x.id && elem.first_name.toLowerCase() === x.first_name.toLowerCase();
+        });
+    });
+}
+
+
+// capture the inputted values for new entry:
+const getFormData = (form) => {
+    
+    const tagElements = Array.from(form.querySelectorAll('.tag'));
+
+    const customer = tagElements.filter(tag => tag.dataset.list === 'customers')
+        .map(cust => {
+            return {
+                "id": parseInt(cust.dataset.id),
+                "name": cust.innerHTML,
+            };
+        })[0]; 
+    const contacts = tagElements.filter(tag => tag.dataset.list === 'contacts')
+        .map(cont => {
+            const names = cont.innerHTML.split(' ');
+            const first_name = names[0];
+            const last_name = names.length > 1 ? names[1] : "";
+            
+            return {
+                "id": parseInt(cont.dataset.id),
+                "first_name": first_name,
+                "last_name": last_name,
+            };
+        });
+    const tags = tagElements.filter(tag => tag.dataset.list === 'tags')
+        .map(tag => {
+            return {
+                "id": tag.dataset.id !== undefined ? parseInt(tag.dataset.id) : -1,
+                "name": tag.innerHTML,
+            };
+        });
+    const description = form.querySelector('textarea').value;
+    const rank = form.querySelector('input[type="number"]').value;
+    const date = form.querySelector('input[type="date"]').value.split('-');
+
+    // create details for new entry:
+    const newEntryDetails = {
+        "customer": customer,
+        "contacts": contacts,
+        "tags": tags,
+        "description": description,
+        "rank": rank,
+        "date": {
+            "year": parseInt(date[0]),
+            "month": parseInt(date[1]),
+            "day": parseInt(date[2]),
+        },
+    };
+
+    console.log('Got form data:'); 
+    console.log(newEntryDetails);
+    return newEntryDetails;
+}
 
 // handles clicks anywhere on the document.  Called on window load. 
 // this is to avoid having to make new event handlers for dynamic content (like the form)
@@ -90,9 +278,8 @@ const handleClicks = (e) => {
     
     // fires when the entry submit button is clicked:
     if (e.target.id === 'entry-submit-btn') {
-        const form = document.querySelector('#entry-form-container');
-        const newEntryData = getFormData(form);
-        newEntry(newEntryData);
+        const form = document.querySelector('#entry-form-container'); // grab the parent elem of the form
+        initiateNewEntry(form); // initiate the creation of a new entry
     }
 
     // fires when a dropdown suggestion is clicked:
@@ -103,6 +290,18 @@ const handleClicks = (e) => {
         input.dataset.id = e.target.dataset.id; // set the data-id of the input to the same as the value object
         addTag(input);
         input.focus(); // resume focus on the input box
+    }
+
+    // cancel or accept changes btn on user prompt modal to add customers and contacts:
+    if (e.target.classList.contains('modal-btn')) {
+        const btn = e.target;
+        const modal = document.querySelector('.modal');
+
+        if (btn.id === 'modal-accept-btn') {
+            handleModalAccept();
+        }
+        
+        modal.classList.remove('open');
     }
 }
 
@@ -157,6 +356,7 @@ const addTag = (inputField) => {
     }
 
     inputField.value = ''; // reset input box
+    inputField.dataset.id = undefined;  // reset data-id
 }
 
 // handles keyup events anywhere on the document.  Called on window load. 
@@ -189,59 +389,6 @@ const handleKeyUp = (e) => {
     if (e.target.classList.contains('tag-input') && e.key === 'Enter' ) {
         addTag(e.target);
     }
-}
-
-// capture the inputted values for new entry:
-const getFormData = (form) => {
-    
-    const tagElements = Array.from(form.querySelectorAll('.tag'));
-
-    const customer = tagElements.filter(tag => tag.dataset.list === 'customers')
-        .map(cust => {
-            return {
-                "id": cust.dataset.id,
-                "name": cust.innerHTML,
-            };
-        });
-    const contacts = tagElements.filter(tag => tag.dataset.list === 'contacts')
-        .map(cont => {
-            const names = cont.innerHTML.split(' ');
-            const first_name = names[0];
-            const last_name = names.length > 1 ? names[1] : "";
-            
-            return {
-                "id": cont.dataset.id,
-                "first_name": first_name,
-                "last_name": last_name,
-            };
-        });
-    const tags = tagElements.filter(tag => tag.dataset.list === 'tags')
-        .map(tag => {
-            return {
-                "id": tag.dataset.id !== undefined ? tag.dataset.id : -1,
-                "name": tag.innerHTML,
-            };
-        });
-    const description = form.querySelector('textarea').value;
-    const rank = form.querySelector('input[type="number"]').value;
-    const date = form.querySelector('input[type="date"]').value.split('-');
-
-    // create details for new entry:
-    const newEntryDetails = {
-        "customer": customer,
-        "contacts": contacts,
-        "tags": tags,
-        "description": description,
-        "rank": rank,
-        "date": {
-            "year": parseInt(date[0]),
-            "month": parseInt(date[1]),
-            "day": parseInt(date[2]),
-        },
-    };
-
-    console.log(newEntryDetails);
-    return newEntryDetails;
 }
 
 // filter array of entries based on criteria
