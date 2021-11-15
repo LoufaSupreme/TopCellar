@@ -439,6 +439,7 @@ const displayEntries = (entries) => {
             console.error(err);
         }
     })
+    .reverse()
     .reduce((acc, entry) => {
         return acc + entry;
     },'')
