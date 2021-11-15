@@ -115,7 +115,6 @@ const handleModalAccept = async () => {
         }
     }
 
-        
     // make a new entry from the stored new entry details:
     newInstance(store.uncreated.entry, 'Entry');
 
@@ -221,7 +220,8 @@ const contactExists = (contacts) => {
 // capture the inputted values for new entry:
 const getFormData = (form) => {
     
-    const tagElements = Array.from(form.querySelectorAll('.tag'));
+    const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
+    tagElements.forEach(el => el.remove());  // remove them from the DOM now that they're loaded into memory
 
     const customer = tagElements.filter(tag => tag.dataset.list === 'customers')
         .map(cust => {
