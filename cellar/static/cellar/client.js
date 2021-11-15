@@ -117,8 +117,11 @@ const handleModalAccept = async () => {
 
     // make a new entry from the stored new entry details:
     newInstance(store.uncreated.entry, 'Entry');
-
     store.uncreated = null; // reset store.uncreated to null
+
+    const form = document.querySelector('#entry-form-container'); // grab the parent elem of the input elements
+    const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
+    tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created    
 }
 
 // generates HTML for the popup modal with details on the to-be-created customer and/or contacts:
@@ -150,7 +153,6 @@ const generateModalText = (customer, contacts) => {
         <button id='modal-accept-btn' class='accept-btn modal-btn'>ACCEPT</button>
         <button id='modal-cancel-btn' class='cancel-btn modal-btn'>CANCEL AND MAKE CHANGES</button>
     `
-
     return promptText;
 }
 
@@ -190,6 +192,8 @@ const initiateNewEntry = (form) => {
     else {
         // otherwise send post request to DB to make new entry:
         newInstance(newEntryData, 'Entry');
+        const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
+        tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created    
     }
 }
 
@@ -221,7 +225,6 @@ const contactExists = (contacts) => {
 const getFormData = (form) => {
     
     const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
-    tagElements.forEach(el => el.remove());  // remove them from the DOM now that they're loaded into memory
 
     const customer = tagElements.filter(tag => tag.dataset.list === 'customers')
         .map(cust => {
