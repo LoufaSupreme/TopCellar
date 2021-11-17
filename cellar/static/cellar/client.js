@@ -58,9 +58,11 @@ const loadStore = async (state) => {
 // HTML COMPONENTS ///////////////////
 //////////////////////////////////////
 
+
 // generate HTML for suggestion dropdowns:
-const makeSuggestionDiv = () => {
-    return `<div class='suggestions' style='display: none'>DUMMY TEXT</div>`;
+// entry_ID is the ID of the entry div that this dropdown is associated with.  Null if not associated with one (e.g. making new entry)
+const makeSuggestionDiv = (type, entry_ID = null) => {
+    return `<div class='suggestions ${type}-suggestions' style='display: none' data-type='${type}' data-id='${entry_ID}'>DUMMY TEXT</div>`; 
 }
 
 
@@ -72,18 +74,18 @@ const makeEntryForm = () => {
     
             <div class="tag-container">
                 <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
-                ${makeSuggestionDiv()}
+                ${makeSuggestionDiv('customers')}
             </div>
             <div class="tag-container">
                 <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
-                ${makeSuggestionDiv()}
+                ${makeSuggestionDiv('contacts')}
             </div>
             <textarea placeholder="Description" name="description"></textarea>
             <input type="date" value="${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}">
             <input type="number" placeholder="Rank">
             <div class="tag-container">
                 <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
-                ${makeSuggestionDiv()}
+                ${makeSuggestionDiv('tags')}
             </div>
         </div>
         <button type="buton" id="entry-submit-btn">CREATE</button>
@@ -207,7 +209,7 @@ const initiateNewEntry = (form) => {
 }
 
 // fires when an Edit btn is clicked within an existing entry
-const initiateEdit = async (entryContainer) => {
+const makeEditForm = async (entryContainer) => {
 
     const entry_ID = entryContainer.id;
     const entry = await getInstance('entry', entry_ID);
@@ -223,24 +225,24 @@ const initiateEdit = async (entryContainer) => {
     entryContainer.innerHTML = `
             <div class="tag-container">
                 ${customerTag}
-                <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
-                ${makeSuggestionDiv()}
+                <input id="customers-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+                ${makeSuggestionDiv('customers', entry_ID)}
             </div>
             <div class="tag-container">
                 ${contactTags}
-                <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
-                ${makeSuggestionDiv()}
+                <input id="contacts-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+                ${makeSuggestionDiv('contacts', entry_ID)}
             </div>
             <textarea placeholder="Description" name="description">${entry.description}</textarea>
             <input type="date" value="${entry.timestamp.year}-${entry.timestamp.month}-${entry.timestamp.day}">
             <input type="number" placeholder="Rank" value="${entry.rank}">
             <div class="tag-container">
                 ${tagTags}
-                <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
-                ${makeSuggestionDiv()}
+                <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+                ${makeSuggestionDiv('tags', entry_ID)}
             </div>
-            <button id='accept-edit-btn'>Accept Changes</button>
-            <button id='cancel-edit-btn'>Cancel</button>
+            <button id='accept-edit-btn' data-id="${entry_ID}">Accept Changes</button>
+            <button id='cancel-edit-btn' data-id='${entry_ID}'>Cancel</button>
         `;
 }
 
@@ -322,44 +324,57 @@ const getFormData = (form) => {
     return newEntryDetails;
 }
 
+// handles the entry submit btn being clicked to submit a new entry:
+const handleEntrySubmitClicked = () => {
+    const form = document.querySelector('#entry-form-container'); // grab the parent elem of the form
+    initiateNewEntry(form); // initiate the creation of a new entry
+}
+
+// handles a dropdown suggestion being clicked:
+const handleSuggestionClicked = (suggestion) => {
+    // get the input associated with that suggestion (has id = suggestion.dataset.inputid):
+    const input = document.querySelector(`#${suggestion.dataset.inputid}`)
+    input.value = suggestion.innerHTML;  // load the input 
+    input.dataset.id = suggestion.dataset.id; // set the data-id of the input to the same as the value object
+    
+    addTag(input);
+    input.focus(); // resume focus on the input box
+}
+
+// handles the accept or cancel btn on the modal for new object entries (customers or contacts)
+const handleModalBtnClicked = (btn) => {
+    const modal = document.querySelector('.modal');
+
+    if (btn.id === 'modal-accept-btn') handleModalAccept();
+    modal.classList.remove('open');
+}
+
 // handles clicks anywhere on the document.  Called on window load. 
 // this is to avoid having to make new event handlers for dynamic content (like the form)
 const handleClicks = (e) => {
     
     // fires when the entry submit button is clicked:
-    if (e.target.id === 'entry-submit-btn') {
-        const form = document.querySelector('#entry-form-container'); // grab the parent elem of the form
-        initiateNewEntry(form); // initiate the creation of a new entry
-    }
+    if (e.target.id === 'entry-submit-btn') handleEntrySubmitClicked();
 
     // fires when a dropdown suggestion is clicked:
-    if (e.target.classList.contains('suggestion')) {
-        // find element that holds the suggestion being clicked, and the input box
-        const rootElement = e.target.parentElement.parentElement.parentElement;
-         // get the input field corresponding to the clicked elements data-owner attribute:
-        const input = rootElement.querySelector('.tag-input');
-        input.value = e.target.innerHTML;  // load the input 
-        input.dataset.id = e.target.dataset.id; // set the data-id of the input to the same as the value object
-        addTag(input);
-        input.focus(); // resume focus on the input box
-    }
+    if (e.target.classList.contains('suggestion')) handleSuggestionClicked(e.target);
 
     // cancel or accept changes btn on user prompt modal to add customers and contacts:
-    if (e.target.classList.contains('modal-btn')) {
-        const btn = e.target;
-        const modal = document.querySelector('.modal');
-
-        if (btn.id === 'modal-accept-btn') {
-            handleModalAccept();
-        }
-        
-        modal.classList.remove('open');
-    }
+    if (e.target.classList.contains('modal-btn')) handleModalBtnClicked(e.target);
 
     // fires when user clicks on an edit btn inside an existing entry:
     if (e.target.classList.contains('edit-entry-btn')) {
         const entryContainer = e.target.parentElement;
-        initiateEdit(entryContainer);
+        makeEditForm(entryContainer);
+    }
+
+    // fires when user clicks on accept changes btn when entry is being edited
+    if (e.target.classList.contains('accept-edit-btn')) {
+        const form = e.target.parentElement; // grab the parent elem of the form
+        initiateEdit(form);
+        
+        const id = e.target.parentElement.id;  // id of entry container
+
     }
 }
 
@@ -376,10 +391,10 @@ const findMatches = (targetWord, arr, propertyList) => {
     })   
 }
 
-const displaySuggestions = (options, owner) => {
+const displaySuggestions = (inputID, options, type) => {
     return options
         .map(option => {
-            return `<li class="suggestion ${owner}-suggestion" data-owner="${owner}" data-id="${option.id}">${option.name}</li>`
+            return `<li class="suggestion ${type}-suggestion" data-type="${type}" data-inputID='${inputID}' data-id="${option.id}">${option.name}</li>`
         })
         .join('');
 }
@@ -446,7 +461,7 @@ const handleKeyUp = (e) => {
 
         const suggestionArea = parent.querySelector('.suggestions');
         suggestionArea.style.display = 'block';
-        suggestionArea.innerHTML = `<ul>${displaySuggestions(options, targetList)}</ul>`;
+        suggestionArea.innerHTML = `<ul>${displaySuggestions(e.target.id, options, targetList)}</ul>`;
 
     }
 
