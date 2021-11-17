@@ -32,6 +32,21 @@ const getUser = async () => {
     }
 }
 
+
+// fetch one instance of type "target" ('entry', 'contact', 'customer'):
+const getInstance = async (target, id) => {
+    try {
+        console.log(`Fetching details for ${target}: ${id}`);
+        const res = await fetch(`api/${target}/${id}`);
+        const instance = await res.json();
+
+        return instance;
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
+
 // fetch whatever API call is passed as a target ('Entries', 'Customers', 'Tags'):
 const getList = async (target) => {
     try {

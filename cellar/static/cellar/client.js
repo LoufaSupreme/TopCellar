@@ -201,10 +201,19 @@ const initiateNewEntry = (form) => {
 }
 
 // fires when an Edit btn is clicked within an existing entry
-const initiateEdit = (entryContainer) => {
+const initiateEdit = async (entryContainer) => {
+
+    // const customerDiv = entryContainer.querySelector('.entry-customer');
+    // const contactsDiv = entryContainer.querySelector('.entry-contacts');
+    // const descriptionDiv = entryContainer.querySelector('.entry-description');
+    // const tagsDiv = entryContainer.querySelector('.entry-tags');
+    // const rankDiv = entryContainer.querySelector('.entry-rank');
 
     const entry_ID = entryContainer.id;
-    
+    const entryDetails = await getInstance('entry', entry_ID);
+    entryContainer.innerHTML = '';
+
+
 
             // <div class="tag-container">
             //     <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
@@ -358,6 +367,16 @@ const displaySuggestions = (options, owner) => {
         .join('');
 }
 
+// create the html for a new tag div:
+const makeTagElement = (type, id, content) => {
+    const tag = document.createElement('div'); // make new tag div
+    tag.classList.add('tag'); // add "tag" to classname list
+    tag.dataset.id = id === 'undefined' ? -1 : id;  // id of the content (i.e. if customer name, then customer.id)
+    tag.dataset.list = type; // the type of tag e.g. 'customers' or 'contacts'
+    tag.innerHTML = content; // the text of the tag
+    return tag;
+}
+
 // inserts a new element in the DOM with ".tag" classname
 // used for customers, contacts and tags
 const addTag = (inputField) => {
@@ -370,12 +389,8 @@ const addTag = (inputField) => {
     }
 
     // make new tag:
-    const tag = document.createElement('div'); // make new tag div
-    tag.classList.add('tag'); // add "tag" to classname list
-    tag.dataset.id = inputField.dataset.id === 'undefined' ? -1 : inputField.dataset.id;  // id of the value (i.e. if customer name, then customer.id)
-    tag.dataset.list = inputField.dataset.list; // take the input's data-list (e.g. "customers") and set to the tag
-    tag.innerHTML = inputField.value; // value of input
-
+    const tag = makeTagElement(inputField.dataset.list, inputField.dataset.id, inputField.value)
+    
     // check if this tag already exists:
     const tagExists = Array.from(parent.querySelectorAll('.tag'))
         .filter(el => {
