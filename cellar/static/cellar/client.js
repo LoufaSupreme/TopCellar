@@ -58,26 +58,32 @@ const loadStore = async (state) => {
 // HTML COMPONENTS ///////////////////
 //////////////////////////////////////
 
+// generate HTML for suggestion dropdowns:
+const makeSuggestionDiv = () => {
+    return `<div class='suggestions' style='display: none'>DUMMY TEXT</div>`;
+}
+
 
 // make html to render a new Entry form:
 const makeEntryForm = () => {
     const now = new Date();
     return `
         <div class="form-container" id="entry-form-container">
-
-            <div class="suggestions" style="display:none">DUMMY TEXT</div>
     
             <div class="tag-container">
                 <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+                ${makeSuggestionDiv()}
             </div>
             <div class="tag-container">
                 <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+                ${makeSuggestionDiv()}
             </div>
             <textarea placeholder="Description" name="description"></textarea>
             <input type="date" value="${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}">
             <input type="number" placeholder="Rank">
             <div class="tag-container">
                 <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+                ${makeSuggestionDiv()}
             </div>
         </div>
         <button type="buton" id="entry-submit-btn">CREATE</button>
@@ -203,30 +209,39 @@ const initiateNewEntry = (form) => {
 // fires when an Edit btn is clicked within an existing entry
 const initiateEdit = async (entryContainer) => {
 
-    // const customerDiv = entryContainer.querySelector('.entry-customer');
-    // const contactsDiv = entryContainer.querySelector('.entry-contacts');
-    // const descriptionDiv = entryContainer.querySelector('.entry-description');
-    // const tagsDiv = entryContainer.querySelector('.entry-tags');
-    // const rankDiv = entryContainer.querySelector('.entry-rank');
-
     const entry_ID = entryContainer.id;
-    const entryDetails = await getInstance('entry', entry_ID);
-    entryContainer.innerHTML = '';
+    const entry = await getInstance('entry', entry_ID);
 
-
-
-            // <div class="tag-container">
-            //     <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
-            // </div>
-            // <div class="tag-container">
-            //     <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
-            // </div>
-            // <textarea placeholder="Description" name="description"></textarea>
-            // <input type="date" value="${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}">
-            // <input type="number" placeholder="Rank">
-            // <div class="tag-container">
-            //     <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
-            // </div>
+    const customerTag = makeTagElement('customers', entry.customer.id, entry.customer.name).outerHTML;
+    const contactTags = entry.contacts
+        .map(c => makeTagElement('contacts', c.id, `${c.first_name} ${c.last_name}`).outerHTML)
+        .join('');
+    const tagTags = entry.tags
+        .map(t => makeTagElement('tags', t.id, t).outerHTML)
+        .join('');
+    
+    entryContainer.innerHTML = `
+            <div class="tag-container">
+                ${customerTag}
+                <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+                ${makeSuggestionDiv()}
+            </div>
+            <div class="tag-container">
+                ${contactTags}
+                <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+                ${makeSuggestionDiv()}
+            </div>
+            <textarea placeholder="Description" name="description">${entry.description}</textarea>
+            <input type="date" value="${entry.timestamp.year}-${entry.timestamp.month}-${entry.timestamp.day}">
+            <input type="number" placeholder="Rank" value="${entry.rank}">
+            <div class="tag-container">
+                ${tagTags}
+                <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+                ${makeSuggestionDiv()}
+            </div>
+            <button id='accept-edit-btn'>Accept Changes</button>
+            <button id='cancel-edit-btn'>Cancel</button>
+        `;
 }
 
 
@@ -319,8 +334,10 @@ const handleClicks = (e) => {
 
     // fires when a dropdown suggestion is clicked:
     if (e.target.classList.contains('suggestion')) {
+        // find element that holds the suggestion being clicked, and the input box
+        const rootElement = e.target.parentElement.parentElement.parentElement;
          // get the input field corresponding to the clicked elements data-owner attribute:
-        const input = document.querySelector(`#${e.target.dataset.owner}-input`);
+        const input = rootElement.querySelector('.tag-input');
         input.value = e.target.innerHTML;  // load the input 
         input.dataset.id = e.target.dataset.id; // set the data-id of the input to the same as the value object
         addTag(input);
@@ -380,12 +397,12 @@ const makeTagElement = (type, id, content) => {
 // inserts a new element in the DOM with ".tag" classname
 // used for customers, contacts and tags
 const addTag = (inputField) => {
-    const parent = inputField.parentElement; // container div
+    const parent = inputField.parentNode; // container div
 
     // if there's already a customer name in the parent div, remove it.
     // only want one customer to be able to be selected at a time
-    if (inputField.dataset.list === 'customers' && parent.firstChild) {
-        parent.firstChild.remove();
+    if (inputField.dataset.list === 'customers' && parent.querySelector('.tag')) {
+        parent.firstElementChild.remove();
     }
 
     // make new tag:
@@ -399,7 +416,7 @@ const addTag = (inputField) => {
 
     // if tag doesn't exist, add it:
     if (!tagExists) {
-        parent.insertBefore(tag, inputField); // add input value as new '.tag' element before
+        parent.insertBefore(tag, inputField); // add input value as new '.tag' element before the input field
     }
 
     inputField.value = ''; // reset input box
@@ -413,6 +430,7 @@ const handleKeyUp = (e) => {
     if (e.target.dataset.list) {
         const targetList = e.target.dataset.list;
         const listItems = store[targetList];  // grab the list of items for targetList from store
+        const parent = e.target.parentElement;
 
         // the below is now not needed since all have 'name' properties:
         let options = [];
@@ -426,9 +444,9 @@ const handleKeyUp = (e) => {
             options = findMatches(e.target.value, listItems, ['name']);
         }
 
-        const suggestionArea = document.querySelector('.suggestions');
+        const suggestionArea = parent.querySelector('.suggestions');
         suggestionArea.style.display = 'block';
-        suggestionArea.innerHTML = `<ul>${displaySuggestions(options, targetList)}</ul>`
+        suggestionArea.innerHTML = `<ul>${displaySuggestions(options, targetList)}</ul>`;
 
     }
 

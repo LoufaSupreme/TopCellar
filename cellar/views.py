@@ -136,6 +136,11 @@ def newEntry(request):
             if descrip == "":
                 raise ValidationError('Description is blank')
 
+            # get rank:
+            rank = data.get('rank')
+            if rank == '':
+                rank = None
+
             # get tags. If the tag doesn't exist, create it:
             raw_tags = data.get('tags')
             tags = []
@@ -156,6 +161,7 @@ def newEntry(request):
                 customer=customer,
                 description=descrip,
                 timestamp=entry_date,
+                rank=rank,
             )
             entry.save()
 
