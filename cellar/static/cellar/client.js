@@ -42,11 +42,12 @@ const App = async (state) => {
 
 // loads relevant user data into the global store:
 const loadStore = async (state) => {
+    console.log('Fetching User Objects...');
     state.user = await getUser();
-    state.entries = await getEntries();
-    state.customers = await getCustomers();
-    state.contacts = await getContacts();
-    state.tags = await getTags();
+    state.entries = await getList('Entries');
+    state.customers = await getList('Customers');
+    state.contacts = await getList('Contacts');
+    state.tags = await getList('Tags');
 
     console.log({store});
     // updateStore(state, store);
@@ -156,6 +157,7 @@ const generateModalText = (customer, contacts) => {
     return promptText;
 }
 
+// creates and displays a modal for the user to choose whether to make new customer/contact objects, or go back and edit the entry before submitting.
 const promptUserMakeObj = (newObjects) => {
     const modal = document.querySelector('.modal');
     const container = modal.querySelector('.promptContainer');
@@ -166,6 +168,7 @@ const promptUserMakeObj = (newObjects) => {
     modal.classList.add('open');
 }
 
+// fired when the "create" btn is clicked to submit a new entry
 const initiateNewEntry = (form) => {
     console.log('Initiated new entry...');
 
@@ -195,6 +198,26 @@ const initiateNewEntry = (form) => {
         const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
         tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created    
     }
+}
+
+// fires when an Edit btn is clicked within an existing entry
+const initiateEdit = (entryContainer) => {
+
+    const entry_ID = entryContainer.id;
+    
+
+            // <div class="tag-container">
+            //     <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+            // </div>
+            // <div class="tag-container">
+            //     <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+            // </div>
+            // <textarea placeholder="Description" name="description"></textarea>
+            // <input type="date" value="${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}">
+            // <input type="number" placeholder="Rank">
+            // <div class="tag-container">
+            //     <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+            // </div>
 }
 
 
@@ -306,6 +329,12 @@ const handleClicks = (e) => {
         
         modal.classList.remove('open');
     }
+
+    // fires when user clicks on an edit btn inside an existing entry:
+    if (e.target.classList.contains('edit-entry-btn')) {
+        const entryContainer = e.target.parentElement;
+        initiateEdit(entryContainer);
+    }
 }
 
 // returns a filtered array
@@ -388,7 +417,7 @@ const handleKeyUp = (e) => {
 
     }
 
-    // if user hits enter while inside an input box 'tag-input', create a new tag element:
+    // if user hits enter while inside an input box w/ class 'tag-input', create a new tag element:
     if (e.target.classList.contains('tag-input') && e.key === 'Enter' ) {
         addTag(e.target);
     }
@@ -425,13 +454,15 @@ const displayEntries = (entries) => {
     return entries.map(entry => {
         try {
             const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name}`);
+
             return `
-                <div class='flex entry-container container bg-dark text-white'>
+                <div id='${entry.id}' class='flex entry-container container bg-dark text-white'>
                     <div>ID: ${entry.id}</div>
-                    ${entry.customer !== null ? `<div>${entry.customer.name}</div>` : ''}
-                    ${contacts.length > 0 ? `<div>${contacts.join(', ')}</div>` : ''}
+                    ${entry.customer !== null ? `<div class='entry-customer'>${entry.customer.name}</div>` : ''}
+                    ${contacts.length > 0 ? `<div class='entry-contacts'>${contacts.join(', ')}</div>` : ''}
                     <div>${entry.description}</div>
                     ${entry.tags.length > 0 ? `<div>Tags: ${entry.tags.join(', ')}</div>` : ''}
+                    <button id='entry-${entry.id}-edit-btn' class='edit-entry-btn'>Edit</button>
                 </div>
             `;
         } 

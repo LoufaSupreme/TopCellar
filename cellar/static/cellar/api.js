@@ -17,57 +17,32 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// fetch all user's entries from db:
-const getEntries = async () => {
-    console.log('Fetching Entries...');
-    const res = await fetch('api/allEntries/');
-    const entries = await res.json();
-
-    return entries;
-}
-
-// fetch all user's customers from db:
-const getCustomers = async () => {
-    console.log('Fetching Customers...');
-    const res = await fetch('api/allCustomers/');
-    const customers = await res.json();
-
-    return customers;
-}
-
-// fetch all user's contacts from db:
-const getContacts = async () => {
-    console.log('Fetching Contacts...');
-    const res = await fetch('api/allContacts/');
-    const contacts = await res.json();
-
-    return contacts;
-}
-
-// fetch all user's tags from db:
-const getTags = async () => {
-    console.log('Fetching Tags...');
-    const res = await fetch('api/allTags/');
-    const tags = await res.json();
-
-    return tags;
-}
 
 // fetch current user's username:
 const getUser = async () => {
-    console.log('Fetching Username...');
-    const res = await fetch('api/currentUser/');
-    const username = await res.json();
+    try {
+        console.log('Fetching Username...');
+        const res = await fetch('api/currentUser/');
+        const username = await res.json();
 
-    return username;
+        return username;
+    }
+    catch (err) {
+        console.error(err);
+    }
 }
 
-// fetch whatever API call is passed as a targer:
+// fetch whatever API call is passed as a target ('Entries', 'Customers', 'Tags'):
 const getList = async (target) => {
-    const res = await fetch(`api/all${target}/`);
-    const listItems = await res.json();
+    try {
+        const res = await fetch(`api/all${target}/`);
+        const listItems = await res.json();
 
-    return listItems;
+        return listItems;
+    }
+    catch (err) {
+        console.error(err);
+    }
 }
 
 
