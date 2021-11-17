@@ -69,6 +69,10 @@ const makeSuggestionDiv = (type, entry_ID = null) => {
 // make html to render a new Entry form:
 const makeEntryForm = () => {
     const now = new Date();
+    // add leading zeros to dates if less than 10 (important for date input values...):
+    const month = now.getMonth()+1 < 10 ? `0${now.getMonth()+1}` : now.getMonth()+1;
+    const day = now.getDate() < 10 ? `0${now.getDate()}` : now.getDate();
+
     return `
         <div class="form-container" id="entry-form-container">
     
@@ -81,7 +85,7 @@ const makeEntryForm = () => {
                 ${makeSuggestionDiv('contacts')}
             </div>
             <textarea placeholder="Description" name="description"></textarea>
-            <input type="date" value="${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}">
+            <input type="date" value="${now.getFullYear()}-${month}-${day}">
             <input type="number" placeholder="Rank">
             <div class="tag-container">
                 <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
@@ -208,6 +212,14 @@ const initiateNewEntry = (form) => {
     }
 }
 
+const initiateEdit = (form, entry_id) => {
+    console.log(`Updating Entry ${entry_id}`);
+
+    // get all the inputted data from the entry form
+    const newEntryData = getFormData(form); 
+
+}
+
 // fires when an Edit btn is clicked within an existing entry
 const makeEditForm = async (entryContainer) => {
 
@@ -221,6 +233,10 @@ const makeEditForm = async (entryContainer) => {
     const tagTags = entry.tags
         .map(t => makeTagElement('tags', t.id, t).outerHTML)
         .join('');
+
+    // add leading zeros to dates if less than 10 (important for date input values...):
+    const month = entry.timestamp.month < 10 ? `0${entry.timestamp.month}` : entry.timestamp.month;
+    const day = entry.timestamp.day < 10 ? `0${entry.timestamp.day}` : entry.timestamp.day;
     
     entryContainer.innerHTML = `
             <div class="tag-container">
@@ -234,7 +250,7 @@ const makeEditForm = async (entryContainer) => {
                 ${makeSuggestionDiv('contacts', entry_ID)}
             </div>
             <textarea placeholder="Description" name="description">${entry.description}</textarea>
-            <input type="date" value="${entry.timestamp.year}-${entry.timestamp.month}-${entry.timestamp.day}">
+            <input type="date" value="${entry.timestamp.year}-${month}-${day}">
             <input type="number" placeholder="Rank" value="${entry.rank}">
             <div class="tag-container">
                 ${tagTags}
@@ -373,7 +389,7 @@ const handleClicks = (e) => {
     if (e.target.id === 'accept-edit-btn') {
         const entry_id = e.target.dataset.id; // get the entry ID from the buttons data-id attribute
         const form = document.querySelector(`#entry-${entry_id}`); // grab the div (entry container) that contains all the inputs
-        initiateEdit(form);
+        initiateEdit(form, entry_id);
     }
 }
 
