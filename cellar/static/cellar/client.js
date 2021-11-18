@@ -186,17 +186,7 @@ const initiateNewEntry = (form) => {
 
     // get all the inputted data from the entry form
     const newEntryData = getFormData(form); 
-    const customer = newEntryData.customer;
-    const contacts = newEntryData.contacts;
-    
-    // check for inputted customers or contacts that don't yet exist and add them to a newObjects object
-    const newContacts = contactExists(contacts);
-
-    const newObjects = {
-        "customer": !customerExists(customer) ? customer : null,
-        "contacts": newContacts.length > 0 ? newContacts : null,
-        "entry": newEntryData,
-    };
+    const newObjects = checkNewInstances(newEntryData);
 
     // if there are some new objects, let the user know:
     if (newObjects.customer !== null || newObjects.contacts !== null) {
@@ -212,12 +202,25 @@ const initiateNewEntry = (form) => {
     }
 }
 
-const initiateEdit = (form, entry_id) => {
+const initiateEdit = async (form, entry_id) => {
     console.log(`Updating Entry ${entry_id}`);
 
     // get all the inputted data from the entry form
     const newEntryData = getFormData(form); 
+    const newObjects = checkNewInstances(newEntryData);
 
+    // if there are some new objects, let the user know:
+    if (newObjects.customer !== null || newObjects.contacts !== null) {
+        console.log('Found new Customer or Contact instances. Prompting user...');
+        store.uncreated = newObjects;  // load new objects into store so they can be created if the user wishes
+        promptUserMakeObj(newObjects); // create a modal user prompt to ask them if they want to create the new objects
+    }
+    else {
+        // otherwise send put request to DB to update the entry:
+        updateInstance(newEntryData, 'entry', entry_id);
+        await loadStore(store);
+        render(root, store);
+    }
 }
 
 // fires when an Edit btn is clicked within an existing entry
@@ -262,6 +265,23 @@ const makeEditForm = async (entryContainer) => {
         `;
 }
 
+// takes the data from an entry form (new or edit) and checks if there are customers or contacts that don't yet exist:
+// returns the new objects in a newObjects object:
+const checkNewInstances = (data) => {
+    const customer = data.customer;
+    const contacts = data.contacts;
+    
+    // check for inputted customers or contacts that don't yet exist and add them to a newObjects object
+    const newContacts = contactExists(contacts);
+
+    const newObjects = {
+        "customer": !customerExists(customer) ? customer : null,
+        "contacts": newContacts.length > 0 ? newContacts : null,
+        "entry": data,
+    };
+
+    return newObjects;
+}
 
 // checks if a passed customer object already exists:
 // returns boolean

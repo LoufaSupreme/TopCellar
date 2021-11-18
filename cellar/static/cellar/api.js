@@ -48,13 +48,13 @@ const getInstance = async (target, id) => {
 }
 
 // send put request to update an instance:
-const updateInstance = async (details, target, id) => {
+const updateInstance = async (details, keyword, id) => {
     console.log(`Updating ${keyword} ${id}...`)
     // get csrf token for put request
     const csrf_token = getCookie('csrftoken');
 
     try {
-        const res = await fetch(`api/${target}/${id}`, {
+        const res = await fetch(`api/${keyword}/${id}`, {
             method: 'PUT',
             body: JSON.stringify(details),
             headers: { "X-CSRFToken": csrf_token }
@@ -64,7 +64,7 @@ const updateInstance = async (details, target, id) => {
             throw `DJANGO: ${obj.error}`;
         }
         else {
-            console.log(`Success! ${keyword} created:`);
+            console.log(`Success! ${keyword} ${id} updated.`);
             console.log(obj);
             return obj;
         }

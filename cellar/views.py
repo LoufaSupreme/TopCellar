@@ -38,11 +38,49 @@ def getEntries(request):
 
 
 # API route
-# send details of just one entry
+# send details of just one entry or update one entry:
 def entryDetail(request, pk):
-    entry = Entry.objects.get(id=pk)
 
-    return JsonResponse(entry.serialize(), safe=False)
+    # if get request to request details:
+    if request.method == 'GET':
+        # get the entry associated with the pk (id)
+        entry = Entry.objects.get(id=pk)
+        return JsonResponse(entry.serialize(), safe=False)
+
+    # if put request to update entry:
+    elif request.method == 'PUT':
+        try:
+            entry = Entry.objects.filter(id=pk)
+            entry_data = consolidateEntryData(request)
+            contacts = entry_data['contacts'];
+            tags = entry_data['tags']
+            print(f'Updating Entry {pk}: {json.loads(request.body)}')
+
+            # create new entry:
+            entry.update(
+                author=entry_data['user'],
+                customer=entry_data['customer'],
+                description=entry_data['description'],
+                timestamp=entry_data['date'],
+                rank=entry_data['rank'],
+            )
+
+            entry = Entry.objects.get(id=pk)
+            entry.contacts.clear()
+            entry.tags.clear()
+
+            for contact in contacts:
+                entry.contacts.add(contact)
+            for tag in tags:
+                entry.tags.add(tag)
+
+            return JsonResponse(entry.serialize(), safe=False, status=201)
+        except Exception as e:
+            print(f'Error: {e}')
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+    else:
+        return JsonResponse({"error": "Post method required"}, status=400)
+
 
 
 # API route
@@ -91,77 +129,104 @@ def getUser(request):
     return JsonResponse(request.user.username, safe=False)
 
 
+# handles checking and summarizing json data to create or update a post
+# returns a dict
+def consolidateEntryData(request):
+    try:
+        user = request.user
+        data = json.loads(request.body)
+        # get customer object:
+        customer = data.get('customer')
+        # try to get the exact customer (e.g. if they chose one of the dropdown options)
+        try:
+            customer = Customer.objects.get(id=customer['id'], name=customer['name'])
+        except Customer.DoesNotExist:
+            # something went wrong.  Frontend needs to send a request to make the customer first. 
+            print('Customer does not exist.') 
+            return JsonResponse({"error": "This customer doesn't exist."}, status=500)
+        except Exception as e:
+            print(f'Error: {e}')
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
+        # get contact object for each contact. If it doesn't exist, create one:
+        contact_names = data.get('contacts')
+        contacts = []
+        for c in contact_names:
+            try:
+                contact = Contact.objects.get(id=c['id'], first_name=c['first_name'], last_name=c['last_name'])
+                contacts.append(contact)
+            except Contact.DoesNotExist:
+                # something went wrong.  Frontend needs to send a request to make the contact first.  
+                return JsonResponse({"error": "This contact doesn't exist."}, status=500)
+            except Exception as e:
+                print(f'Error: {e}')
+                return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
+        # get date and make datetime object:
+        entry_date = data.get('date')
+        now = datetime.datetime.now()
+        # use current time for the datetime instance.
+        entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], now.hour, now.minute, now.second)
+
+        # get description:
+        descrip = data.get('description').strip()
+        if descrip == "":
+            raise ValidationError('Description is blank')
+
+        # get rank:
+        rank = data.get('rank')
+        if rank == '':
+            rank = None
+
+        # get tags. If the tag doesn't exist, create it:
+        raw_tags = data.get('tags')
+        tags = []
+        for t in raw_tags:
+            try:
+                tag = Tag.objects.get(name__iexact=t['name']) # case insensitive
+                tags.append(tag)
+            except Tag.DoesNotExist:
+                tag = Tag(user=user, name=t['name'])
+                tag.save()
+                tags.append(tag)
+            except Exception as e:
+                print(f'Error: {e}')
+                return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+        
+        entry_data = {
+            'user': user,
+            'customer': customer,
+            'contacts': contacts,
+            'description': descrip,
+            'rank': rank,
+            'date': entry_date,
+            'tags': tags,
+        }
+
+        return entry_data
+
+    except Exception as e:
+        print(f'Error: {e}')
+        return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
+
 # API route
 # create new entry
 def newEntry(request):
     if request.method == 'POST':
         try:
-            user = request.user
-            data = json.loads(request.body)
-            print(f'Creating new Entry for {user}: {data}')
-            # get customer object:
-            customer = data.get('customer')
-            # try to get the exact customer (e.g. if they chose one of the dropdown options)
-            try:
-                customer = Customer.objects.get(id=customer['id'], name=customer['name'])
-            except Customer.DoesNotExist:
-                # something went wrong.  Frontend needs to send a request to make the customer first. 
-                print('Customer does not exist.') 
-                return JsonResponse({"error": "This customer doesn't exist."}, status=500)
-            except Exception as e:
-                print(f'Error: {e}')
-                return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
-
-            # get contact object for each contact. If it doesn't exist, create one:
-            contact_names = data.get('contacts')
-            contacts = []
-            for c in contact_names:
-                try:
-                    contact = Contact.objects.get(id=c['id'], first_name=c['first_name'], last_name=c['last_name'])
-                    contacts.append(contact)
-                except Contact.DoesNotExist:
-                    # something went wrong.  Frontend needs to send a request to make the contact first.  
-                    return JsonResponse({"error": "This contact doesn't exist."}, status=500)
-                except Exception as e:
-                    return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
-
-            # get date and make datetime object:
-            entry_date = data.get('date')
-            now = datetime.datetime.now()
-            # use current time for the datetime instance.
-            entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], now.hour, now.minute, now.second)
-
-            # get description:
-            descrip = data.get('description').strip()
-            if descrip == "":
-                raise ValidationError('Description is blank')
-
-            # get rank:
-            rank = data.get('rank')
-            if rank == '':
-                rank = None
-
-            # get tags. If the tag doesn't exist, create it:
-            raw_tags = data.get('tags')
-            tags = []
-            for t in raw_tags:
-                try:
-                    tag = Tag.objects.get(name__iexact=t['name']) # case insensitive
-                    tags.append(tag)
-                except Tag.DoesNotExist:
-                    tag = Tag(user=user, name=t['name'])
-                    tag.save()
-                    tags.append(tag)
-                except Exception as e:
-                    return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+            entry_data = consolidateEntryData(request)
+            contacts = entry_data['contacts'];
+            tags = entry_data['tags']
+            print(f'Creating new Entry for {entry_data["user"]}: {json.loads(request.body)}')
 
             # create new entry:
             entry = Entry(
-                author=user,
-                customer=customer,
-                description=descrip,
-                timestamp=entry_date,
-                rank=rank,
+                author=entry_data['user'],
+                customer=entry_data['customer'],
+                description=entry_data['description'],
+                timestamp=entry_data['date'],
+                rank=entry_data['rank'],
             )
             entry.save()
 
