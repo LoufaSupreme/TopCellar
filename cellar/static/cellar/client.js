@@ -116,7 +116,7 @@ const handleModalAccept = async () => {
 
         if (store.uncreated.customer) {
             const newCustomer = await newInstance(store.uncreated.customer, 'Customer');
-            store.uncreated.customer.id = await newCustomer.id;        
+            store.uncreated.customer.id = newCustomer.id;        
         }
 
         if (store.uncreated.contacts) {
@@ -128,13 +128,28 @@ const handleModalAccept = async () => {
         }
     }
 
-    // make a new entry from the stored new entry details:
-    newInstance(store.uncreated.entry, 'Entry');
-    store.uncreated = null; // reset store.uncreated to null
+    if (store.uncreated.mode === 'create') {
+        // make a new entry from the stored new entry details:
+        newInstance(store.uncreated.entry, 'Entry');
+        store.uncreated = null; // reset store.uncreated to null
 
-    const form = document.querySelector('#entry-form-container'); // grab the parent elem of the input elements
-    const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
-    tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created    
+        // const form = document.querySelector('#entry-form-container'); // grab the parent elem of the input elements
+        // const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
+        // tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created   
+        await loadStore(store);
+        render(root, store);
+ 
+    }
+    else if (store.uncreated.mode === 'update') {
+        // update the existing instance:
+        updateInstance(store.uncreated.entry, 'entry', store.uncreated.entry.id);
+        store.uncreated = null; // reset store.uncreated to null
+        await loadStore(store);
+        render(root, store);
+    }
+    else {
+        console.error('Uncreated Object mode is neither create nor update...');
+    }
 }
 
 // generates HTML for the popup modal with details on the to-be-created customer and/or contacts:
@@ -181,12 +196,12 @@ const promptUserMakeObj = (newObjects) => {
 }
 
 // fired when the "create" btn is clicked to submit a new entry
-const initiateNewEntry = (form) => {
+const initiateNewEntry = async (form) => {
     console.log('Initiated new entry...');
 
     // get all the inputted data from the entry form
     const newEntryData = getFormData(form); 
-    const newObjects = checkNewInstances(newEntryData);
+    const newObjects = checkNewInstances(newEntryData, 'create');
 
     // if there are some new objects, let the user know:
     if (newObjects.customer !== null || newObjects.contacts !== null) {
@@ -197,8 +212,11 @@ const initiateNewEntry = (form) => {
     else {
         // otherwise send post request to DB to make new entry:
         newInstance(newEntryData, 'Entry');
-        const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
-        tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created    
+        await loadStore(store);
+        render(root, store);
+        // const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
+        // tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created 
+
     }
 }
 
@@ -207,7 +225,8 @@ const initiateEdit = async (form, entry_id) => {
 
     // get all the inputted data from the entry form
     const newEntryData = getFormData(form); 
-    const newObjects = checkNewInstances(newEntryData);
+    const newObjects = checkNewInstances(newEntryData, 'update');
+    newObjects.entry.id = entry_id;
 
     // if there are some new objects, let the user know:
     if (newObjects.customer !== null || newObjects.contacts !== null) {
@@ -267,7 +286,7 @@ const makeEditForm = async (entryContainer) => {
 
 // takes the data from an entry form (new or edit) and checks if there are customers or contacts that don't yet exist:
 // returns the new objects in a newObjects object:
-const checkNewInstances = (data) => {
+const checkNewInstances = (data, keyword) => {
     const customer = data.customer;
     const contacts = data.contacts;
     
@@ -275,6 +294,7 @@ const checkNewInstances = (data) => {
     const newContacts = contactExists(contacts);
 
     const newObjects = {
+        "mode": keyword,
         "customer": !customerExists(customer) ? customer : null,
         "contacts": newContacts.length > 0 ? newContacts : null,
         "entry": data,
