@@ -24,12 +24,12 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] 
 
 ##### Sales Entry Page
-- [ ] When adding an entry with a customer or contact that doesn't exist, prompt user if they'd like to create a new one
+- [x] When adding an entry with a customer or contact that doesn't exist, prompt user if they'd like to create a new one
 - [ ] Add frontend checks for required fields (create, edit)
-- [ ] Add backend checks for required fields (create, edit)
+- [x] Add backend checks for required fields (create, edit)
 - [ ] Allow uploading pictures when creating or editing an entry
 - [ ] Implement search bar to filter entries
-- [ ] Allow user to edit existing entry in place
+- [x] Allow user to edit existing entry in place
 - [ ] Allow user to delete existing entry (display warning first)
 - [ ] Implement custom filtering of entries by adding tags (list of customers, contacts, tags, dollar value, date)
 - [ ] Allow user to save custom filters for later date

@@ -431,6 +431,14 @@ const handleClicks = (e) => {
         const form = document.querySelector(`#entry-${entry_id}`); // grab the div (entry container) that contains all the inputs
         initiateEdit(form, entry_id);
     }
+
+    // fires when user clicks on cancel btn when entry is being editied
+    if (e.target.id === 'cancel-edit-btn') {
+        const entry_id = parseInt(e.target.dataset.id);
+        const entryContainer = document.querySelector(`#entry-${entry_id}`);
+        const entry = store.entries.find(ent => ent.id === entry_id);
+        entryContainer.outerHTML = makeEntryHTML(entry);
+    }
 }
 
 // returns a filtered array
@@ -551,34 +559,28 @@ const filterEntries = (entries, criteria) => {
 }
 
 
+// generate HTML for one entry:
+const makeEntryHTML = (entry) => {
+    const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name}`);
+
+    return `
+        <div id='entry-${entry.id}' class='flex entry-container container bg-dark text-white'>
+            <div>ID: ${entry.id}</div>
+            ${entry.customer !== null ? `<div class='entry-customer'>${entry.customer.name}</div>` : ''}
+            ${contacts.length > 0 ? `<div class='entry-contacts'>${contacts.join(', ')}</div>` : ''}
+            <div>${entry.description}</div>
+            ${entry.tags.length > 0 ? `<div>Tags: ${entry.tags.join(', ')}</div>` : ''}
+            <button id='entry-${entry.id}-edit-btn' class='edit-entry-btn' data-id='${entry.id}'>Edit</button>
+        </div>
+    `;
+}
+
+
 // display each entry on the page:
 const displayEntries = (entries) => {
     console.log('Displaying Entries...');
-    return entries.map(entry => {
-        try {
-            const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name}`);
-
-            return `
-                <div id='entry-${entry.id}' class='flex entry-container container bg-dark text-white'>
-                    <div>ID: ${entry.id}</div>
-                    ${entry.customer !== null ? `<div class='entry-customer'>${entry.customer.name}</div>` : ''}
-                    ${contacts.length > 0 ? `<div class='entry-contacts'>${contacts.join(', ')}</div>` : ''}
-                    <div>${entry.description}</div>
-                    ${entry.tags.length > 0 ? `<div>Tags: ${entry.tags.join(', ')}</div>` : ''}
-                    <button id='entry-${entry.id}-edit-btn' class='edit-entry-btn' data-id='${entry.id}'>Edit</button>
-                </div>
-            `;
-        } 
-        catch (err) {
-            console.error(err);
-        }
-    })
-    .reverse()
-    .reduce((acc, entry) => {
-        return acc + entry;
-    },'')
+    return entries.map(entry => makeEntryHTML(entry)).reverse().join('');
 }
-
 
 
 // run on DOM content loaded:

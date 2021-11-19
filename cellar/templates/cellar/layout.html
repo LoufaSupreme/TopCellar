@@ -21,6 +21,41 @@
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
+    <div class="nav-bar">
+        <h1><a href="{% url 'cellar:index' %}">TopCellar</a></h1>
+        <div class="nav-content">
+            <div class="login-status">
+                {% if user.is_authenticated %}
+                    Logged in as <strong>{{ user.username }}</strong>
+                {% else %}
+                    Not logged in.
+                {% endif %}
+            </div>
+            <ul class="nav">
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cellar:index' %}">Sales Activity</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Rolodex</a>
+                </li>    
+                <li class="nav-item">
+                    <a class="nav-link" href="#">KPIs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cellar:logout' %}">Log Out</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cellar:login' %}">Log In</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cellar:register' %}">Register</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
     {% block body %}
     {% endblock %}
 </body>
