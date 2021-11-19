@@ -59,6 +59,22 @@ const loadStore = async (state) => {
 //////////////////////////////////////
 
 
+// generate HTML for one entry:
+const makeEntryHTML = (entry) => {
+    const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name}`);
+
+    return `
+        <div id='entry-${entry.id}' class='flex entry-container container bg-dark text-white'>
+            <div>ID: ${entry.id}</div>
+            ${entry.customer !== null ? `<div class='entry-customer'>${entry.customer.name}</div>` : ''}
+            ${contacts.length > 0 ? `<div class='entry-contacts'>${contacts.join(', ')}</div>` : ''}
+            <div>${entry.description}</div>
+            ${entry.tags.length > 0 ? `<div>Tags: ${entry.tags.join(', ')}</div>` : ''}
+            <button id='entry-${entry.id}-edit-btn' class='edit-entry-btn' data-id='${entry.id}'>Edit</button>
+        </div>
+    `;
+}
+
 // generate HTML for suggestion dropdowns:
 // entry_ID is the ID of the entry div that this dropdown is associated with.  Null if not associated with one (e.g. making new entry)
 const makeSuggestionDiv = (type, entry_ID = null) => {
@@ -105,6 +121,84 @@ const makeModal = () => {
     `;
 }
 
+
+// generates HTML for the popup modal with details on the to-be-created customer and/or contacts:
+const generateModalText = (customer, contacts) => {
+    
+    let promptText = '';
+    if (customer) {
+        promptText += `
+            <div>We couldn't find the following customer in your Rolodex</div>
+            <div>${customer.name}</div>
+        `;
+    }
+
+    if (contacts) {
+        const contactText = contacts.map(contact => {
+            return `
+                <div>${contact.first_name} ${contact.last_name}</div>
+            `
+        }).join('');
+
+        promptText += `
+            <div>We couldn't find the following contacts in your Rolodex</div>
+            ${contactText}
+        `;
+    }
+
+    promptText += `
+        <div>Would you like to add them now?</div>
+        <button id='modal-accept-btn' class='accept-btn modal-btn'>ACCEPT</button>
+        <button id='modal-cancel-btn' class='cancel-btn modal-btn'>CANCEL AND MAKE CHANGES</button>
+    `
+    return promptText;
+}
+
+
+// fires when an Edit btn is clicked within an existing entry
+const makeEditForm = async (entryContainer) => {
+
+    const entry_ID = entryContainer.id.split('-')[1];
+    const entry = await getInstance('entry', entry_ID);
+
+    const customerTag = makeTagElement('customers', entry.customer.id, entry.customer.name).outerHTML;
+    const contactTags = entry.contacts
+        .map(c => makeTagElement('contacts', c.id, `${c.first_name} ${c.last_name}`).outerHTML)
+        .join('');
+    const tagTags = entry.tags
+        .map(t => makeTagElement('tags', t.id, t).outerHTML)
+        .join('');
+
+    // add leading zeros to dates if less than 10 (important for date input values...):
+    const month = entry.timestamp.month < 10 ? `0${entry.timestamp.month}` : entry.timestamp.month;
+    const day = entry.timestamp.day < 10 ? `0${entry.timestamp.day}` : entry.timestamp.day;
+    
+    entryContainer.innerHTML = `
+            <div class="tag-container">
+                ${customerTag}
+                <input id="customers-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+                ${makeSuggestionDiv('customers', entry_ID)}
+            </div>
+            <div class="tag-container">
+                ${contactTags}
+                <input id="contacts-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+                ${makeSuggestionDiv('contacts', entry_ID)}
+            </div>
+            <textarea placeholder="Description" name="description">${entry.description}</textarea>
+            <input type="date" value="${entry.timestamp.year}-${month}-${day}">
+            <input type="number" placeholder="Rank" value="${entry.rank}">
+            <div class="tag-container">
+                ${tagTags}
+                <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+                ${makeSuggestionDiv('tags', entry_ID)}
+            </div>
+            <button id='accept-edit-btn' data-id="${entry_ID}">Accept Changes</button>
+            <button id='cancel-edit-btn' data-id='${entry_ID}'>Cancel</button>
+        `;
+}
+
+
+
 //////////////////////////////////////
 // HELPER FUNCTIONS /////////////////
 //////////////////////////////////////
@@ -150,38 +244,6 @@ const handleModalAccept = async () => {
     else {
         console.error('Uncreated Object mode is neither create nor update...');
     }
-}
-
-// generates HTML for the popup modal with details on the to-be-created customer and/or contacts:
-const generateModalText = (customer, contacts) => {
-    
-    let promptText = '';
-    if (customer) {
-        promptText += `
-            <div>We couldn't find the following customer in your Rolodex</div>
-            <div>${customer.name}</div>
-        `;
-    }
-
-    if (contacts) {
-        const contactText = contacts.map(contact => {
-            return `
-                <div>${contact.first_name} ${contact.last_name}</div>
-            `
-        }).join('');
-
-        promptText += `
-            <div>We couldn't find the following contacts in your Rolodex</div>
-            ${contactText}
-        `;
-    }
-
-    promptText += `
-        <div>Would you like to add them now?</div>
-        <button id='modal-accept-btn' class='accept-btn modal-btn'>ACCEPT</button>
-        <button id='modal-cancel-btn' class='cancel-btn modal-btn'>CANCEL AND MAKE CHANGES</button>
-    `
-    return promptText;
 }
 
 // creates and displays a modal for the user to choose whether to make new customer/contact objects, or go back and edit the entry before submitting.
@@ -240,48 +302,6 @@ const initiateEdit = async (form, entry_id) => {
         await loadStore(store);
         render(root, store);
     }
-}
-
-// fires when an Edit btn is clicked within an existing entry
-const makeEditForm = async (entryContainer) => {
-
-    const entry_ID = entryContainer.id.split('-')[1];
-    const entry = await getInstance('entry', entry_ID);
-
-    const customerTag = makeTagElement('customers', entry.customer.id, entry.customer.name).outerHTML;
-    const contactTags = entry.contacts
-        .map(c => makeTagElement('contacts', c.id, `${c.first_name} ${c.last_name}`).outerHTML)
-        .join('');
-    const tagTags = entry.tags
-        .map(t => makeTagElement('tags', t.id, t).outerHTML)
-        .join('');
-
-    // add leading zeros to dates if less than 10 (important for date input values...):
-    const month = entry.timestamp.month < 10 ? `0${entry.timestamp.month}` : entry.timestamp.month;
-    const day = entry.timestamp.day < 10 ? `0${entry.timestamp.day}` : entry.timestamp.day;
-    
-    entryContainer.innerHTML = `
-            <div class="tag-container">
-                ${customerTag}
-                <input id="customers-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
-                ${makeSuggestionDiv('customers', entry_ID)}
-            </div>
-            <div class="tag-container">
-                ${contactTags}
-                <input id="contacts-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
-                ${makeSuggestionDiv('contacts', entry_ID)}
-            </div>
-            <textarea placeholder="Description" name="description">${entry.description}</textarea>
-            <input type="date" value="${entry.timestamp.year}-${month}-${day}">
-            <input type="number" placeholder="Rank" value="${entry.rank}">
-            <div class="tag-container">
-                ${tagTags}
-                <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
-                ${makeSuggestionDiv('tags', entry_ID)}
-            </div>
-            <button id='accept-edit-btn' data-id="${entry_ID}">Accept Changes</button>
-            <button id='cancel-edit-btn' data-id='${entry_ID}'>Cancel</button>
-        `;
 }
 
 // takes the data from an entry form (new or edit) and checks if there are customers or contacts that don't yet exist:
@@ -558,22 +578,6 @@ const filterEntries = (entries, criteria) => {
     return filteredEntries;
 }
 
-
-// generate HTML for one entry:
-const makeEntryHTML = (entry) => {
-    const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name}`);
-
-    return `
-        <div id='entry-${entry.id}' class='flex entry-container container bg-dark text-white'>
-            <div>ID: ${entry.id}</div>
-            ${entry.customer !== null ? `<div class='entry-customer'>${entry.customer.name}</div>` : ''}
-            ${contacts.length > 0 ? `<div class='entry-contacts'>${contacts.join(', ')}</div>` : ''}
-            <div>${entry.description}</div>
-            ${entry.tags.length > 0 ? `<div>Tags: ${entry.tags.join(', ')}</div>` : ''}
-            <button id='entry-${entry.id}-edit-btn' class='edit-entry-btn' data-id='${entry.id}'>Edit</button>
-        </div>
-    `;
-}
 
 
 // display each entry on the page:
