@@ -71,6 +71,7 @@ const makeEntryHTML = (entry) => {
             <div>${entry.description}</div>
             ${entry.tags.length > 0 ? `<div>Tags: ${entry.tags.join(', ')}</div>` : ''}
             <button id='entry-${entry.id}-edit-btn' class='edit-entry-btn' data-id='${entry.id}'>Edit</button>
+            <button id='entry-${entry.id}-delete-btn' class='delete-entry-btn' data-id='${entry.id}'>Delete</button>
         </div>
     `;
 }
@@ -197,6 +198,16 @@ const makeEditForm = async (entryContainer) => {
         `;
 }
 
+
+// create the html for a new tag div:
+const makeTagElement = (type, id, content) => {
+    const tag = document.createElement('div'); // make new tag div
+    tag.classList.add('tag'); // add "tag" to classname list
+    tag.dataset.id = id === 'undefined' ? -1 : id;  // id of the content (i.e. if customer name, then customer.id)
+    tag.dataset.list = type; // the type of tag e.g. 'customers' or 'contacts'
+    tag.innerHTML = content; // the text of the tag
+    return tag;
+}
 
 
 //////////////////////////////////////
@@ -400,6 +411,11 @@ const getFormData = (form) => {
     return newEntryDetails;
 }
 
+//////////////////////////////////////
+// EVENT HANDLER FUNCTIONS ////////////
+//////////////////////////////////////
+
+
 // handles the entry submit btn being clicked to submit a new entry:
 const handleEntrySubmitClicked = () => {
     const form = document.querySelector('#entry-form-container'); // grab the parent elem of the form
@@ -425,6 +441,13 @@ const handleModalBtnClicked = (btn) => {
     modal.classList.remove('open');
 }
 
+// deletes an entry:
+const handleEntryDelete = (entry_id) => {
+    const entryContainer = document.querySelector(`#entry-${entry_id}`); // get the container div of the entry
+    entryContainer.remove(); // remove it from DOM
+    deleteInstance('entry', entry_id);
+}
+
 // handles clicks anywhere on the document.  Called on window load. 
 // this is to avoid having to make new event handlers for dynamic content (like the form)
 const handleClicks = (e) => {
@@ -433,93 +456,38 @@ const handleClicks = (e) => {
     if (e.target.id === 'entry-submit-btn') handleEntrySubmitClicked();
 
     // fires when a dropdown suggestion is clicked:
-    if (e.target.classList.contains('suggestion')) handleSuggestionClicked(e.target);
+    else if (e.target.classList.contains('suggestion')) handleSuggestionClicked(e.target);
 
     // cancel or accept changes btn on user prompt modal to add customers and contacts:
-    if (e.target.classList.contains('modal-btn')) handleModalBtnClicked(e.target);
+    else if (e.target.classList.contains('modal-btn')) handleModalBtnClicked(e.target);
 
-    // fires when user clicks on an edit btn inside an existing entry:
-    if (e.target.classList.contains('edit-entry-btn')) {
+    // fires when user clicks on edit btn inside an existing entry:
+    else if (e.target.classList.contains('edit-entry-btn')) {
         const entry_id = e.target.dataset.id;
         const entryContainer = document.querySelector(`#entry-${entry_id}`);
         makeEditForm(entryContainer);
     }
 
+    // fires when user clicks on delete btn inside an existing entry:
+    else if (e.target.classList.contains('delete-entry-btn')) handleEntryDelete(e.target.dataset.id);
+
     // fires when user clicks on accept changes btn when entry is being edited
-    if (e.target.id === 'accept-edit-btn') {
+    else if (e.target.id === 'accept-edit-btn') {
         const entry_id = e.target.dataset.id; // get the entry ID from the buttons data-id attribute
         const form = document.querySelector(`#entry-${entry_id}`); // grab the div (entry container) that contains all the inputs
         initiateEdit(form, entry_id);
     }
 
     // fires when user clicks on cancel btn when entry is being editied
-    if (e.target.id === 'cancel-edit-btn') {
+    else if (e.target.id === 'cancel-edit-btn') {
         const entry_id = parseInt(e.target.dataset.id);
         const entryContainer = document.querySelector(`#entry-${entry_id}`);
         const entry = store.entries.find(ent => ent.id === entry_id);
         entryContainer.outerHTML = makeEntryHTML(entry);
     }
+
 }
 
-// returns a filtered array
-// for each el[prop] combination of el in arr and prop in propertyList, checks whether targetWord matches:
-const findMatches = (targetWord, arr, propertyList) => {
-    return arr.filter(el => {
-        const regex = new RegExp(targetWord, 'gi');
-        return propertyList
-            .map( prop => {
-                return el[prop] !== null ? el[prop].match(regex) : null;
-            })
-            .filter(prop => prop !== null)[0];
-    })   
-}
-
-const displaySuggestions = (inputID, options, type) => {
-    return options
-        .map(option => {
-            return `<li class="suggestion ${type}-suggestion" data-type="${type}" data-inputID='${inputID}' data-id="${option.id}">${option.name}</li>`
-        })
-        .join('');
-}
-
-// create the html for a new tag div:
-const makeTagElement = (type, id, content) => {
-    const tag = document.createElement('div'); // make new tag div
-    tag.classList.add('tag'); // add "tag" to classname list
-    tag.dataset.id = id === 'undefined' ? -1 : id;  // id of the content (i.e. if customer name, then customer.id)
-    tag.dataset.list = type; // the type of tag e.g. 'customers' or 'contacts'
-    tag.innerHTML = content; // the text of the tag
-    return tag;
-}
-
-// inserts a new element in the DOM with ".tag" classname
-// used for customers, contacts and tags
-const addTag = (inputField) => {
-    const parent = inputField.parentNode; // container div
-
-    // if there's already a customer name in the parent div, remove it.
-    // only want one customer to be able to be selected at a time
-    if (inputField.dataset.list === 'customers' && parent.querySelector('.tag')) {
-        parent.firstElementChild.remove();
-    }
-
-    // make new tag:
-    const tag = makeTagElement(inputField.dataset.list, inputField.dataset.id, inputField.value)
-    
-    // check if this tag already exists:
-    const tagExists = Array.from(parent.querySelectorAll('.tag'))
-        .filter(el => {
-            return el.dataset.id === tag.dataset.id && el.innerHTML === tag.innerHTML;
-        }).length > 0;
-
-    // if tag doesn't exist, add it:
-    if (!tagExists) {
-        parent.insertBefore(tag, inputField); // add input value as new '.tag' element before the input field
-    }
-
-    inputField.value = ''; // reset input box
-    inputField.dataset.id = undefined;  // reset data-id
-}
 
 // handles keyup events anywhere on the document.  Called on window load. 
 // this is to avoid having to make new event handlers for dynamic content (like the form)
@@ -553,6 +521,58 @@ const handleKeyUp = (e) => {
         addTag(e.target);
     }
 }
+
+// returns a filtered array
+// for each el[prop] combination of el in arr and prop in propertyList, checks whether targetWord matches:
+const findMatches = (targetWord, arr, propertyList) => {
+    return arr.filter(el => {
+        const regex = new RegExp(targetWord, 'gi');
+        return propertyList
+            .map( prop => {
+                return el[prop] !== null ? el[prop].match(regex) : null;
+            })
+            .filter(prop => prop !== null)[0];
+    })   
+}
+
+const displaySuggestions = (inputID, options, type) => {
+    return options
+        .map(option => {
+            return `<li class="suggestion ${type}-suggestion" data-type="${type}" data-inputID='${inputID}' data-id="${option.id}">${option.name}</li>`
+        })
+        .join('');
+}
+
+
+// inserts a new element in the DOM with ".tag" classname
+// used for customers, contacts and tags
+const addTag = (inputField) => {
+    const parent = inputField.parentNode; // container div
+
+    // if there's already a customer name in the parent div, remove it.
+    // only want one customer to be able to be selected at a time
+    if (inputField.dataset.list === 'customers' && parent.querySelector('.tag')) {
+        parent.firstElementChild.remove();
+    }
+
+    // make new tag:
+    const tag = makeTagElement(inputField.dataset.list, inputField.dataset.id, inputField.value)
+    
+    // check if this tag already exists:
+    const tagExists = Array.from(parent.querySelectorAll('.tag'))
+        .filter(el => {
+            return el.dataset.id === tag.dataset.id && el.innerHTML === tag.innerHTML;
+        }).length > 0;
+
+    // if tag doesn't exist, add it:
+    if (!tagExists) {
+        parent.insertBefore(tag, inputField); // add input value as new '.tag' element before the input field
+    }
+
+    inputField.value = ''; // reset input box
+    inputField.dataset.id = undefined;  // reset data-id
+}
+
 
 // filter array of entries based on criteria
 // criteria is an object with key:value pairs of what to filter {"author.name": 'Jane Doe', "user.id": 1}

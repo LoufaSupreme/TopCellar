@@ -74,6 +74,31 @@ const updateInstance = async (details, keyword, id) => {
     }
 }
 
+// send delete request to delete an instance:
+const deleteInstance = async (keyword, id) => {
+    console.log(`Deleting ${keyword} ${id}...`)
+    // get csrf token for put request
+    const csrf_token = getCookie('csrftoken');
+
+    try {
+        const res = await fetch(`api/${keyword}/${id}`, {
+            method: 'DELETE',
+            headers: { "X-CSRFToken": csrf_token }
+        });
+        const obj = await res.json();
+        if (obj.error) {
+            throw `DJANGO: ${obj.error}`;
+        }
+        else {
+            console.log(`Success! ${keyword} ${id} deleted.`);
+        }
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
+
+
 // fetch whatever API call is passed as a target ('Entries', 'Customers', 'Tags'):
 const getList = async (target) => {
     try {

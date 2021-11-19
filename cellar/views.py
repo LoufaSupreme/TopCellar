@@ -44,8 +44,11 @@ def entryDetail(request, pk):
     # if get request to request details:
     if request.method == 'GET':
         # get the entry associated with the pk (id)
-        entry = Entry.objects.get(id=pk)
-        return JsonResponse(entry.serialize(), safe=False)
+        try:
+            entry = Entry.objects.get(id=pk)
+            return JsonResponse(entry.serialize(), safe=False)
+        except Exception as e:
+            print(f'Error: {e}')
 
     # if put request to update entry:
     elif request.method == 'PUT':
@@ -78,8 +81,19 @@ def entryDetail(request, pk):
         except Exception as e:
             print(f'Error: {e}')
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+    
+    # 
+    elif request.method == 'DELETE':
+        try:
+            entry = Entry.objects.get(id=pk)
+            entry.delete()
+            return JsonResponse({"success": f'Entry {pk} successfully deleted.'}, status=500)
+        except Exception as e:
+            print(f'Error: {e}')
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
     else:
-        return JsonResponse({"error": "Post method required"}, status=400)
+        return JsonResponse({"error": "Unsupported HTTP method."}, status=400)
 
 
 
