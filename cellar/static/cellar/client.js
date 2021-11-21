@@ -34,6 +34,7 @@ const App = async (state) => {
             Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
         </div>
 
+        ${makeSearchBox()}
         ${makeEntryForm()}
         <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
         `;
@@ -207,6 +208,13 @@ const makeTagElement = (type, id, content) => {
     tag.dataset.list = type; // the type of tag e.g. 'customers' or 'contacts'
     tag.innerHTML = content; // the text of the tag
     return tag;
+}
+
+// create search box at top of screen to filter entries:
+const makeSearchBox = () => {
+    return `
+        <div><input type="text" id="search" placeholder="Search"></div>
+    `;
 }
 
 
@@ -488,38 +496,56 @@ const handleClicks = (e) => {
 
 }
 
+// populate the suggestion dropdown with options:
+const listSuggestions = (inputBox) => {
+    const listType = inputBox.dataset.list;
+    const listItems = store[listType];  // grab the list of items for listType from store
+    const parent = inputBox.parentElement;
+
+    // the below is now not needed since all have 'name' properties:
+    let options = [];
+    if (listType === 'customers') {
+        options = findMatches(inputBox.value, listItems, ['name']);
+    }
+    else if (listType === 'contacts') {
+        options = findMatches(inputBox.value, listItems, ['first_name', 'last_name']);
+    }
+    else {
+        options = findMatches(inputBox.value, listItems, ['name']);
+    }
+
+    options = options.map(option => {
+        return {"suggestion": option, "active": false}
+    });
+
+    const suggestionArea = parent.querySelector('.suggestions');
+    suggestionArea.style.display = 'block';
+    suggestionArea.innerHTML = `<ul>${displaySuggestions(inputBox.id, options, listType)}</ul>`;
+
+}
+
+// fires everytime a user types in the search box.
+// used to filter the entries on screen
+const handleSearchInput = (searchInput) => {
+    const targetValue = searchInput.value;
+    const currentEntries = store.entries;
+    const filtered = filterEntries(currentEntries, targetValue);
+    const entryContainer = document.querySelector('#entries-container');
+    entryContainer.innerHTML = displayEntries(filtered);
+}
 
 // handles keyup events anywhere on the document.  Called on window load. 
 // this is to avoid having to make new event handlers for dynamic content (like the form)
 const handleKeyUp = (e) => {
 
-    if (e.target.dataset.list) {
-        const targetList = e.target.dataset.list;
-        const listItems = store[targetList];  // grab the list of items for targetList from store
-        const parent = e.target.parentElement;
-
-        // the below is now not needed since all have 'name' properties:
-        let options = [];
-        if (targetList === 'customers') {
-            options = findMatches(e.target.value, listItems, ['name']);
-        }
-        else if (targetList === 'contacts') {
-            options = findMatches(e.target.value, listItems, ['first_name', 'last_name']);
-        }
-        else {
-            options = findMatches(e.target.value, listItems, ['name']);
-        }
-
-        const suggestionArea = parent.querySelector('.suggestions');
-        suggestionArea.style.display = 'block';
-        suggestionArea.innerHTML = `<ul>${displaySuggestions(e.target.id, options, targetList)}</ul>`;
-
-    }
-
+    if (e.target.classList.contains('tag-input')) listSuggestions(e.target); 
+    
     // if user hits enter while inside an input box w/ class 'tag-input', create a new tag element:
     if (e.target.classList.contains('tag-input') && e.key === 'Enter' ) {
         addTag(e.target);
     }
+
+    if (e.target.id === 'search') handleSearchInput(e.target);
 }
 
 // returns a filtered array
@@ -535,10 +561,11 @@ const findMatches = (targetWord, arr, propertyList) => {
     })   
 }
 
+
 const displaySuggestions = (inputID, options, type) => {
     return options
         .map(option => {
-            return `<li class="suggestion ${type}-suggestion" data-type="${type}" data-inputID='${inputID}' data-id="${option.id}">${option.name}</li>`
+            return `<li class="suggestion ${type}-suggestion" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">${option.suggestion.name}</li>`
         })
         .join('');
 }
@@ -573,10 +600,28 @@ const addTag = (inputField) => {
     inputField.dataset.id = undefined;  // reset data-id
 }
 
+// returns any entry that contains the target string anywhere:
+const filterEntries = (entries, target) => {
+    const regex = new RegExp(target, 'gi');
+    const filtered = entries.filter(entry => {
+        
+        let customerMatch = false;
+        let descriptionMatch = false;
+        let contactMatch = false;
+        if (entry.customer) customerMatch = entry.customer.name.match(regex);
+        if (entry.description) descriptionMatch = entry.description.match(regex); 
+        if (entry.contacts) contactMatch = entry.contacts.filter(con => {
+                                return con.first_name.match(regex) || con.last_name.match(regex);
+                            }).length > 0;
+        
+        return customerMatch || descriptionMatch || contactMatch;
+    })
+    return filtered;
+}
 
 // filter array of entries based on criteria
 // criteria is an object with key:value pairs of what to filter {"author.name": 'Jane Doe', "user.id": 1}
-const filterEntries = (entries, criteria) => {
+const filterEntries2 = (entries, criteria) => {
     
     const filteredEntries = entries.filter(entry => {
         for (let key in criteria) {
