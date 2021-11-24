@@ -59,6 +59,7 @@ textarea,
 select {
   /* by default fonts are inherited everywhere, except for form elements... */
   font: inherit;
+  color: inherit;
 }
 
 ul li {

@@ -30,7 +30,7 @@ const App = async (state) => {
         
         return `
         ${makeModal()}
-        <div class='fs-700 ff-sans-cond letter-spacing-1 text-dark uppercase'>
+        <div class='fs-700 ff-sans-cond letter-spacing-1 text-white uppercase'>
             Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
         </div>
 
@@ -65,14 +65,16 @@ const makeEntryHTML = (entry) => {
     const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name}`);
 
     return `
-        <div id='entry-${entry.id}' class='flex entry-container container bg-dark text-white'>
+        <div id='entry-${entry.id}' class='flex neupho entry-container container bg-dark text-white'>
             <div>ID: ${entry.id}</div>
-            ${entry.customer !== null ? `<div class='entry-customer'>${entry.customer.name}</div>` : ''}
-            ${contacts.length > 0 ? `<div class='entry-contacts'>${contacts.join(', ')}</div>` : ''}
-            <div>${entry.description}</div>
-            ${entry.tags.length > 0 ? `<div>Tags: ${entry.tags.join(', ')}</div>` : ''}
-            <button id='entry-${entry.id}-edit-btn' class='edit-entry-btn' data-id='${entry.id}'>Edit</button>
-            <button id='entry-${entry.id}-delete-btn' class='delete-entry-btn' data-id='${entry.id}'>Delete</button>
+            ${entry.customer !== null ? `<div class='fs-600 text-accent entry-customer'>${entry.customer.name}</div>` : ''}
+            ${contacts.length > 0 ? `<div class='fs-400 text-white entry-contacts'>${contacts.join(', ')}</div>` : ''}
+            <div class='neupho description inset'>${entry.description}</div>
+            ${entry.tags.length > 0 ? `<div class='neupho tag-container'>Tags: ${entry.tags.join(', ')}</div>` : ''}
+            <div class='flex'>
+                <button id='entry-${entry.id}-edit-btn' class='neupho round-btn edit-entry-btn' data-id='${entry.id}'>Edit</button>
+                <button id='entry-${entry.id}-delete-btn' class='neupho round-btn delete-entry-btn' data-id='${entry.id}'>Delete</button>
+            </div>
         </div>
     `;
 }
@@ -94,23 +96,23 @@ const makeEntryForm = () => {
     return `
         <div class="form-container" id="entry-form-container">
     
-            <div class="tag-container">
+            <div class="neupho tag-container inset flex">
                 <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
                 ${makeSuggestionDiv('customers')}
             </div>
-            <div class="tag-container">
+            <div class="neupho tag-container inset flex">
                 <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
                 ${makeSuggestionDiv('contacts')}
             </div>
-            <textarea placeholder="Description" name="description"></textarea>
+            <textarea class='neupho description' placeholder="Description" name="description"></textarea>
             <input type="date" value="${now.getFullYear()}-${month}-${day}">
             <input type="number" placeholder="Rank">
-            <div class="tag-container">
+            <div class="neupho tag-container inset flex">
                 <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
                 ${makeSuggestionDiv('tags')}
             </div>
         </div>
-        <button type="buton" id="entry-submit-btn">CREATE</button>
+        <button type="buton" class='neupho' id="entry-submit-btn">CREATE</button>
     `;
 }
 
@@ -213,7 +215,9 @@ const makeTagElement = (type, id, content) => {
 // create search box at top of screen to filter entries:
 const makeSearchBox = () => {
     return `
-        <div><input type="text" id="search" placeholder="Search"></div>
+        <div class='neupho inset'>
+            <input type="text" id="search" placeholder="Search">
+        </div>
     `;
 }
 

@@ -205,10 +205,6 @@
 /* COMPONENTS --------------------------------- */
 /* ------------------------------------------ */
 
-body {
-  background-color: white;
-  color: hsl(var(--clr-dark));
-}
 
 #entries-container {
   flex-direction: column;
@@ -226,3 +222,58 @@ body {
 .open {
   display: block;
 }
+
+.neupho {
+  background-color: hsl(var(--clr-dark));
+  margin: 1rem;
+  box-shadow:  6px 6px 12px rgba(0, 0, 0, 0.4),
+              -4px -4px 10px rgba(255,255,255,0.1);
+  }
+  
+  .container {
+      border-radius: 20px;
+      padding: 1rem;
+  }
+  
+  .tag-container {
+      padding: 0.5rem 0 0.5rem 1.2rem;
+      border-radius: 50px;
+  }
+  
+  .description {
+      min-height: 100px;
+      padding: 0.5rem 0 0.5rem 1.2rem;
+      border-radius: 10px;
+  }
+  
+  .inset {
+      box-shadow:  inset 4px 4px 10px rgba(0, 0, 0, 0.4),
+      inset -4px -4px 10px rgba(255,255,255,0.1);
+  }
+  
+  .round-btn {
+      width: 45px;
+      height: 45px;
+      border-radius: 100%;
+      border: none;
+      color: hsl(var(--clr-light));
+      font-size: 1.2rem;
+  }
+  
+  .tag {
+      background-color: hsl(var(--clr-light) / 0.7);
+      color: hsl(var(--clr-white));
+      font-weight: bold;
+      padding: 0.3rem 1rem 0.3rem 0.6rem;
+      border: none;
+      border-radius: 20px;
+  }
+  
+  input {
+      background-color: transparent;
+      border: none;
+  }
+  
+  input:focus {
+      outline-width: 0;
+  }
