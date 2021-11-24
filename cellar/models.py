@@ -166,7 +166,7 @@ class Entry(models.Model):
             "rank": self.rank,
             "completed": self.completed,
             "archived": self.archived,
-            "tags": [tag.name for tag in self.tags.all()],
+            "tags": [{"id": tag.id, "name": tag.name} for tag in self.tags.all()],
         }
 
         if self.customer != None:

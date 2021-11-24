@@ -60,6 +60,7 @@ select {
   /* by default fonts are inherited everywhere, except for form elements... */
   font: inherit;
   color: inherit;
+  border: none;
 }
 
 ul li {

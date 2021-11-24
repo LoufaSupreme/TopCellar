@@ -62,7 +62,8 @@ const loadStore = async (state) => {
 
 // generate HTML for one entry:
 const makeEntryHTML = (entry) => {
-    const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name}`);
+    const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name !== null ? c.last_name : ""}`);
+    const tags = entry.tags.map(t => makeTagElement('tags', t.id, t.name).outerHTML);
 
     return `
         <div id='entry-${entry.id}' class='flex neupho entry-container container bg-dark text-white'>
@@ -70,10 +71,22 @@ const makeEntryHTML = (entry) => {
             ${entry.customer !== null ? `<div class='fs-600 text-accent entry-customer'>${entry.customer.name}</div>` : ''}
             ${contacts.length > 0 ? `<div class='fs-400 text-white entry-contacts'>${contacts.join(', ')}</div>` : ''}
             <div class='neupho description inset'>${entry.description}</div>
-            ${entry.tags.length > 0 ? `<div class='neupho tag-container'>Tags: ${entry.tags.join(', ')}</div>` : ''}
+            ${entry.tags.length > 0 ? `<div class='neupho tag-container inset flex'>${tags.join('')}</div>` : ''}
             <div class='flex'>
-                <button id='entry-${entry.id}-edit-btn' class='neupho round-btn edit-entry-btn' data-id='${entry.id}'>Edit</button>
-                <button id='entry-${entry.id}-delete-btn' class='neupho round-btn delete-entry-btn' data-id='${entry.id}'>Delete</button>
+                <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn fave-entry-btn' data-id='${entry.id}'>
+                    <i class="bi bi-star"></i>
+                </button>
+                <button id='entry-${entry.id}-edit-btn' class='neupho round-btn edit-entry-btn' data-id='${entry.id}'>
+                    <i class='bi bi-pencil-square'></i>
+                </button>
+                <button id='entry-${entry.id}-delete-btn' class='neupho round-btn delete-entry-btn' data-id='${entry.id}'>
+                    <i class="bi bi-x-square"></i>
+                </button>
+                <select class='neupho container text-accent'>
+                    <option value='active'>Active</option>
+                    <option value='complete'>Complete</option>
+                    <option value='archived'>Archived</option>
+                </select>
             </div>
         </div>
     `;
@@ -167,10 +180,10 @@ const makeEditForm = async (entryContainer) => {
 
     const customerTag = makeTagElement('customers', entry.customer.id, entry.customer.name).outerHTML;
     const contactTags = entry.contacts
-        .map(c => makeTagElement('contacts', c.id, `${c.first_name} ${c.last_name}`).outerHTML)
+        .map(c => makeTagElement('contacts', c.id, `${c.first_name} ${c.last_name !== null ? c.last_name : ""}`).outerHTML)
         .join('');
     const tagTags = entry.tags
-        .map(t => makeTagElement('tags', t.id, t).outerHTML)
+        .map(t => makeTagElement('tags', t.id, t.name).outerHTML)
         .join('');
 
     // add leading zeros to dates if less than 10 (important for date input values...):
@@ -383,9 +396,9 @@ const getFormData = (form) => {
         })[0]; 
     const contacts = tagElements.filter(tag => tag.dataset.list === 'contacts')
         .map(cont => {
-            const names = cont.innerHTML.split(' ');
+            const names = cont.innerHTML.trim().split(' ');
             const first_name = names[0];
-            const last_name = names.length > 1 ? names[1] : "";
+            const last_name = names.length > 1 ? names[1] : null;
             
             return {
                 "id": parseInt(cont.dataset.id),
@@ -592,7 +605,7 @@ const addTag = (inputField) => {
     // check if this tag already exists:
     const tagExists = Array.from(parent.querySelectorAll('.tag'))
         .filter(el => {
-            return el.dataset.id === tag.dataset.id && el.innerHTML === tag.innerHTML;
+            return el.dataset.id === tag.dataset.id && el.innerHTML.trim() === tag.innerHTML;
         }).length > 0;
 
     // if tag doesn't exist, add it:

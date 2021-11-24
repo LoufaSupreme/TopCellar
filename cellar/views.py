@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
 import json, datetime
+import traceback
 
 from .models import User, Profile, Entry, Address, Customer, Contact, Tag
 
@@ -25,7 +26,7 @@ def index(request):
 
     return render(request, "cellar/index.html", {
         "new_register": new_register,
-        "user": user.username
+        "user": user
     })
 
 # API route
@@ -146,82 +147,63 @@ def getUser(request):
 # handles checking and summarizing json data to create or update a post
 # returns a dict
 def consolidateEntryData(request):
-    try:
-        user = request.user
-        data = json.loads(request.body)
-        # get customer object:
-        customer = data.get('customer')
-        # try to get the exact customer (e.g. if they chose one of the dropdown options)
+    user = request.user
+    data = json.loads(request.body)
+    # get customer object:
+    customer = data.get('customer')
+    # try to get the exact customer (e.g. if they chose one of the dropdown options)
+    customer = Customer.objects.get(id=customer['id'], name=customer['name'])
+
+    # get contact object for each contact. If it doesn't exist, create one:
+    contact_names = data.get('contacts')
+    contacts = []
+    for c in contact_names:
+        print(c, c['id'], c['first_name'], c['last_name'])
+        contact = Contact.objects.get(id=c['id'], first_name=c['first_name'], last_name=c['last_name'])
+        contacts.append(contact)
+
+    # get date and make datetime object:
+    entry_date = data.get('date')
+    now = datetime.datetime.now()
+    # use current time for the datetime instance.
+    entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], now.hour, now.minute, now.second)
+
+    # get description:
+    descrip = data.get('description').strip()
+    if descrip == "":
+        raise ValidationError('Description is blank')
+
+    # get rank:
+    rank = data.get('rank')
+    if rank == '':
+        rank = None
+
+    # get tags. If the tag doesn't exist, create it:
+    raw_tags = data.get('tags')
+    tags = []
+    for t in raw_tags:
         try:
-            customer = Customer.objects.get(id=customer['id'], name=customer['name'])
-        except Customer.DoesNotExist:
-            # something went wrong.  Frontend needs to send a request to make the customer first. 
-            print('Customer does not exist.') 
-            return JsonResponse({"error": "This customer doesn't exist."}, status=500)
+            tag = Tag.objects.get(name__iexact=t['name']) # case insensitive
+            tags.append(tag)
+        except Tag.DoesNotExist:
+            tag = Tag(user=user, name=t['name'])
+            tag.save()
+            tags.append(tag)
         except Exception as e:
-            print(f'Error: {e}')
-            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
-
-        # get contact object for each contact. If it doesn't exist, create one:
-        contact_names = data.get('contacts')
-        contacts = []
-        for c in contact_names:
-            try:
-                contact = Contact.objects.get(id=c['id'], first_name=c['first_name'], last_name=c['last_name'])
-                contacts.append(contact)
-            except Contact.DoesNotExist:
-                # something went wrong.  Frontend needs to send a request to make the contact first.  
-                return JsonResponse({"error": "This contact doesn't exist."}, status=500)
-            except Exception as e:
-                print(f'Error: {e}')
-                return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
-
-        # get date and make datetime object:
-        entry_date = data.get('date')
-        now = datetime.datetime.now()
-        # use current time for the datetime instance.
-        entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], now.hour, now.minute, now.second)
-
-        # get description:
-        descrip = data.get('description').strip()
-        if descrip == "":
-            raise ValidationError('Description is blank')
-
-        # get rank:
-        rank = data.get('rank')
-        if rank == '':
-            rank = None
-
-        # get tags. If the tag doesn't exist, create it:
-        raw_tags = data.get('tags')
-        tags = []
-        for t in raw_tags:
-            try:
-                tag = Tag.objects.get(name__iexact=t['name']) # case insensitive
-                tags.append(tag)
-            except Tag.DoesNotExist:
-                tag = Tag(user=user, name=t['name'])
-                tag.save()
-                tags.append(tag)
-            except Exception as e:
-                print(f'Error: {e}')
-                return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
-        
-        entry_data = {
-            'user': user,
-            'customer': customer,
-            'contacts': contacts,
-            'description': descrip,
-            'rank': rank,
-            'date': entry_date,
-            'tags': tags,
-        }
-
-        return entry_data
-
-    except Exception as e:
-        print(f'Error: {e}')
-        return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+            print(f'{e.__class__.__name__}: {e}')
+            traceback.print_exc()
+    
+    entry_data = {
+        'user': user,
+        'customer': customer,
+        'contacts': contacts,
+        'description': descrip,
+        'rank': rank,
+        'date': entry_date,
+        'tags': tags,
+    }
+    # print(entry_data)
+    return entry_data
 
 
 # API route
@@ -254,6 +236,8 @@ def newEntry(request):
 
             return JsonResponse(entry.serialize(), safe=False, status=201)
         except Exception as e:
+            traceback.print_exc()
+            print(f'{e.__class__.__name__}: {e}')
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
     else:
         return JsonResponse({"error": "Post method required"}, status=400)
