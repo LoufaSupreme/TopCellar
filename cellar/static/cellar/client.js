@@ -35,6 +35,7 @@ const App = async (state) => {
         </div>
 
         ${makeSearchBox()}
+        ${makeAddBtn()}
         ${makeEntryForm()}
         <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
         `;
@@ -62,7 +63,7 @@ const loadStore = async (state) => {
 
 // generate HTML for one entry:
 const makeEntryHTML = (entry) => {
-    const contacts = entry.contacts.map(c => `${c.first_name} ${c.last_name !== null ? c.last_name : ""}`);
+    const contacts = entry.contacts.map(c => `${c.first_name}${c.last_name !== null ? ' ' + c.last_name : ""}`);
     const tags = entry.tags.map(t => makeTagElement('tags', t.id, t.name).outerHTML);
 
     return `
@@ -73,16 +74,16 @@ const makeEntryHTML = (entry) => {
             <div class='neupho description inset'>${entry.description}</div>
             ${entry.tags.length > 0 ? `<div class='neupho tag-container inset flex'>${tags.join('')}</div>` : ''}
             <div class='flex'>
-                <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn fave-entry-btn' data-id='${entry.id}'>
+                <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn' data-id='${entry.id}'>
                     <i class="bi bi-star"></i>
                 </button>
-                <button id='entry-${entry.id}-edit-btn' class='neupho round-btn edit-entry-btn' data-id='${entry.id}'>
+                <button id='entry-${entry.id}-edit-btn' class='neupho round-btn bg-dark edit-entry-btn' data-id='${entry.id}'>
                     <i class='bi bi-pencil-square'></i>
                 </button>
-                <button id='entry-${entry.id}-delete-btn' class='neupho round-btn delete-entry-btn' data-id='${entry.id}'>
+                <button id='entry-${entry.id}-delete-btn' class='neupho round-btn bg-dark delete-entry-btn' data-id='${entry.id}'>
                     <i class="bi bi-x-square"></i>
                 </button>
-                <select class='neupho container text-accent'>
+                <select class='neupho container text-accent bg-dark'>
                     <option value='active'>Active</option>
                     <option value='complete'>Complete</option>
                     <option value='archived'>Archived</option>
@@ -107,8 +108,8 @@ const makeEntryForm = () => {
     const day = now.getDate() < 10 ? `0${now.getDate()}` : now.getDate();
 
     return `
-        <div class="form-container" id="entry-form-container">
-    
+        <div class="form-container neupho container bg-dark text-white" id="entry-form-container">
+            <div class='text-accent fs-700'>New Entry</div>
             <div class="neupho tag-container inset flex">
                 <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
                 ${makeSuggestionDiv('customers')}
@@ -117,15 +118,22 @@ const makeEntryForm = () => {
                 <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
                 ${makeSuggestionDiv('contacts')}
             </div>
-            <textarea class='neupho description' placeholder="Description" name="description"></textarea>
-            <input type="date" value="${now.getFullYear()}-${month}-${day}">
-            <input type="number" placeholder="Rank">
+            <div class='description-wrapper'>
+                <textarea class='description neupho inset bg-dark' placeholder="Description" cols="10" rows="1"></textarea>
+            </div>
+            <div>
+                <input class='neupho inset' type="date" value="${now.getFullYear()}-${month}-${day}">
+                <input class='neupho inset' type="number" placeholder="Rank">
+            </div>
             <div class="neupho tag-container inset flex">
                 <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
                 ${makeSuggestionDiv('tags')}
             </div>
+            <div class='flex'>
+                <button type="buton" class='neupho bg-dark' id="entry-submit-btn">CREATE</button>
+                <button type="buton" class='neupho bg-dark' id="entry-cancel-btn">CANCEL</button>
+            </div>
         </div>
-        <button type="buton" class='neupho' id="entry-submit-btn">CREATE</button>
     `;
 }
 
@@ -234,6 +242,17 @@ const makeSearchBox = () => {
     `;
 }
 
+// create a button to make the new entry form appear:
+const makeAddBtn = () => {
+    return `
+        <div>
+            <button id='add-btn' class='neupho round-btn bg-dark text-accent'>
+                <i class="bi bi-plus-lg"></i>
+            </button>
+        </div>
+    `;
+}
+
 
 //////////////////////////////////////
 // HELPER FUNCTIONS /////////////////
@@ -267,7 +286,7 @@ const handleModalAccept = async () => {
         // const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
         // tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created   
         await loadStore(store);
-        render(root, store);
+        // render(root, store);
  
     }
     else if (store.uncreated.mode === 'update') {
@@ -275,7 +294,7 @@ const handleModalAccept = async () => {
         updateInstance(store.uncreated.entry, 'entry', store.uncreated.entry.id);
         store.uncreated = null; // reset store.uncreated to null
         await loadStore(store);
-        render(root, store);
+        // render(root, store);
     }
     else {
         console.error('Uncreated Object mode is neither create nor update...');
@@ -311,7 +330,7 @@ const initiateNewEntry = async (form) => {
         // otherwise send post request to DB to make new entry:
         newInstance(newEntryData, 'Entry');
         await loadStore(store);
-        render(root, store);
+        // render(root, store);
         // const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
         // tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created 
 
@@ -336,7 +355,7 @@ const initiateEdit = async (form, entry_id) => {
         // otherwise send put request to DB to update the entry:
         updateInstance(newEntryData, 'entry', entry_id);
         await loadStore(store);
-        render(root, store);
+        // render(root, store);
     }
 }
 
@@ -509,6 +528,11 @@ const handleClicks = (e) => {
         const entryContainer = document.querySelector(`#entry-${entry_id}`);
         const entry = store.entries.find(ent => ent.id === entry_id);
         entryContainer.outerHTML = makeEntryHTML(entry);
+    }
+
+    else if (e.target.id === 'add-btn') {
+        const entryForm = document.querySelector('.form-container');
+        entryForm.style.display = 'block';
     }
 
 }

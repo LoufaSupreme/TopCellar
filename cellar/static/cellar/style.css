@@ -65,17 +65,15 @@
 
 .flow > *:where(:not(:first-child)) {
   /* select anything with a sibling before it */
-  margin-top: var(
-    --flow-space,
-    1rem
-  ); /* default to 1rem if --flow-space is not set */
+  margin-top: var(--flow-space,1rem); /* default to 1rem if --flow-space is not set */
   /* outline: 1px solid red; */
 }
 
 .container {
-  padding-inline: 2em; /* -inline is for left and right only */
-  margin-inline: auto;
+  padding: 1rem;
+  margin: 1rem auto;
   max-width: 80rem;
+  border-radius: 20px;
 }
 
 .grid-container {
@@ -215,6 +213,10 @@
   min-width: 80vw;
 }
 
+.form-container {
+  display: none;
+}
+
 .modal {
   display: none;
 }
@@ -224,26 +226,29 @@
 }
 
 .neupho {
-  background-color: hsl(var(--clr-dark));
   margin: 1rem;
   box-shadow:  6px 6px 12px rgba(0, 0, 0, 0.4),
               -4px -4px 10px rgba(255,255,255,0.1);
   }
-  
-.container {
-    border-radius: 20px;
-    padding: 1rem;
-}
+ 
 
 .tag-container {
     padding: 0.5rem 0 0.5rem 1.2rem;
     border-radius: 50px;
 }
 
+.description-wrapper {
+  display: flex;
+}
+
 .description {
     min-height: 100px;
-    padding: 0.5rem 0 0.5rem 1.2rem;
+    flex: 1;
+    resize: vertical;
+    padding: 0.5rem 1.2rem 0.5rem 1.2rem;
+    /* margin-right: -1rem; */
     border-radius: 10px;
+    white-space: pre-wrap; /* allows displaying content with line breaks*/ 
 }
 
 .inset {
