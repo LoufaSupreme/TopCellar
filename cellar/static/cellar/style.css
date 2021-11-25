@@ -289,3 +289,8 @@ button {
 button i {
   pointer-events: none;
 }
+
+.hl {
+  background-color: yellow;
+  color: hsl(var(--clr-dark));
+}

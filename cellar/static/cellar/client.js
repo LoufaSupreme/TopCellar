@@ -62,16 +62,47 @@ const loadStore = async (state) => {
 
 
 // generate HTML for one entry:
-const makeEntryHTML = (entry) => {
-    const contacts = entry.contacts.map(c => `${c.first_name}${c.last_name !== null ? ' ' + c.last_name : ""}`);
-    const tags = entry.tags.map(t => makeTagElement('tags', t.id, t.name).outerHTML);
+const makeEntryHTML = (entry, regex = null) => {
+    let contacts = entry.contacts.map(c => `${c.first_name}${c.last_name !== null ? ' ' + c.last_name : ""}`);
+    let tags = entry.tags.map(t => makeTagElement('tags', t.id, t.name));
+    let customerName = entry.customer ? entry.customer.name : null;
+    let description = entry.description;
 
+    // if a regular expression was given to filter the entries,
+    // then find and replace that regex with a highlight span
+    if (regex) {
+        contacts = contacts.map(c => {
+            c = c.replace(regex, (match) => {
+                return `<span class='hl'>${match}</span>`;
+            })
+            return c;
+        })
+
+        tags = tags.map(t => {
+            t.innerHTML = t.innerHTML.replace(regex, (match) => {
+                return `<span class='hl'>${match}</span>`;
+            })
+            return t;
+        })
+
+        description = description.replace(regex, (match) => {
+            return `<span class='hl'>${match}</span>`;
+        })
+
+        if (customerName) {
+            customerName = customerName.replace(regex, (match) => `<span class='hl'>${match}</span>`)
+        }
+    }
+
+    // convert the tags array into an array of HTML
+    tags = tags.map(t => t.outerHTML)
+    
     return `
         <div id='entry-${entry.id}' class=' neupho entry-container container bg-dark text-white'>
             <div>ID: ${entry.id}</div>
-            ${entry.customer !== null ? `<div class='fs-700 text-accent entry-customer'>${entry.customer.name}</div>` : ''}
+            ${entry.customer !== null ? `<div class='fs-700 text-accent entry-customer'>${customerName}</div>` : ''}
             ${contacts.length > 0 ? `<div class='fs-400 text-white entry-contacts'>${contacts.join(', ')}</div>` : ''}
-            <div class='neupho description inset'>${entry.description}</div>
+            <div class='neupho description inset'>${description}</div>
             ${entry.tags.length > 0 ? `<div class='neupho tag-container inset flex'>${tags.join('')}</div>` : ''}
             <div class='flex'>
                 <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn' data-id='${entry.id}'>
@@ -575,10 +606,17 @@ const listSuggestions = (inputBox) => {
 // used to filter the entries on screen
 const handleSearchInput = (searchInput) => {
     const targetValue = searchInput.value;
-    const currentEntries = store.entries;
-    const filtered = filterEntries(currentEntries, targetValue);
+    const currentEntries = [...store.entries];
     const entryContainer = document.querySelector('#entries-container');
-    entryContainer.innerHTML = displayEntries(filtered);
+
+    if (targetValue.length < 2) {
+        entryContainer.innerHTML = displayEntries(currentEntries);
+    }
+    if (targetValue.length > 1) {
+        const regex = new RegExp(targetValue, 'gi');
+        const filtered = filterEntries(currentEntries, regex);
+        entryContainer.innerHTML = displayEntries(filtered, regex);
+    }
 }
 
 // handles keyup events anywhere on the document.  Called on window load. 
@@ -648,8 +686,7 @@ const addTag = (inputField) => {
 }
 
 // returns any entry that contains the target string anywhere:
-const filterEntries = (entries, target) => {
-    const regex = new RegExp(target, 'gi');
+const filterEntries = (entries, regex) => {
     const filtered = entries.filter(entry => {
         
         let customerMatch = false;
@@ -670,7 +707,8 @@ const filterEntries = (entries, target) => {
         }).length > 0;
         
         return customerMatch || descriptionMatch || contactMatch || tagMatch;
-    })
+    });
+
     return filtered;
 }
 
@@ -701,9 +739,10 @@ const filterEntries2 = (entries, criteria) => {
 
 
 // display each entry on the page:
-const displayEntries = (entries) => {
+const displayEntries = (entries, regex = null) => {
     console.log('Displaying Entries...');
-    return entries.map(entry => makeEntryHTML(entry)).reverse().join('');
+
+    return entries.map(entry => makeEntryHTML(entry, regex)).reverse().join('');
 }
 
 
