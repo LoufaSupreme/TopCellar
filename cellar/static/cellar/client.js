@@ -67,9 +67,9 @@ const makeEntryHTML = (entry) => {
     const tags = entry.tags.map(t => makeTagElement('tags', t.id, t.name).outerHTML);
 
     return `
-        <div id='entry-${entry.id}' class='flex neupho entry-container container bg-dark text-white'>
+        <div id='entry-${entry.id}' class=' neupho entry-container container bg-dark text-white'>
             <div>ID: ${entry.id}</div>
-            ${entry.customer !== null ? `<div class='fs-600 text-accent entry-customer'>${entry.customer.name}</div>` : ''}
+            ${entry.customer !== null ? `<div class='fs-700 text-accent entry-customer'>${entry.customer.name}</div>` : ''}
             ${contacts.length > 0 ? `<div class='fs-400 text-white entry-contacts'>${contacts.join(', ')}</div>` : ''}
             <div class='neupho description inset'>${entry.description}</div>
             ${entry.tags.length > 0 ? `<div class='neupho tag-container inset flex'>${tags.join('')}</div>` : ''}
@@ -130,8 +130,8 @@ const makeEntryForm = () => {
                 ${makeSuggestionDiv('tags')}
             </div>
             <div class='flex'>
-                <button type="buton" class='neupho bg-dark' id="entry-submit-btn">CREATE</button>
-                <button type="buton" class='neupho bg-dark' id="entry-cancel-btn">CANCEL</button>
+                <button type="buton" class='neupho bg-dark' id="submit-new-btn">CREATE</button>
+                <button type="buton" class='neupho bg-dark' id="cancel-new-btn">CANCEL</button>
             </div>
         </div>
     `;
@@ -497,7 +497,13 @@ const handleEntryDelete = (entry_id) => {
 const handleClicks = (e) => {
     
     // fires when the entry submit button is clicked:
-    if (e.target.id === 'entry-submit-btn') handleEntrySubmitClicked();
+    if (e.target.id === 'submit-new-btn') handleEntrySubmitClicked();
+
+    if (e.target.id === 'cancel-new-btn') {
+        const entryForm = document.querySelector('.form-container');
+        entryForm.style.display = 'none';
+
+    }
 
     // fires when a dropdown suggestion is clicked:
     else if (e.target.classList.contains('suggestion')) handleSuggestionClicked(e.target);
@@ -649,13 +655,21 @@ const filterEntries = (entries, target) => {
         let customerMatch = false;
         let descriptionMatch = false;
         let contactMatch = false;
+        let tagMatch = false;
+
         if (entry.customer) customerMatch = entry.customer.name.match(regex);
         if (entry.description) descriptionMatch = entry.description.match(regex); 
         if (entry.contacts) contactMatch = entry.contacts.filter(con => {
-                                return con.first_name.match(regex) || con.last_name.match(regex);
-                            }).length > 0;
+            if (con.last_name) {
+                return con.first_name.match(regex) || con.last_name.match(regex);
+            }
+            else return con.first_name.match(regex);
+        }).length > 0;
+        if (entry.tags) tagMatch = entry.tags.filter(tag => {
+            return tag.name.match(regex);
+        }).length > 0;
         
-        return customerMatch || descriptionMatch || contactMatch;
+        return customerMatch || descriptionMatch || contactMatch || tagMatch;
     })
     return filtered;
 }
