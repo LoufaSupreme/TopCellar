@@ -96,12 +96,11 @@ const makeEntryHTML = (entry, regex = null) => {
 
   return `
         <div id='entry-${entry.id}' class=' neupho entry-container container bg-dark text-white'>
-            <div>ID: ${entry.id}</div>
-            ${entry.customer !== null ? `<div class='fs-700 text-accent entry-customer'>${customerName}</div>` : ""}
-            ${contacts.length > 0 ? `<div class='fs-400 text-white entry-contacts'>${contacts.join(", ")}</div>`: ""}
-            <div class='neupho description inset'>${description}</div>
-            ${entry.tags.length > 0 ? `<div class='neupho tag-container inset flex'>${tags.join("")}</div>` : ""}
-            <div class='flex'>
+            ${entry.customer !== null ? `<div class='entry-customer fs-500 text-accent'>${customerName}</div>` : ""}
+            ${contacts.length > 0 ? `<div class='entry-contacts fs-300 text-white'>${contacts.join(", ")}</div>`: ""}
+            <div class='description fs-300 neupho inset'>${description}</div>
+            ${entry.tags.length > 0 ? `<div class='fs-300 neupho tag-container inset flex'>${tags.join("")}</div>` : ""}
+            <div class='entry-btn-container flex'>
                 <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn' data-id='${entry.id}'>
                     <i class="bi bi-star"></i>
                 </button>
@@ -111,7 +110,7 @@ const makeEntryHTML = (entry, regex = null) => {
                 <button id='entry-${entry.id}-delete-btn' class='neupho round-btn bg-dark delete-entry-btn' data-id='${entry.id}'>
                     <i class="bi bi-x-square"></i>
                 </button>
-                <select class='neupho container text-accent bg-dark'>
+                <select class='neupho text-accent bg-dark'>
                     <option value='active'>Active</option>
                     <option value='complete'>Complete</option>
                     <option value='archived'>Archived</option>
@@ -145,7 +144,7 @@ const makeEntryForm = () => {
                 <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
                 ${makeSuggestionDiv("contacts")}
             </div>
-            <div class='description-wrapper'>
+            <div class='description-wrapper flex'>
                 <textarea class='description neupho inset bg-dark' placeholder="Description" cols="10" rows="1"></textarea>
             </div>
             <div>
@@ -384,7 +383,8 @@ const initiateEdit = async (form, entry_id) => {
     console.log("Found new Customer or Contact instances. Prompting user...");
     store.uncreated = newObjects; // load new objects into store so they can be created if the user wishes
     promptUserMakeObj(newObjects); // create a modal user prompt to ask them if they want to create the new objects
-  } else {
+  } 
+  else {
     // otherwise send put request to DB to update the entry:
     updateInstance(newEntryData, "entry", entry_id);
     await loadStore(store);
@@ -418,10 +418,7 @@ const customerExists = (customer) => {
 
   return (
     existingCustomers.filter((el) => {
-      return (
-        el.id === customer.id &&
-        el.name.toLowerCase() === customer.name.toLowerCase()
-      );
+      return (el.id === customer.id && el.name.toLowerCase() === customer.name.toLowerCase());
     }).length > 0
   );
 };
@@ -433,10 +430,7 @@ const contactExists = (contacts) => {
 
   return contacts.filter((elem) => {
     return !existingContacts.find((x) => {
-      return (
-        elem.id === x.id &&
-        elem.first_name.toLowerCase() === x.first_name.toLowerCase()
-      );
+      return (elem.id === x.id && elem.first_name.toLowerCase() === x.first_name.toLowerCase());
     });
   });
 };

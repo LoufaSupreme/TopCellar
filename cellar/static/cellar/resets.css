@@ -69,6 +69,7 @@ select {
   font: inherit;
   color: inherit;
   border: none;
+  margin: 0;
 }
 
 ul li {
