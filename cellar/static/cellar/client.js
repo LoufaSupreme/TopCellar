@@ -29,7 +29,7 @@ const App = async (state) => {
 
     return `
         ${makeModal()}
-        <div class='fs-700 ff-sans-cond letter-spacing-1 text-white uppercase'>
+        <div class='welcome fs-700 ff-sans-cond letter-spacing-1 text-white uppercase'>
             Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
         </div>
 
@@ -184,14 +184,12 @@ const generateModalText = (customer, contacts) => {
 
   if (contacts) {
     const contactText = contacts
-      .map((contact) => {
-        return `<div>${contact.first_name} ${contact.last_name}</div>`;
-      }).join("");
+      .map((contact) => `<div>${contact.first_name} ${contact.last_name}</div>`).join("");
 
     promptText += `
-            <div>We couldn't find the following contacts in your Rolodex</div>
-            ${contactText}
-        `;
+        <div>We couldn't find the following contacts in your Rolodex:</div>
+        ${contactText}
+    `;
   }
 
     promptText += `
@@ -264,7 +262,7 @@ const makeTagElement = (type, id, content) => {
 // create search box at top of screen to filter entries:
 const makeSearchBox = () => {
   return `
-        <div class='neupho inset'>
+        <div class='search-container neupho inset'>
             <input type="text" id="search" placeholder="Search">
         </div>
     `;
@@ -273,10 +271,18 @@ const makeSearchBox = () => {
 // create a button to make the new entry form appear:
 const makeAddBtn = () => {
   return `
-        <div>
-            <button id='add-btn' class='neupho round-btn bg-dark text-accent'>
-                <i class="bi bi-plus-lg"></i>
-            </button>
+        <div class='toolbar-container flex'>
+            <div class='toolbar flex'>
+                <div id='toolbar-filter-btn' class='neupho inset'>
+                    <span class='fs-400 text-accent'>FILTER<span>
+                </div>
+                <button id='add-btn' class='round-btn bg-dark text-accent neupho'>
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+                <div id='toolbar-sort-btn' class='neupho inset'>
+                    <span class='fs-400 text-accent'>SORT<span>
+                </div>
+            </div>
         </div>
     `;
 };

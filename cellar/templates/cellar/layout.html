@@ -24,7 +24,7 @@
 <body>
     <div class="navbar bg-dark flex">
         <h1><a class='navbar-brand text-accent' href="{% url 'cellar:index' %}">TopCellar</a></h1>
-        <div class="nav-content">
+        <div class="nav-content flex">
             <div class="login-status">
                 {% if user.is_authenticated %}
                     Logged in as <strong>{{ user.username }}</strong>
