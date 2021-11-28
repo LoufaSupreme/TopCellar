@@ -28,14 +28,13 @@ const App = async (state) => {
     await loadStore(state);
 
     return `
-        ${makeModal()}
         <div class='welcome fs-700 ff-sans-cond letter-spacing-1 text-white uppercase'>
             Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
         </div>
-
+        ${makeModal('new-entry-modal')}
+        ${makeModal('add-objects-modal')}
         ${makeSearchBox()}
         ${makeAddBtn()}
-        ${makeEntryForm()}
         <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
     `;
   }
@@ -97,18 +96,18 @@ const makeEntryHTML = (entry, regex = null) => {
   return `
         <div id='entry-${entry.id}' class=' neupho entry-container container bg-dark text-white'>
             ${entry.customer !== null ? `<div class='entry-customer fs-500 text-accent'>${customerName}</div>` : ""}
-            ${contacts.length > 0 ? `<div class='entry-contacts fs-300 text-white'>${contacts.join(", ")}</div>`: ""}
+            ${contacts.length > 0 ? `<div class='entry-contacts fs-300 text-white'>${contacts.join("  &middot  ")}</div>`: ""}
             <div class='description fs-300 neupho inset'>${description}</div>
             ${entry.tags.length > 0 ? `<div class='fs-300 neupho tag-container inset flex'>${tags.join("")}</div>` : ""}
             <div class='entry-btn-container flex'>
                 <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn' data-id='${entry.id}'>
-                    <i class="bi bi-star"></i>
+                    <i class="bi bi-flag"></i>
                 </button>
                 <button id='entry-${entry.id}-edit-btn' class='neupho round-btn bg-dark edit-entry-btn' data-id='${entry.id}'>
                     <i class='bi bi-pencil-square'></i>
                 </button>
                 <button id='entry-${entry.id}-delete-btn' class='neupho round-btn bg-dark delete-entry-btn' data-id='${entry.id}'>
-                    <i class="bi bi-x-square"></i>
+                    <i class="bi bi-x-lg"></i>
                 </button>
                 <select class='neupho text-accent bg-dark'>
                     <option value='active'>Active</option>
@@ -134,7 +133,7 @@ const makeEntryForm = () => {
   const day = now.getDate() < 10 ? `0${now.getDate()}` : now.getDate();
 
   return `
-        <div class="form-container neupho container bg-dark text-white" id="entry-form-container">
+        <div class="prompt-container neupho container bg-dark text-white" id="entry-form-container">
             <div class='text-accent fs-700'>New Entry</div>
             <div class="neupho tag-container inset flex">
                 <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
@@ -163,10 +162,58 @@ const makeEntryForm = () => {
     `;
 };
 
+// fires when an Edit btn is clicked within an existing entry
+const makeEditForm = async (entryContainer) => {
+    const entry_ID = entryContainer.id.split("-")[1];
+    const entry = await getInstance("entry", entry_ID);
+  
+    const customerTag = makeTagElement(
+      "customers",
+      entry.customer.id,
+      entry.customer.name
+    ).outerHTML;
+    const contactTags = entry.contacts
+      .map((c) => makeTagElement("contacts", c.id, `${c.first_name} ${c.last_name !== null ? c.last_name : ""}`).outerHTML)
+      .join("");
+    const tagTags = entry.tags
+      .map((t) => makeTagElement("tags", t.id, t.name).outerHTML)
+      .join("");
+  
+    // add leading zeros to dates if less than 10 (important for date input values...):
+    const month = entry.timestamp.month < 10 ? `0${entry.timestamp.month}` : entry.timestamp.month;
+    const day = entry.timestamp.day < 10 ? `0${entry.timestamp.day}` : entry.timestamp.day;
+  
+    entryContainer.innerHTML = `
+        <div class="tag-container neupho inset flex">
+            ${customerTag}
+            <input id="customers-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+            ${makeSuggestionDiv("customers", entry_ID)}
+        </div>
+        <div class="tag-container">
+            ${contactTags}
+            <input id="contacts-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+            ${makeSuggestionDiv("contacts", entry_ID)}
+        </div>
+        <textarea placeholder="Description" name="description">${
+        entry.description
+        }</textarea>
+        <input type="date" value="${entry.timestamp.year}-${month}-${day}">
+        <input type="number" placeholder="Rank" value="${entry.rank}">
+        <div class="tag-container">
+            ${tagTags}
+            <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+            ${makeSuggestionDiv("tags", entry_ID)}
+        </div>
+        <button id='accept-edit-btn' data-id="${entry_ID}">Accept Changes</button>
+        <button id='cancel-edit-btn' data-id='${entry_ID}'>Cancel</button>
+    `;
+  };  
+
 // create a modal div (for pop up user prompts)
-const makeModal = () => {
+// types: new-entry-modal, add-objects-modal
+const makeModal = (type = null) => {
   return `
-        <div class="modal">
+        <div id='${type}' class="modal">
             <div class="prompt-container neupho bg-dark text-white flex"></div>
         </div>
     `;
@@ -200,53 +247,6 @@ const generateModalText = (customer, contacts) => {
         </div>
     `;
     return promptText;
-};
-
-// fires when an Edit btn is clicked within an existing entry
-const makeEditForm = async (entryContainer) => {
-  const entry_ID = entryContainer.id.split("-")[1];
-  const entry = await getInstance("entry", entry_ID);
-
-  const customerTag = makeTagElement(
-    "customers",
-    entry.customer.id,
-    entry.customer.name
-  ).outerHTML;
-  const contactTags = entry.contacts
-    .map((c) => makeTagElement("contacts", c.id, `${c.first_name} ${c.last_name !== null ? c.last_name : ""}`).outerHTML)
-    .join("");
-  const tagTags = entry.tags
-    .map((t) => makeTagElement("tags", t.id, t.name).outerHTML)
-    .join("");
-
-  // add leading zeros to dates if less than 10 (important for date input values...):
-  const month = entry.timestamp.month < 10 ? `0${entry.timestamp.month}` : entry.timestamp.month;
-  const day = entry.timestamp.day < 10 ? `0${entry.timestamp.day}` : entry.timestamp.day;
-
-  entryContainer.innerHTML = `
-            <div class="tag-container">
-                ${customerTag}
-                <input id="customers-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
-                ${makeSuggestionDiv("customers", entry_ID)}
-            </div>
-            <div class="tag-container">
-                ${contactTags}
-                <input id="contacts-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
-                ${makeSuggestionDiv("contacts", entry_ID)}
-            </div>
-            <textarea placeholder="Description" name="description">${
-              entry.description
-            }</textarea>
-            <input type="date" value="${entry.timestamp.year}-${month}-${day}">
-            <input type="number" placeholder="Rank" value="${entry.rank}">
-            <div class="tag-container">
-                ${tagTags}
-                <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
-                ${makeSuggestionDiv("tags", entry_ID)}
-            </div>
-            <button id='accept-edit-btn' data-id="${entry_ID}">Accept Changes</button>
-            <button id='cancel-edit-btn' data-id='${entry_ID}'>Cancel</button>
-        `;
 };
 
 // create the html for a new tag div:
@@ -295,53 +295,58 @@ const makeAddBtn = () => {
 // creates a new entry:
 // fired if user clicks on the accept btn in the popup modal (when creating entries with new customer or contacts):
 const handleModalAccept = async () => {
-  if (store.uncreated) {
-    if (store.uncreated.customer) {
-      const newCustomer = await newInstance(
-        store.uncreated.customer,
-        "Customer"
-      );
-      store.uncreated.customer.id = newCustomer.id;
-    }
+    // make the new entry form modal dissapear:
+    const newEntryModal = document.querySelector('#new-entry-modal');
+    newEntryModal.classList.remove('open');
 
-    if (store.uncreated.contacts) {
-      const newContacts = await newInstance(
-        store.uncreated.contacts,
-        "Contacts"
-      ); // create new contacts in db
-      newContacts.forEach((c) => {
-        const target = store.uncreated.contacts.find(
-          (el) => c.first_name === el.first_name && c.last_name === el.last_name
-        );
-        target.id = c.id;
-      });
+    // grab the entry container div, so we can update it:
+    const entriesContainer = document.querySelector('#entries-container');
+
+    // 
+    if (store.uncreated) {
+        if (store.uncreated.customer) {
+            const newCustomer = await newInstance(store.uncreated.customer,"Customer");
+            store.uncreated.customer.id = newCustomer.id;
+        }
+
+        if (store.uncreated.contacts) {
+            const newContacts = await newInstance(store.uncreated.contacts,"Contacts"); // create new contacts in db
+            newContacts.forEach((c) => {
+                const target = store.uncreated.contacts.find((el) => {
+                    return c.first_name === el.first_name && c.last_name === el.last_name
+                });
+                target.id = c.id;
+            });
+        }
     }
-  }
 
   if (store.uncreated.mode === "create") {
     // make a new entry from the stored new entry details:
-    newInstance(store.uncreated.entry, "Entry");
+    await newInstance(store.uncreated.entry, "Entry");
     store.uncreated = null; // reset store.uncreated to null
 
-    // const form = document.querySelector('#entry-form-container'); // grab the parent elem of the input elements
-    // const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
-    // tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created
     await loadStore(store);
+    entriesContainer.innerHTML = displayEntries(store.entries);
+
     // render(root, store);
-  } else if (store.uncreated.mode === "update") {
+  } 
+  else if (store.uncreated.mode === "update") {
     // update the existing instance:
-    updateInstance(store.uncreated.entry, "entry", store.uncreated.entry.id);
+    await updateInstance(store.uncreated.entry, "entry", store.uncreated.entry.id);
     store.uncreated = null; // reset store.uncreated to null
     await loadStore(store);
+    entriesContainer.innerHTML = displayEntries(store.entries);
+
     // render(root, store);
-  } else {
+  } 
+  else {
     console.error("Uncreated Object mode is neither create nor update...");
   }
 };
 
 // creates and displays a modal for the user to choose whether to make new customer/contact objects, or go back and edit the entry before submitting.
 const promptUserMakeObj = (newObjects) => {
-  const modal = document.querySelector(".modal");
+  const modal = document.querySelector("#add-objects-modal");
   const container = modal.querySelector(".prompt-container");
 
   const modalText = generateModalText(newObjects.customer, newObjects.contacts);
@@ -363,6 +368,11 @@ const initiateNewEntry = async (form) => {
     console.log("Found new Customer or Contact instances. Prompting user...");
     store.uncreated = newObjects; // load new objects into store so they can be created if the user wishes
     promptUserMakeObj(newObjects); // create a modal user prompt to ask them if they want to create the new objects
+    
+    return {
+        status: 'incomplete',
+        message: 'New customer or contact objects to be created'
+    };
   } 
   else {
     // otherwise send post request to DB to make new entry:
@@ -371,6 +381,10 @@ const initiateNewEntry = async (form) => {
     const entriesContainer = document.querySelector('#entries-container');
     entriesContainer.innerHTML = displayEntries(store.entries);
 
+    return {
+        status: 'complete',
+        message: 'Sending request to create new entry...'
+    };
     // render(root, store);
     // const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
     // tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created
@@ -503,9 +517,15 @@ const getFormData = (form) => {
 //////////////////////////////////////
 
 // handles the entry submit btn being clicked to submit a new entry:
-const handleEntrySubmitClicked = () => {
+const handleEntrySubmitClicked = async () => {
   const form = document.querySelector("#entry-form-container"); // grab the parent elem of the form
-  initiateNewEntry(form); // initiate the creation of a new entry
+  const modal = document.querySelector('#new-entry-modal');
+  const newEntryStatus = await initiateNewEntry(form); // initiate the creation of a new entry
+  
+  if (newEntryStatus.status === 'complete') {
+    modal.classList.remove('open');
+    console.log(newEntryStatus.message);
+  }
 };
 
 // handles a dropdown suggestion being clicked:
@@ -521,7 +541,7 @@ const handleSuggestionClicked = (suggestion) => {
 
 // handles the accept or cancel btn on the modal for new object entries (customers or contacts)
 const handleModalBtnClicked = (btn) => {
-  const modal = document.querySelector(".modal");
+  const modal = document.querySelector("#add-objects-modal");
 
   if (btn.id === "modal-accept-btn") handleModalAccept();
   modal.classList.remove("open");
@@ -541,16 +561,20 @@ const handleClicks = (e) => {
   if (e.target.id === "submit-new-btn") handleEntrySubmitClicked();
 
   if (e.target.id === "cancel-new-btn") {
-    const entryForm = document.querySelector(".form-container");
-    entryForm.style.display = "none";
+    // const entryForm = document.querySelector(".form-container");
+    // entryForm.style.display = "none";
+    const modal = document.querySelector('#new-entry-modal');
+    modal.classList.remove('open');
   }
 
   // fires when a dropdown suggestion is clicked:
   else if (e.target.classList.contains("suggestion"))
     handleSuggestionClicked(e.target);
+
   // cancel or accept changes btn on user prompt modal to add customers and contacts:
   else if (e.target.classList.contains("modal-btn"))
     handleModalBtnClicked(e.target);
+
   // fires when user clicks on edit btn inside an existing entry:
   else if (e.target.classList.contains("edit-entry-btn")) {
     const entry_id = e.target.dataset.id;
@@ -561,6 +585,7 @@ const handleClicks = (e) => {
   // fires when user clicks on delete btn inside an existing entry:
   else if (e.target.classList.contains("delete-entry-btn"))
     handleEntryDelete(e.target.dataset.id);
+
   // fires when user clicks on accept changes btn when entry is being edited
   else if (e.target.id === "accept-edit-btn") {
     const entry_id = e.target.dataset.id; // get the entry ID from the buttons data-id attribute
@@ -574,9 +599,17 @@ const handleClicks = (e) => {
     const entryContainer = document.querySelector(`#entry-${entry_id}`);
     const entry = store.entries.find((ent) => ent.id === entry_id);
     entryContainer.outerHTML = makeEntryHTML(entry);
-  } else if (e.target.id === "add-btn") {
-    const entryForm = document.querySelector(".form-container");
-    entryForm.style.display = "block";
+  } 
+    // fires when user clicks big "+" btn:
+    // generates new entry form for entry creation:
+  else if (e.target.id === "add-btn") {
+        const entryForm = makeEntryForm();
+        const modal = document.querySelector('#new-entry-modal');
+        modal.innerHTML = entryForm;
+        modal.classList.add('open');
+
+    // const entryForm = document.querySelector(".form-container");
+    // entryForm.style.display = "block";
   }
 };
 

@@ -88,7 +88,7 @@ def entryDetail(request, pk):
         try:
             entry = Entry.objects.get(id=pk)
             entry.delete()
-            return JsonResponse({"success": f'Entry {pk} successfully deleted.'}, status=500)
+            return JsonResponse({"success": f'Entry {pk} successfully deleted.'}, status=201)
         except Exception as e:
             print(f'Error: {e}')
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)

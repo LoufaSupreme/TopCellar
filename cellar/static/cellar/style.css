@@ -380,7 +380,7 @@
 /* FORM /////////////////////////// */
 
 .form-container {
-  display: none;
+  /* display: none; */
 }
 
 .modal {
@@ -394,7 +394,15 @@
   pointer-events: none;
   border: none;
   transition: 0.25s ease-in-out;
-  z-index: 1;
+  overflow-y: scroll;
+}
+
+#new-entry-modal {
+  z-index: 5;
+}
+
+#add-objects-modal {
+  z-index: 10;
 }
 
 .modal.open {
