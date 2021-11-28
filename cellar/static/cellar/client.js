@@ -123,10 +123,10 @@ const makeEntryHTML = (entry, regex = null) => {
                 <button id='entry-${entry.id}-delete-btn' class='neupho round-btn bg-dark delete-entry-btn' data-id='${entry.id}'>
                     <i class="bi bi-x-lg"></i>
                 </button>
-                <select class='neupho text-accent bg-dark'>
+                <select class='neupho text-accent bg-dark' onchange='statusChange(this, ${entry.id})'>
                     <option value='active'>Active</option>
-                    <option value='complete'>Complete</option>
-                    <option value='archived'>Archived</option>
+                    <option ${entry.completed ? 'selected' : ''} value='complete'>Complete</option>
+                    <option ${entry.archived ? 'selected' : ''} value='archived'>Archived</option>
                 </select>
             </div>
         </div>
@@ -587,6 +587,30 @@ const handleEntryFlag = (entry_id) => {
         entry.flagged = true;  
         updateInstance(entry, 'entry', entry_id);  
     }
+}
+
+// changes entry status (input via dropdown select)
+// fired from the select dropdown onchange event
+const statusChange = (dropdown, entry_id) => {
+    const entry = store.entries.find(entry => entry.id === parseInt(entry_id));
+    if (dropdown.value === 'active') {
+        entry.completed = false;
+        entry.archived = false;
+    }
+    else if (dropdown.value === 'complete') {
+        entry.completed = true;
+        entry.archived = false;
+    }
+    else if (dropdown.value === 'archived') {
+        entry.completed = false;
+        entry.archived = true;
+    }
+    else {
+        console.error('Status not recognized');
+    }
+    
+    // update the db:
+    updateInstance(entry, 'entry', entry_id);
 }
 
 // handles clicks anywhere on the document.  Called on window load.
