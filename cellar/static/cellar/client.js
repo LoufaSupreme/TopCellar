@@ -611,7 +611,7 @@ const listSuggestions = (inputBox) => {
 // fires everytime a user types in the search box.
 // used to filter the entries on screen
 const handleSearchInput = (searchInput) => {
-  const targetValue = searchInput.value;
+  let targetValue = searchInput.value;
   const currentEntries = [...store.entries];  // creates a copy
   const entryContainer = document.querySelector("#entries-container");
   const searchCount = document.querySelector('.search-count');
@@ -622,6 +622,12 @@ const handleSearchInput = (searchInput) => {
     searchCount.style.display = 'none';
   }
   else {
+    //   targetValue = targetValue.split(' ').reduce((acc, curr) => {
+    //     return acc += `(?=.*${curr})`;
+    //   },'');
+
+      targetValue = targetValue.split(' ').join('|');
+
     const regex = new RegExp(targetValue, "gi");
     const filtered = filterEntries(currentEntries, regex);
     entryContainer.innerHTML = displayEntries(filtered, regex);
