@@ -241,13 +241,19 @@
 /* SEARCHBAR AREA ///////////////*/
 
 .search-container {
-  margin: 1rem 4rem;
+  margin: 1rem 4rem 0 4rem;
   padding: 0.3rem 1.2rem;
   border-radius: 20px;
 }
 
 #search {
   width: 100%;
+}
+
+/* number of search results when typing in search box */
+.search-count {
+  display: none;
+  margin: 0.2rem 0 0.5rem 5.5rem;
 }
 
 #entries-container {

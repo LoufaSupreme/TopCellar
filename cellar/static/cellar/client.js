@@ -265,6 +265,7 @@ const makeSearchBox = () => {
         <div class='search-container neupho inset'>
             <input type="text" id="search" placeholder="Search">
         </div>
+        <div class='search-count fs-200 text-white'></div>
     `;
 };
 
@@ -611,16 +612,28 @@ const listSuggestions = (inputBox) => {
 // used to filter the entries on screen
 const handleSearchInput = (searchInput) => {
   const targetValue = searchInput.value;
-  const currentEntries = [...store.entries];
+  const currentEntries = [...store.entries];  // creates a copy
   const entryContainer = document.querySelector("#entries-container");
+  const searchCount = document.querySelector('.search-count');
 
+    // if only typed 1 letter, display the full set of entries: 
   if (targetValue.length < 2) {
     entryContainer.innerHTML = displayEntries(currentEntries);
+    searchCount.style.display = 'none';
   }
-  if (targetValue.length > 1) {
+  else {
     const regex = new RegExp(targetValue, "gi");
     const filtered = filterEntries(currentEntries, regex);
     entryContainer.innerHTML = displayEntries(filtered, regex);
+    searchCount.style.display = 'block';
+    if (filtered.length === 0) {
+        searchCount.innerHTML = `No results found`;
+    }
+    else if (filtered.length === 1) {
+        searchCount.innerHTML = `${filtered.length} result`;
+    } else {
+        searchCount.innerHTML = `${filtered.length} results`;
+    }
   }
 };
 
