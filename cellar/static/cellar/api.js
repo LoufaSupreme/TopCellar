@@ -48,8 +48,10 @@ const getInstance = async (target, id) => {
 }
 
 // send put request to update an instance:
+// keywords: 'entry', 'customer', 'contact'
 const updateInstance = async (details, keyword, id) => {
-    console.log(`Updating ${keyword} ${id}...`)
+    console.log(`Updating ${keyword} ${id}...`);
+    console.log(details)
     // get csrf token for put request
     const csrf_token = getCookie('csrftoken');
 

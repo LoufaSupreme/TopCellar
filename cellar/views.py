@@ -49,7 +49,8 @@ def entryDetail(request, pk):
             entry = Entry.objects.get(id=pk)
             return JsonResponse(entry.serialize(), safe=False)
         except Exception as e:
-            print(f'Error: {e}')
+            print(f'{e.__class__.__name__}: {e}')
+            traceback.print_exc()
 
     # if put request to update entry:
     elif request.method == 'PUT':
@@ -60,13 +61,16 @@ def entryDetail(request, pk):
             tags = entry_data['tags']
             print(f'Updating Entry {pk}: {json.loads(request.body)}')
 
-            # create new entry:
+            # update entry object:
             entry.update(
                 author=entry_data['user'],
                 customer=entry_data['customer'],
                 description=entry_data['description'],
-                timestamp=entry_data['date'],
+                timestamp=entry_data['timestamp'],
                 rank=entry_data['rank'],
+                flagged=entry_data['flagged'],
+                archived=entry_data['archived'],
+                completed=entry_data['completed'],
             )
 
             entry = Entry.objects.get(id=pk)
@@ -80,7 +84,8 @@ def entryDetail(request, pk):
 
             return JsonResponse(entry.serialize(), safe=False, status=201)
         except Exception as e:
-            print(f'Error: {e}')
+            print(f'{e.__class__.__name__}: {e}')
+            traceback.print_exc()
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
     
     # 
@@ -90,7 +95,9 @@ def entryDetail(request, pk):
             entry.delete()
             return JsonResponse({"success": f'Entry {pk} successfully deleted.'}, status=201)
         except Exception as e:
-            print(f'Error: {e}')
+            print(f'{e.__class__.__name__}: {e}')
+            traceback.print_exc()
+
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
 
     else:
@@ -158,12 +165,12 @@ def consolidateEntryData(request):
     contact_names = data.get('contacts')
     contacts = []
     for c in contact_names:
-        print(c, c['id'], c['first_name'], c['last_name'])
+        # print('Contact:', c)
         contact = Contact.objects.get(id=c['id'], first_name=c['first_name'], last_name=c['last_name'])
         contacts.append(contact)
 
     # get date and make datetime object:
-    entry_date = data.get('date')
+    entry_date = data.get('timestamp')
     now = datetime.datetime.now()
     # use current time for the datetime instance.
     entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], now.hour, now.minute, now.second)
@@ -177,6 +184,10 @@ def consolidateEntryData(request):
     rank = data.get('rank')
     if rank == '':
         rank = None
+
+    flagged = data.get('flagged')
+    archived = data.get('archived')
+    completed = data.get('completed')
 
     # get tags. If the tag doesn't exist, create it:
     raw_tags = data.get('tags')
@@ -199,7 +210,10 @@ def consolidateEntryData(request):
         'contacts': contacts,
         'description': descrip,
         'rank': rank,
-        'date': entry_date,
+        'timestamp': entry_date,
+        'flagged' : flagged, 
+        'archived': archived,
+        'completed': completed,
         'tags': tags,
     }
     # print(entry_data)
@@ -221,7 +235,7 @@ def newEntry(request):
                 author=entry_data['user'],
                 customer=entry_data['customer'],
                 description=entry_data['description'],
-                timestamp=entry_data['date'],
+                timestamp=entry_data['timestamp'],
                 rank=entry_data['rank'],
             )
             entry.save()

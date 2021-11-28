@@ -137,6 +137,7 @@ class Entry(models.Model):
     rank = models.PositiveIntegerField(null=True, blank=True)
     completed = models.BooleanField(default=False)
     archived = models.BooleanField(default=False)
+    flagged = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag, blank=True, related_name="entries")
 
     def __str__(self):
@@ -166,6 +167,7 @@ class Entry(models.Model):
             "rank": self.rank,
             "completed": self.completed,
             "archived": self.archived,
+            "flagged": self.flagged,
             "tags": [{"id": tag.id, "name": tag.name} for tag in self.tags.all()],
         }
 

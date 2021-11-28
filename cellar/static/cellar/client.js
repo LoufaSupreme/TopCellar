@@ -63,6 +63,22 @@ const makeEntryHTML = (entry, regex = null) => {
   let tags = entry.tags.map((t) => makeTagElement("tags", t.id, t.name));
   let customerName = entry.customer ? entry.customer.name : null;
   let description = entry.description;
+  
+  let flagBtn;
+  if (entry.flagged) {
+    flagBtn = `
+        <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn inset' data-id='${entry.id}'>
+            <i class="bi bi-flag-fill"></i>
+        </button>
+    `;
+  }
+  else {
+    flagBtn = `
+        <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn' data-id='${entry.id}'>
+            <i class="bi bi-flag"></i>
+        </button>
+    `;
+  }
 
   // if a regular expression was given to filter the entries,
   // then find and replace that regex with a highlight span
@@ -100,9 +116,7 @@ const makeEntryHTML = (entry, regex = null) => {
             <div class='description fs-300 neupho inset'>${description}</div>
             ${entry.tags.length > 0 ? `<div class='fs-300 neupho tag-container inset flex'>${tags.join("")}</div>` : ""}
             <div class='entry-btn-container flex'>
-                <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn' data-id='${entry.id}'>
-                    <i class="bi bi-flag"></i>
-                </button>
+                ${flagBtn}
                 <button id='entry-${entry.id}-edit-btn' class='neupho round-btn bg-dark edit-entry-btn' data-id='${entry.id}'>
                     <i class='bi bi-pencil-square'></i>
                 </button>
@@ -154,7 +168,7 @@ const makeEntryForm = () => {
                 <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
                 ${makeSuggestionDiv("tags")}
             </div>
-            <div class='flex'>
+            <div class='form-btn-container flex'>
                 <button type="buton" class='neupho bg-dark' id="submit-new-btn">CREATE</button>
                 <button type="buton" class='neupho bg-dark' id="cancel-new-btn">CANCEL</button>
             </div>
@@ -398,6 +412,7 @@ const initiateEdit = async (form, entry_id) => {
   const newEntryData = getFormData(form);
   const newObjects = checkNewInstances(newEntryData, "update");
   newObjects.entry.id = entry_id;
+  const entriesContainer = document.querySelector('#entries-container');
 
   // if there are some new objects, let the user know:
   if (newObjects.customer !== null || newObjects.contacts !== null) {
@@ -409,7 +424,7 @@ const initiateEdit = async (form, entry_id) => {
     // otherwise send put request to DB to update the entry:
     updateInstance(newEntryData, "entry", entry_id);
     await loadStore(store);
-    // render(root, store);
+    entriesContainer.innerHTML = displayEntries(store.entries);
   }
 };
 
@@ -554,6 +569,26 @@ const handleEntryDelete = (entry_id) => {
   deleteInstance("entry", entry_id);
 };
 
+// changes entry flagged status:
+const handleEntryFlag = (entry_id) => {
+    const entry = store.entries.find(entry => entry.id === parseInt(entry_id));
+    const entryContainer = document.querySelector(`#entry-${entry_id}`); // get the container div of the entry
+    const flagBtn = entryContainer.querySelector('.fave-entry-btn');
+    
+    if (entry.flagged) {
+        flagBtn.classList.remove('inset');
+        flagBtn.innerHTML = "<i class='bi bi-flag'></i>";  
+        entry.flagged = false;
+        updateInstance(entry, 'entry', entry_id);  
+    }
+    else {
+        flagBtn.classList.add('inset');
+        flagBtn.innerHTML = "<i class='bi bi-flag-fill'></i>";  
+        entry.flagged = true;  
+        updateInstance(entry, 'entry', entry_id);  
+    }
+}
+
 // handles clicks anywhere on the document.  Called on window load.
 // this is to avoid having to make new event handlers for dynamic content (like the form)
 const handleClicks = (e) => {
@@ -574,6 +609,10 @@ const handleClicks = (e) => {
   // cancel or accept changes btn on user prompt modal to add customers and contacts:
   else if (e.target.classList.contains("modal-btn"))
     handleModalBtnClicked(e.target);
+
+    else if (e.target.classList.contains('fave-entry-btn')) {
+        handleEntryFlag(e.target.dataset.id);
+    }
 
   // fires when user clicks on edit btn inside an existing entry:
   else if (e.target.classList.contains("edit-entry-btn")) {

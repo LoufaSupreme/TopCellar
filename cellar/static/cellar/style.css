@@ -377,15 +377,12 @@
 }
 
 
-/* FORM /////////////////////////// */
 
-.form-container {
-  /* display: none; */
-}
+/* FORM /////////////////////////// */
 
 .modal {
   position: fixed;
-  background: hsl(var(--clr-dark)/0.7);
+  background: rgba(0, 0, 0, 0.7);
   opacity: 0;
   top: 0;
   left: 0;
@@ -420,6 +417,15 @@
   left: 50%;
   transform: translate(-50%, -50%);
   transition: 0.25s ease-in-out;
+}
+
+.form-btn-container {
+  justify-content: center;
+  align-items: center;
+}
+
+.form-btn-container button {
+  padding: 0.2rem 0.6rem;
 }
 
 input {
