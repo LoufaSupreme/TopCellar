@@ -137,8 +137,20 @@ const makeEntryHTML = (entry, regex = null) => {
 // generate HTML for suggestion dropdowns:
 // entry_ID is the ID of the entry div that this dropdown is associated with.  Null if not associated with one (e.g. making new entry)
 const makeSuggestionDiv = (type, entry_ID = null) => {
-  return `<div class='suggestions ${type}-suggestions' style='display: none' data-type='${type}' data-id='${entry_ID}'>DUMMY TEXT</div>`;
+  return `
+    <div class='suggestions ${type}-suggestions flex' style='display: none' data-type='${type}' data-id='${entry_ID}'>
+        DUMMY TEXT
+    </div>
+  `;
 };
+
+const displaySuggestions = (inputID, options, type) => {
+    return options
+      .map((option) => {
+        return `<li class="suggestion ${type}-suggestion fs-300" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">${option.suggestion.name}</li>`;
+      })
+      .join("");
+  };
 
 // make html to render a new Entry form:
 const makeEntryForm = () => {
@@ -683,33 +695,33 @@ const handleClicks = (e) => {
   }
 };
 
+
 // populate the suggestion dropdown with options:
 const listSuggestions = (inputBox) => {
-  const listType = inputBox.dataset.list;
-  const listItems = store[listType]; // grab the list of items for listType from store
-  const parent = inputBox.parentElement;
+    const listType = inputBox.dataset.list;
+    const listItems = store[listType]; // grab the list of items for listType from store
 
-  // the below is now not needed since all have 'name' properties:
-  let options = [];
-  if (listType === "customers") {
-    options = findMatches(inputBox.value, listItems, ["name"]);
-  } else if (listType === "contacts") {
-    options = findMatches(inputBox.value, listItems, [
-      "first_name",
-      "last_name",
-    ]);
-  } else {
-    options = findMatches(inputBox.value, listItems, ["name"]);
-  }
+    // the below is now not needed since all have 'name' properties:
+    let options = [];
+    if (listType === "customers") {
+        options = findMatches(inputBox.value, listItems, ["name"]);
+    } 
+    else if (listType === "contacts") {
+        options = findMatches(inputBox.value, listItems, [
+        "first_name",
+        "last_name",
+        ]);
+    } 
+    else {
+        options = findMatches(inputBox.value, listItems, ["name"]);
+    }
 
-  options = options.map((option) => {
-    return { suggestion: option, active: false };
-  });
+    options = options.map((option) => {
+        return { suggestion: option, active: false };
+    });
 
-  const suggestionArea = parent.querySelector(".suggestions");
-  suggestionArea.style.display = "block";
-  suggestionArea.innerHTML = `<ul>${displaySuggestions(inputBox.id, options, listType)}</ul>`;
-};
+    return options;
+}
 
 // fires everytime a user types in the search box.
 // used to filter the entries on screen
@@ -749,14 +761,30 @@ const handleSearchInput = (searchInput) => {
 // handles keyup events anywhere on the document.  Called on window load.
 // this is to avoid having to make new event handlers for dynamic content (like the form)
 const handleKeyUp = (e) => {
-  if (e.target.classList.contains("tag-input")) listSuggestions(e.target);
+    if (e.target.classList.contains("tag-input")) {
+        const inputBox = e.target;
+        const parent = inputBox.parentElement;
+        const suggestionArea = parent.querySelector(".suggestions");
+        const listType = inputBox.dataset.list;
 
-  // if user hits enter while inside an input box w/ class 'tag-input', create a new tag element:
-  if (e.target.classList.contains("tag-input") && e.key === "Enter") {
-    addTag(e.target);
-  }
+        if (inputBox.value.trim() !== '') {
+            const options = listSuggestions(inputBox);
+            if (options.length > 0) {
+                suggestionArea.style.display = "block";
+                suggestionArea.innerHTML = `<ul>${displaySuggestions(inputBox.id, options, listType)}</ul>`;
+            }
+        }
+        else {
+            suggestionArea.style.display = "none";
+        }
+    }
 
-  if (e.target.id === "search") handleSearchInput(e.target);
+    // if user hits enter while inside an input box w/ class 'tag-input', create a new tag element:
+    if (e.target.classList.contains("tag-input") && e.key === "Enter") {
+        addTag(e.target);
+    }
+
+    if (e.target.id === "search") handleSearchInput(e.target);
 };
 
 // returns a filtered array
@@ -772,13 +800,6 @@ const findMatches = (targetWord, arr, propertyList) => {
   });
 };
 
-const displaySuggestions = (inputID, options, type) => {
-  return options
-    .map((option) => {
-      return `<li class="suggestion ${type}-suggestion" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">${option.suggestion.name}</li>`;
-    })
-    .join("");
-};
 
 // inserts a new element in the DOM with ".tag" classname
 // used for customers, contacts and tags
