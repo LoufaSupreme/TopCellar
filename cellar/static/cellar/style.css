@@ -382,7 +382,7 @@
 
 .modal {
   position: fixed;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   opacity: 0;
   top: 0;
   left: 0;
@@ -417,6 +417,17 @@
   left: 50%;
   transform: translate(-50%, -50%);
   transition: 0.25s ease-in-out;
+  border-radius: 14px;
+  padding: 0.5rem;
+}
+
+.modal-text {
+  margin: 1rem 1.5rem 0.5rem 1.5rem;
+  text-align: center;
+}
+
+.modal-object {
+  margin: 0.2rem auto;
 }
 
 .form-btn-container {

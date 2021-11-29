@@ -35,6 +35,7 @@ const App = async (state) => {
         ${makeModal('add-objects-modal')}
         ${makeSearchBox()}
         ${makeAddBtn()}
+
         <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
     `;
   }
@@ -160,11 +161,11 @@ const makeEntryForm = () => {
             <div class='description-wrapper flex'>
                 <textarea class='description neupho inset bg-dark' placeholder="Description" cols="10" rows="1"></textarea>
             </div>
-            <div>
+            <div class='flex'>
                 <input class='neupho inset' type="date" value="${now.getFullYear()}-${month}-${day}">
                 <input class='neupho inset' type="number" placeholder="Rank">
             </div>
-            <div class="neupho tag-container inset flex">
+            <div class="tag-container neupho inset flex">
                 <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
                 ${makeSuggestionDiv("tags")}
             </div>
@@ -203,23 +204,27 @@ const makeEditForm = async (entryContainer) => {
             <input id="customers-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
             ${makeSuggestionDiv("customers", entry_ID)}
         </div>
-        <div class="tag-container">
+        <div class="tag-container neupho inset flex">
             ${contactTags}
             <input id="contacts-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
             ${makeSuggestionDiv("contacts", entry_ID)}
         </div>
-        <textarea placeholder="Description" name="description">${
-        entry.description
-        }</textarea>
-        <input type="date" value="${entry.timestamp.year}-${month}-${day}">
-        <input type="number" placeholder="Rank" value="${entry.rank}">
-        <div class="tag-container">
+        <div class='description-wrapper flex'>
+            <textarea class='description neupho inset bg-dark' placeholder="Description" cols="10" rows="1">${entry.description}</textarea>
+        </div>
+        <div class='flex'>
+            <input class='neupho inset' type="date" value="${entry.timestamp.year}-${month}-${day}">
+            <input class='neupho inset' type="number" placeholder="Rank" value='${entry.rank}'>
+        </div>
+        <div class="neupho tag-container inset flex">
             ${tagTags}
             <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
             ${makeSuggestionDiv("tags", entry_ID)}
         </div>
-        <button id='accept-edit-btn' data-id="${entry_ID}">Accept Changes</button>
-        <button id='cancel-edit-btn' data-id='${entry_ID}'>Cancel</button>
+        <div class='form-btn-container flex'>
+            <button id='accept-edit-btn' class='neupho bg-dark' data-id="${entry_ID}">Accept Changes</button>
+            <button id='cancel-edit-btn' class='neupho bg-dark' data-id='${entry_ID}'>Cancel</button>
+        </div>
     `;
   };  
 
@@ -228,7 +233,9 @@ const makeEditForm = async (entryContainer) => {
 const makeModal = (type = null) => {
   return `
         <div id='${type}' class="modal">
-            <div class="prompt-container neupho bg-dark text-white flex"></div>
+            <div class="prompt-container neupho bg-dark text-white flex">
+                        
+            </div>
         </div>
     `;
 };
@@ -238,24 +245,24 @@ const generateModalText = (customer, contacts) => {
   let promptText = "";
   if (customer) {
     promptText += `
-            <div>We couldn't find the following customer in your Rolodex:</div>
-            <div>${customer.name}</div>
-        `;
+        <div class='modal-text fs-300'>We couldn't find the following customer in your Rolodex:</div>
+        <div class='modal-object fs-400 text-accent'>${customer.name}</div>
+    `;
   }
 
   if (contacts) {
     const contactText = contacts
-      .map((contact) => `<div>${contact.first_name} ${contact.last_name}</div>`).join("");
+      .map((contact) => `<div class='modal-object fs-400 text-accent'>${contact.first_name} ${contact.last_name}</div>`).join("");
 
     promptText += `
-        <div>We couldn't find the following contacts in your Rolodex:</div>
+        <div class='modal-text fs-300'>We couldn't find the following contacts in your Rolodex:</div>
         ${contactText}
     `;
   }
 
-    promptText += `
-        <div>Would you like to add them now?</div>
-        <div class='flex'>
+    promptText += `            
+        <div class='modal-text fs-300'>Would you like to add them now?</div>
+        <div class='flex form-btn-container'>
             <button id='modal-accept-btn' class='accept-btn modal-btn neupho bg-dark'>ACCEPT</button>
             <button id='modal-cancel-btn' class='cancel-btn modal-btn neupho bg-dark'>CANCEL AND MAKE CHANGES</button>
         </div>
