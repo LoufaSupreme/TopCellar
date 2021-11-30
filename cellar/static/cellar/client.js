@@ -34,6 +34,7 @@ const App = async (state) => {
         ${makeModal('new-entry-modal')}
         ${makeModal('add-objects-modal')}
         ${makeSearchBox()}
+        ${makeFilterBox()}
         ${makeAddBtn()}
 
         <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
@@ -112,6 +113,7 @@ const makeEntryHTML = (entry, regex = null) => {
 
   return `
         <div id='entry-${entry.id}' class=' neupho entry-container container bg-dark text-white'>
+            <div class='fs-200 text-white'>${entry.timestamp.full}</div>
             ${entry.customer !== null ? `<div class='entry-customer fs-500 text-accent'>${customerName}</div>` : ""}
             ${contacts.length > 0 ? `<div class='entry-contacts fs-300 text-white'>${contacts.join("  &middot  ")}</div>`: ""}
             <div class='description fs-300 neupho inset'>${description}</div>
@@ -242,7 +244,7 @@ const makeEditForm = async (entryContainer) => {
             <button id='cancel-edit-btn' class='neupho bg-dark' data-id='${entry_ID}'>Cancel</button>
         </div>
     `;
-  };  
+};  
 
 // create a modal div (for pop up user prompts)
 // types: new-entry-modal, add-objects-modal
@@ -314,6 +316,51 @@ const makeSearchBox = () => {
         <div class='search-count fs-200 text-white'></div>
     `;
 };
+
+// create a form to apply multiple filters to the entries
+const makeFilterBox = () => {
+    return `
+    <div id='filter-container' class='search-container'>
+        <div class='text-accent fs-600'>Filter</div>
+            <div class='flex'>
+                <select class='neupho bg-dark'>
+                    <option value='new'>New Custom Filter</option>
+                    <option value='custom1'>Custom Filter 1</option>
+                    <option value='custom2'>Custom Filter 2</option>
+                </select>
+            </div>
+            <div class='flex'>
+                <span>Show entries with</span>
+                <select id='filter-any-all' class='neupho bg-dark'>
+                    <option value='any'>ANY</option>
+                    <option value='all'>ALL</option>
+                </select>
+                <span>of the below parameters</span>
+            </div>
+            <div class="neupho tag-container inset flex">
+                <input id="customers-input" class="tag-input filter-input" type="text" data-id="undefined" data-list="customers" placeholder="Accounts">
+                ${makeSuggestionDiv("customers")}
+            </div>
+            <div class="neupho tag-container inset flex">
+                <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+                ${makeSuggestionDiv("contacts")}
+            </div>
+            <div class='flex'>
+                <input id='filter-date-from' class='neupho inset' type="date">
+                <div class='text-white'>TO</div>
+                <input id='filter-date-to' class='neupho inset' type="date">
+            </div>
+            <div class="tag-container neupho inset flex">
+                <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+                ${makeSuggestionDiv("tags")}
+            </div>
+            <div class='form-btn-container flex'>
+                <button type="buton" class='neupho bg-dark' id="filter-btn">FILTER</button>
+            </div>
+        </div>
+    </div>
+    `;
+}
 
 // create a button to make the new entry form appear:
 const makeAddBtn = () => {
@@ -461,7 +508,7 @@ const initiateEdit = async (form, entry_id) => {
     } 
     else {
         // otherwise send put request to DB to update the entry:
-        updateInstance(newEntryData, "entry", entry_id);
+        await updateInstance(newEntryData, "entry", entry_id);
         await loadStore(store);
         entriesContainer.innerHTML = displayEntries(store.entries);
     }
@@ -522,6 +569,7 @@ const getFormData = (form) => {
         name: cust.innerText,
       };
     })[0];
+
   const contacts = tagElements
     .filter((tag) => tag.dataset.list === "contacts")
     .map((cont) => {
@@ -535,6 +583,7 @@ const getFormData = (form) => {
         last_name: last_name,
       };
     });
+
   const tags = tagElements
     .filter((tag) => tag.dataset.list === "tags")
     .map((tag) => {
@@ -543,6 +592,7 @@ const getFormData = (form) => {
         name: tag.innerText,
       };
     });
+
   const description = form.querySelector("textarea").value;
   const rank = form.querySelector('input[type="number"]').value;
   const date = form.querySelector('input[type="date"]').value.split("-");
@@ -568,6 +618,59 @@ const getFormData = (form) => {
   console.log(newEntryDetails);
   return newEntryDetails;
 };
+
+// gets the data from the filter form:
+const getFilterFormData = (form) => {
+    const tagElements = Array.from(form.querySelectorAll(".tag")); // grab all of the tag elements
+
+    const customers = tagElements
+        .filter((tag) => tag.dataset.list === "customers")
+        .map((cust) => {
+            return {
+                id: parseInt(cust.dataset.id),
+                name: cust.innerText,
+            };
+        });
+
+    const contacts = tagElements
+        .filter((tag) => tag.dataset.list === "contacts")
+        .map((cont) => {
+            const names = cont.innerText.trim().split(" ");
+            const first_name = names[0];
+            const last_name = names.length > 1 ? names[1] : null;
+
+            return {
+                id: parseInt(cont.dataset.id),
+                first_name: first_name,
+                last_name: last_name,
+            };
+        });
+    
+    const fromDate = form.querySelector('#filter-date-from').value.split("-");
+    const toDate = form.querySelector('#filter-date-to').value.split("-");
+    const anyAllSelect = form.querySelector('#filter-any-all').value;
+
+    const tags = tagElements
+        .filter((tag) => tag.dataset.list === "tags")
+        .map((tag) => {
+            return {
+                id: tag.dataset.id !== undefined ? parseInt(tag.dataset.id) : -1,
+                name: tag.innerText,
+            };
+        });
+
+    const filterParameters = {
+        type: anyAllSelect,
+        customers: customers,
+        contacts: contacts, 
+        tags: tags, 
+        fromDate: fromDate,
+        toDate: toDate,
+    }
+
+    return filterParameters;
+    
+}
 
 //////////////////////////////////////
 // EVENT HANDLER FUNCTIONS ////////////
@@ -658,66 +761,75 @@ const statusChange = (dropdown, entry_id) => {
 // handles clicks anywhere on the document.  Called on window load.
 // this is to avoid having to make new event handlers for dynamic content (like the form)
 const handleClicks = (e) => {
-  // fires when the entry submit button is clicked:
-  if (e.target.id === "submit-new-btn") handleEntrySubmitClicked();
+    // fires when the entry submit button is clicked:
+    if (e.target.id === "submit-new-btn") handleEntrySubmitClicked();
 
-  if (e.target.id === "cancel-new-btn") {
-    // const entryForm = document.querySelector(".form-container");
-    // entryForm.style.display = "none";
-    const modal = document.querySelector('#new-entry-modal');
-    modal.classList.remove('open');
-  }
-
-  // fires when a dropdown suggestion is clicked:
-  else if (e.target.classList.contains("suggestion"))
-    handleSuggestionClicked(e.target);
-
-  // cancel or accept changes btn on user prompt modal to add customers and contacts:
-  else if (e.target.classList.contains("modal-btn"))
-    handleModalBtnClicked(e.target);
-
-    else if (e.target.classList.contains('fave-entry-btn')) {
-        handleEntryFlag(e.target.dataset.id);
+    if (e.target.id === "cancel-new-btn") {
+        // const entryForm = document.querySelector(".form-container");
+        // entryForm.style.display = "none";
+        const modal = document.querySelector('#new-entry-modal');
+        modal.classList.remove('open');
     }
 
-  // fires when user clicks on edit btn inside an existing entry:
-  else if (e.target.classList.contains("edit-entry-btn")) {
-    const entry_id = e.target.dataset.id;
-    const entryContainer = document.querySelector(`#entry-${entry_id}`);
-    makeEditForm(entryContainer);
-  }
+    // fires when a dropdown suggestion is clicked:
+    else if (e.target.classList.contains("suggestion"))
+        handleSuggestionClicked(e.target);
 
-  // fires when user clicks on delete btn inside an existing entry:
-  else if (e.target.classList.contains("delete-entry-btn"))
-    handleEntryDelete(e.target.dataset.id);
+    // cancel or accept changes btn on user prompt modal to add customers and contacts:
+    else if (e.target.classList.contains("modal-btn"))
+        handleModalBtnClicked(e.target);
 
-  // fires when user clicks on accept changes btn when entry is being edited
-  else if (e.target.id === "accept-edit-btn") {
-    const entry_id = e.target.dataset.id; // get the entry ID from the buttons data-id attribute
-    const form = document.querySelector(`#entry-${entry_id}`); // grab the div (entry container) that contains all the inputs
-    initiateEdit(form, entry_id);
-  }
+        else if (e.target.classList.contains('fave-entry-btn')) {
+            handleEntryFlag(e.target.dataset.id);
+        }
 
-  // fires when user clicks on cancel btn when entry is being editied
-  else if (e.target.id === "cancel-edit-btn") {
-    const entry_id = parseInt(e.target.dataset.id);
-    const entryContainer = document.querySelector(`#entry-${entry_id}`);
-    const entry = store.entries.find((ent) => ent.id === entry_id);
-    entryContainer.outerHTML = makeEntryHTML(entry);
-  } 
-    // fires when user clicks big "+" btn:
-    // generates new entry form for entry creation:
-  else if (e.target.id === "add-btn") {
-        const entryForm = makeEntryForm();
-        const modal = document.querySelector('#new-entry-modal');
-        modal.innerHTML = entryForm;
-        modal.classList.add('open');
-  }
+    // fires when user clicks on edit btn inside an existing entry:
+    else if (e.target.classList.contains("edit-entry-btn")) {
+        const entry_id = e.target.dataset.id;
+        const entryContainer = document.querySelector(`#entry-${entry_id}`);
+        makeEditForm(entryContainer);
+    }
 
-    // fires when user clicks on a tag's "X"
-  else if (e.target.classList.contains('tag-close-btn')) {
-    e.target.parentNode.remove();
-  }
+    // fires when user clicks on delete btn inside an existing entry:
+    else if (e.target.classList.contains("delete-entry-btn"))
+        handleEntryDelete(e.target.dataset.id);
+
+    // fires when user clicks on accept changes btn when entry is being edited
+    else if (e.target.id === "accept-edit-btn") {
+        const entry_id = e.target.dataset.id; // get the entry ID from the buttons data-id attribute
+        const form = document.querySelector(`#entry-${entry_id}`); // grab the div (entry container) that contains all the inputs
+        initiateEdit(form, entry_id);
+    }
+
+    // fires when user clicks on cancel btn when entry is being editied
+    else if (e.target.id === "cancel-edit-btn") {
+        const entry_id = parseInt(e.target.dataset.id);
+        const entryContainer = document.querySelector(`#entry-${entry_id}`);
+        const entry = store.entries.find((ent) => ent.id === entry_id);
+        entryContainer.outerHTML = makeEntryHTML(entry);
+    } 
+        // fires when user clicks big "+" btn:
+        // generates new entry form for entry creation:
+    else if (e.target.id === "add-btn") {
+            const entryForm = makeEntryForm();
+            const modal = document.querySelector('#new-entry-modal');
+            modal.innerHTML = entryForm;
+            modal.classList.add('open');
+    }
+
+        // fires when user clicks on a tag's "X"
+    else if (e.target.classList.contains('tag-close-btn')) {
+        e.target.parentNode.remove();
+    }
+
+    // fires when user clicks on "filter" btn within filter container
+    else if (e.target.id === 'filter-btn') {
+        const form = document.querySelector('#filter-container');
+        const filterParams = getFilterFormData(form);
+        const filteredEntries = filterEntries(store.entries, filterParams);
+        const entriesContainer = document.querySelector('#entries-container');
+        entriesContainer.innerHTML = displayEntries(filteredEntries);
+    }
 };
 
 
@@ -769,7 +881,7 @@ const handleSearchInput = (searchInput) => {
       targetValue = targetValue.split(' ').join('|');
 
     const regex = new RegExp(targetValue, "gi");
-    const filtered = filterEntries(currentEntries, regex);
+    const filtered = searchEntries(currentEntries, regex);
     entryContainer.innerHTML = displayEntries(filtered, regex);
     searchCount.style.display = 'block';
     if (filtered.length === 0) {
@@ -838,7 +950,7 @@ const addTag = (inputField) => {
 
     // if there's already a customer name in the parent div, remove it.
     // only want one customer to be able to be selected at a time
-    if (inputField.dataset.list === "customers" && parent.querySelector(".tag")) {
+    if (inputField.dataset.list === "customers" && parent.querySelector(".tag") && !inputField.classList.contains('filter-input')) {
         parent.firstElementChild.remove();
     }
 
@@ -875,56 +987,141 @@ const addTag = (inputField) => {
 };
 
 // returns any entry that contains the target string anywhere:
-const filterEntries = (entries, regex) => {
-  const filtered = entries.filter((entry) => {
-    let customerMatch = false;
-    let descriptionMatch = false;
-    let contactMatch = false;
-    let tagMatch = false;
+const searchEntries = (entries, regex) => {
+    const filtered = entries.filter((entry) => {
+        let customerMatch = false;
+        let descriptionMatch = false;
+        let contactMatch = false;
+        let tagMatch = false;
 
-    if (entry.customer) customerMatch = entry.customer.name.match(regex);
-    if (entry.description) descriptionMatch = entry.description.match(regex);
-    if (entry.contacts)
-      contactMatch =
-        entry.contacts.filter((con) => {
-          if (con.last_name) {
-            return con.first_name.match(regex) || con.last_name.match(regex);
-          } else return con.first_name.match(regex);
-        }).length > 0;
-    if (entry.tags)
-      tagMatch =
-        entry.tags.filter((tag) => {
-          return tag.name.match(regex);
-        }).length > 0;
+        if (entry.customer) customerMatch = entry.customer.name.match(regex);
 
-    return customerMatch || descriptionMatch || contactMatch || tagMatch;
-  });
+        if (entry.description) descriptionMatch = entry.description.match(regex);
+
+        if (entry.contacts)
+        contactMatch =
+            entry.contacts.filter((con) => {
+                if (con.last_name) {
+                    return con.first_name.match(regex) || con.last_name.match(regex);
+                } 
+                else return con.first_name.match(regex);
+            }).length > 0;
+        if (entry.tags)
+        tagMatch =
+            entry.tags.filter((tag) => {
+                return tag.name.match(regex);
+            }).length > 0;
+
+        return customerMatch || descriptionMatch || contactMatch || tagMatch;
+    });
 
   return filtered;
 };
 
-// filter array of entries based on criteria
-// criteria is an object with key:value pairs of what to filter {"author.name": 'Jane Doe', "user.id": 1}
-const filterEntries2 = (entries, criteria) => {
-  const filteredEntries = entries.filter((entry) => {
-    for (let key in criteria) {
-      const keys = key.split(".");
+// returns list of entries that match filter criteria
+const filterEntries = (entries, criteria) => {
+    if (criteria.type === 'any') {
+        entries = entries.filter(entry => {
 
-      let val = entry;
-      for (let k of keys) {
-        if (val[k]) {
-          val = val[k];
-        }
-      }
-      if (val === undefined || val != criteria[key]) {
-        return false;
-      }
+            // check if any customers match
+            if (entry.customer) {
+                for (let i = 0; i < criteria.customers.length; i++) {
+                    const criteriaCustomer = criteria.customers[i];
+                    if (
+                        entry.customer.name === criteriaCustomer.name &&
+                        entry.customer.id === criteriaCustomer.id    
+                    ) {
+                        customerMatch = true;
+                        return true;
+                    }
+                }
+            }
+
+            // check if any contacts match
+            if (entry.contacts) {
+                for (let i = 0; i < criteria.contacts.length; i++) {
+                    const criteriaContact = criteria.contacts[i];
+                    const contactMatch = entry.contacts.filter(contact => {
+                        return contact.id === criteriaContact.id;
+                    }).length > 0;
+
+                    if (contactMatch) return true;
+                }
+            }
+
+            // check if any tags match
+            if (entry.tags) {
+                for (let i = 0; i < criteria.tags.length; i++) {
+                    const criteriaTag = criteria.tags[i];
+                    const tagMatch = entry.tags.filter(tag => {
+                        return tag.id === criteriaTag.id;
+                    }).length > 0;
+
+                    if (tagMatch) return true;
+                }
+            }
+
+            // check if date range matches
+            if (criteria.fromDate === '' && criteria.toDate === '') return false;
+
+            else if (criteria.fromDate === '' && criteria.toDate !== '') {
+                const targetEndDate = new Date(
+                    parseInt(criteria.toDate[0]),
+                    parseInt(criteria.toDate[1]),
+                    parseInt(criteria.toDate[2])
+                );
+
+                const entryDate = new Date(
+                    entry.timestamp.year,
+                    entry.timestamp.month,
+                    entry.timestamp.day
+                );
+                
+                if (entryDate <= targetEndDate) return true;
+            }
+
+            else if (criteria.fromDate !== '' && criteria.toDate === '') {
+                const targetStartDate = new Date(
+                    parseInt(criteria.fromDate[0]),
+                    parseInt(criteria.fromDate[1]),
+                    parseInt(criteria.fromDate[2])
+                );
+
+                const entryDate = new Date(
+                    entry.timestamp.year,
+                    entry.timestamp.month,
+                    entry.timestamp.day
+                );
+                
+                if (entryDate >= targetStartDate) return true;
+            }
+
+            else if (criteria.fromDate !== '' && criteria.toDate !== '') {
+                const targetStartDate = new Date(
+                    parseInt(criteria.fromDate[0]),
+                    parseInt(criteria.fromDate[1]),
+                    parseInt(criteria.fromDate[2])
+                );
+
+                const targetEndDate = new Date(
+                    parseInt(criteria.toDate[0]),
+                    parseInt(criteria.toDate[1]),
+                    parseInt(criteria.toDate[2])
+                );
+
+                const entryDate = new Date(
+                    entry.timestamp.year,
+                    entry.timestamp.month,
+                    entry.timestamp.day
+                );
+                
+                if (entryDate >= targetStartDate && entryDate <= targetEndDate) return true;
+            }
+
+        })
+        return entries;
     }
-    return true;
-  });
-
-  return filteredEntries;
-};
+}
 
 // display each entry on the page:
 const displayEntries = (entries, regex = null) => {
