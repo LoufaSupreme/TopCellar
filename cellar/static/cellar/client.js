@@ -145,11 +145,14 @@ const makeSuggestionDiv = (type, entry_ID = null) => {
 };
 
 const displaySuggestions = (inputID, options, type) => {
-    return options
+    options = options
       .map((option) => {
         return `<li class="suggestion ${type}-suggestion fs-300" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">${option.suggestion.name}</li>`;
       })
       .join("");
+      
+      options = '<li class="fs-200 text-white">Choose Existing:</li>' + options;
+      return options;
   };
 
 // make html to render a new Entry form:
@@ -197,13 +200,14 @@ const makeEditForm = async (entryContainer) => {
     const customerTag = makeTagElement(
       "customers",
       entry.customer.id,
-      entry.customer.name
+      entry.customer.name,
+      'active',
     ).outerHTML;
     const contactTags = entry.contacts
-      .map((c) => makeTagElement("contacts", c.id, `${c.first_name} ${c.last_name !== null ? c.last_name : ""}`).outerHTML)
+      .map((c) => makeTagElement("contacts", c.id, `${c.first_name} ${c.last_name !== null ? c.last_name : ""}`, 'active').outerHTML)
       .join("");
     const tagTags = entry.tags
-      .map((t) => makeTagElement("tags", t.id, t.name).outerHTML)
+      .map((t) => makeTagElement("tags", t.id, t.name, 'active').outerHTML)
       .join("");
   
     // add leading zeros to dates if less than 10 (important for date input values...):
@@ -283,13 +287,22 @@ const generateModalText = (customer, contacts) => {
 };
 
 // create the html for a new tag div:
-const makeTagElement = (type, id, content) => {
-  const tag = document.createElement("div"); // make new tag div
-  tag.classList.add("tag"); // add "tag" to classname list
-  tag.dataset.id = id === "undefined" ? -1 : id; // id of the content (i.e. if customer name, then customer.id)
-  tag.dataset.list = type; // the type of tag e.g. 'customers' or 'contacts'
-  tag.innerHTML = content; // the text of the tag
-  return tag;
+// type = customers, contacts, tags
+const makeTagElement = (type, id, content, status = 'locked') => {
+    const tag = document.createElement("div"); // make new tag div
+    tag.classList.add("tag"); // add "tag" to classname list
+    tag.dataset.id = id === "undefined" ? -1 : id; // id of the content (i.e. if customer name, then customer.id)
+    tag.dataset.list = type; // the type of tag e.g. 'customers' or 'contacts'
+    tag.innerHTML = content; // the text of the tag
+
+    if (status !== 'locked') {
+        const exit = document.createElement('div');
+        exit.classList.add('tag-close-btn');
+        exit.innerHTML = '<i class="bi bi-x"></i>';
+        tag.appendChild(exit);
+    }
+
+    return tag;
 };
 
 // create search box at top of screen to filter entries:
@@ -425,26 +438,33 @@ const initiateNewEntry = async (form) => {
 };
 
 const initiateEdit = async (form, entry_id) => {
-  console.log(`Updating Entry ${entry_id}`);
+    console.log(`Updating Entry ${entry_id}`);
+    const originalEntry = store.entries.find(entry => entry.id === parseInt(entry_id));
 
-  // get all the inputted data from the entry form
-  const newEntryData = getFormData(form);
-  const newObjects = checkNewInstances(newEntryData, "update");
-  newObjects.entry.id = entry_id;
-  const entriesContainer = document.querySelector('#entries-container');
+    // get all the inputted data from the entry form
+    const newEntryData = getFormData(form);
+    // replace the flagged/archived/completed data with this entries real data
+    // have to do this because the getFormData function assumes them all to be false, bc there's no input for them in the form.  
+    newEntryData.flagged = originalEntry.flagged;
+    newEntryData.archived = originalEntry.archived;
+    newEntryData.completed = originalEntry.completed;
 
-  // if there are some new objects, let the user know:
-  if (newObjects.customer !== null || newObjects.contacts !== null) {
-    console.log("Found new Customer or Contact instances. Prompting user...");
-    store.uncreated = newObjects; // load new objects into store so they can be created if the user wishes
-    promptUserMakeObj(newObjects); // create a modal user prompt to ask them if they want to create the new objects
-  } 
-  else {
-    // otherwise send put request to DB to update the entry:
-    updateInstance(newEntryData, "entry", entry_id);
-    await loadStore(store);
-    entriesContainer.innerHTML = displayEntries(store.entries);
-  }
+    const newObjects = checkNewInstances(newEntryData, "update");
+    newObjects.entry.id = entry_id;
+    const entriesContainer = document.querySelector('#entries-container');
+
+    // if there are some new objects, let the user know:
+    if (newObjects.customer !== null || newObjects.contacts !== null) {
+        console.log("Found new Customer or Contact instances. Prompting user...");
+        store.uncreated = newObjects; // load new objects into store so they can be created if the user wishes
+        promptUserMakeObj(newObjects); // create a modal user prompt to ask them if they want to create the new objects
+    } 
+    else {
+        // otherwise send put request to DB to update the entry:
+        updateInstance(newEntryData, "entry", entry_id);
+        await loadStore(store);
+        entriesContainer.innerHTML = displayEntries(store.entries);
+    }
 };
 
 // takes the data from an entry form (new or edit) and checks if there are customers or contacts that don't yet exist:
@@ -499,13 +519,13 @@ const getFormData = (form) => {
     .map((cust) => {
       return {
         id: parseInt(cust.dataset.id),
-        name: cust.innerHTML,
+        name: cust.innerText,
       };
     })[0];
   const contacts = tagElements
     .filter((tag) => tag.dataset.list === "contacts")
     .map((cont) => {
-      const names = cont.innerHTML.trim().split(" ");
+      const names = cont.innerText.trim().split(" ");
       const first_name = names[0];
       const last_name = names.length > 1 ? names[1] : null;
 
@@ -520,7 +540,7 @@ const getFormData = (form) => {
     .map((tag) => {
       return {
         id: tag.dataset.id !== undefined ? parseInt(tag.dataset.id) : -1,
-        name: tag.innerHTML,
+        name: tag.innerText,
       };
     });
   const description = form.querySelector("textarea").value;
@@ -534,11 +554,14 @@ const getFormData = (form) => {
     tags: tags,
     description: description,
     rank: rank,
-    date: {
+    timestamp: {
       year: parseInt(date[0]),
       month: parseInt(date[1]),
       day: parseInt(date[2]),
     },
+    flagged: false,
+    archived: false,
+    completed: false,
   };
 
   console.log("Got form data:");
@@ -689,9 +712,11 @@ const handleClicks = (e) => {
         const modal = document.querySelector('#new-entry-modal');
         modal.innerHTML = entryForm;
         modal.classList.add('open');
+  }
 
-    // const entryForm = document.querySelector(".form-container");
-    // entryForm.style.display = "block";
+    // fires when user clicks on a tag's "X"
+  else if (e.target.classList.contains('tag-close-btn')) {
+    e.target.parentNode.remove();
   }
 };
 
@@ -766,18 +791,16 @@ const handleKeyUp = (e) => {
         const parent = inputBox.parentElement;
         const parentHeight = parent.getBoundingClientRect().height;
         const suggestionArea = parent.querySelector(".suggestions");
+        // set the position of the suggestion box to be just underneath the input box
         suggestionArea.style.setProperty('transform', `translateY(${parentHeight}px)`);
 
         const listType = inputBox.dataset.list;
 
-        console.log(parentHeight)
-
+        // if the input box is not empty
         if (inputBox.value.trim() !== '') {
             const options = listSuggestions(inputBox);
             if (options.length > 0) {
                 suggestionArea.style.display = "block";
-                // suggestionArea.style.setProperty('top', `${parentHeight}px`);
-
                 suggestionArea.innerHTML = `<ul>${displaySuggestions(inputBox.id, options, listType)}</ul>`;
             }
         }
@@ -823,7 +846,8 @@ const addTag = (inputField) => {
     const tag = makeTagElement(
         inputField.dataset.list,
         inputField.dataset.id,
-        inputField.value
+        inputField.value,
+        'active',
     );
 
     // check if this tag already exists:
