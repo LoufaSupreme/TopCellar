@@ -28,9 +28,14 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] Add frontend checks for required fields (create, edit)
 - [x] Add backend checks for required fields (create, edit)
 - [ ] Allow uploading pictures when creating or editing an entry
-- [ ] Implement search bar to filter entries
+- [x] Implement search bar to filter entries
+- [x] Show dynamic dropdown of available choices when typing in input field
 - [x] Allow user to edit existing entry in place
-- [ ] Allow user to delete existing entry (display warning first)
+- [x] Allow user to delete existing entry 
+- [x] Allow user to edit existing entries
+- [x] Allow user to flag existing entries
+- [x] Allow user to change status of existing entries
+- [ ] Display warning before deleting entry
 - [ ] Implement custom filtering of entries by adding tags (list of customers, contacts, tags, dollar value, date)
 - [ ] Allow user to save custom filters for later date
 - [ ] Implement sorting of entries by at least one criteria.  Sorting preference should be saved in user preferences each time
