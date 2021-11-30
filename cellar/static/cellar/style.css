@@ -350,6 +350,8 @@
   padding: 0.5rem 1rem;
   margin: 0.5rem 0;
   --gap: 0.5rem;
+  position: relative;
+  flex-wrap: wrap;
 }
 
 .tag {
@@ -444,19 +446,21 @@
     flex-direction: column;
     --gap: 0.3rem;
     position: absolute;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 1);
     max-height: 150px;
     overflow-y: scroll;
-    padding: 1rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 1rem;
     border: 2px solid hsl(var(--clr-light) / 0.7);
-    transform: translateY(2rem);
+    z-index: 20;
+    /* transform: translateY(2rem); */
 }
 
 /* individual suggestion in dropdown box */
 .suggestion {
     cursor: pointer;
     color: hsl(var(--clr-light));
+    padding: 0 1rem;
 }
 
 .suggestion:hover {

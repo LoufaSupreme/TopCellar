@@ -564,13 +564,13 @@ const handleEntrySubmitClicked = async () => {
 
 // handles a dropdown suggestion being clicked:
 const handleSuggestionClicked = (suggestion) => {
-  // get the input associated with that suggestion (has id = suggestion.dataset.inputid):
-  const input = document.querySelector(`#${suggestion.dataset.inputid}`);
-  input.value = suggestion.innerHTML; // load the input
-  input.dataset.id = suggestion.dataset.id; // set the data-id of the input to the same as the value object
+    // get the input associated with that suggestion (has id = suggestion.dataset.inputid):
+    const input = document.querySelector(`#${suggestion.dataset.inputid}`);
+    input.value = suggestion.innerHTML; // load the input
+    input.dataset.id = suggestion.dataset.id; // set the data-id of the input to the same as the value object
 
-  addTag(input);
-  input.focus(); // resume focus on the input box
+    addTag(input);
+    input.focus(); // resume focus on the input box
 };
 
 // handles the accept or cancel btn on the modal for new object entries (customers or contacts)
@@ -764,13 +764,20 @@ const handleKeyUp = (e) => {
     if (e.target.classList.contains("tag-input")) {
         const inputBox = e.target;
         const parent = inputBox.parentElement;
+        const parentHeight = parent.getBoundingClientRect().height;
         const suggestionArea = parent.querySelector(".suggestions");
+        suggestionArea.style.setProperty('transform', `translateY(${parentHeight}px)`);
+
         const listType = inputBox.dataset.list;
+
+        console.log(parentHeight)
 
         if (inputBox.value.trim() !== '') {
             const options = listSuggestions(inputBox);
             if (options.length > 0) {
                 suggestionArea.style.display = "block";
+                // suggestionArea.style.setProperty('top', `${parentHeight}px`);
+
                 suggestionArea.innerHTML = `<ul>${displaySuggestions(inputBox.id, options, listType)}</ul>`;
             }
         }
@@ -804,37 +811,43 @@ const findMatches = (targetWord, arr, propertyList) => {
 // inserts a new element in the DOM with ".tag" classname
 // used for customers, contacts and tags
 const addTag = (inputField) => {
-  const parent = inputField.parentNode; // container div
+    const parent = inputField.parentNode; // container div
 
-  // if there's already a customer name in the parent div, remove it.
-  // only want one customer to be able to be selected at a time
-  if (inputField.dataset.list === "customers" && parent.querySelector(".tag")) {
-    parent.firstElementChild.remove();
-  }
+    // if there's already a customer name in the parent div, remove it.
+    // only want one customer to be able to be selected at a time
+    if (inputField.dataset.list === "customers" && parent.querySelector(".tag")) {
+        parent.firstElementChild.remove();
+    }
 
-  // make new tag:
-  const tag = makeTagElement(
-    inputField.dataset.list,
-    inputField.dataset.id,
-    inputField.value
-  );
+    // make new tag:
+    const tag = makeTagElement(
+        inputField.dataset.list,
+        inputField.dataset.id,
+        inputField.value
+    );
 
-  // check if this tag already exists:
-  const tagExists =
-    Array.from(parent.querySelectorAll(".tag")).filter((el) => {
-      return (
-        el.dataset.id === tag.dataset.id &&
-        el.innerHTML.trim() === tag.innerHTML
-      );
-    }).length > 0;
+    // check if this tag already exists:
+    // returns boolean
+    const tagExists =
+        Array.from(parent.querySelectorAll(".tag")).filter((el) => {
+        return (
+            el.dataset.id === tag.dataset.id &&
+            el.innerHTML.trim() === tag.innerHTML
+        );
+        }).length > 0;
 
-  // if tag doesn't exist, add it:
-  if (!tagExists) {
-    parent.insertBefore(tag, inputField); // add input value as new '.tag' element before the input field
-  }
+    // if tag doesn't exist, add it:
+    if (!tagExists) {
+        parent.insertBefore(tag, inputField); // add input value as new '.tag' element before the input field
 
-  inputField.value = ""; // reset input box
-  inputField.dataset.id = undefined; // reset data-id
+        // hide suggestion box again:
+        const suggestionBox = parent.querySelector('.suggestions');
+        suggestionBox.style.display = "none";
+        
+    }
+
+    inputField.value = ""; // reset input box
+    inputField.dataset.id = undefined; // reset data-id
 };
 
 // returns any entry that contains the target string anywhere:
