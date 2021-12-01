@@ -1153,6 +1153,8 @@ const filterEntries = (entries, criteria) => {
     // if user chose "any" in dropdown
     // i.e. return entries that include ANY of the filter criteria:
     if (criteria.type === 'any') {
+        console.log('Filtering entries matching ANY criteria...')
+
         entries = entries.filter(entry => {
 
             // check if any customers match
@@ -1185,7 +1187,7 @@ const filterEntries = (entries, criteria) => {
 
     // return entries that satisfy ALL the filter criteria at once:
     else if (criteria.type === 'all') {
-        
+        console.log('Filtering entries matching ALL criteria...')
         return entries = entries.filter(entry => {
             // array of booleans for each check
             let allMatches = [];

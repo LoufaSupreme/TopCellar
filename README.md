@@ -37,7 +37,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [x] Allow user to change status of existing entries
 - [ ] Display warning before deleting entry
 - [x] Implement custom filtering of entries by adding tags (matching ANY criteria)
-- [ ] Implement custom filtering (matching ALL criteria)
+- [x] Implement custom filtering (matching ALL criteria)
 - [ ] Allow user to save custom filters for later date
 - [ ] Implement sorting of entries by at least one criteria.  Sorting preference should be saved in user preferences each time
 - [ ] 
