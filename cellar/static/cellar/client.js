@@ -646,8 +646,12 @@ const getFilterFormData = (form) => {
             };
         });
     
-    const fromDate = form.querySelector('#filter-date-from').value.split("-");
-    const toDate = form.querySelector('#filter-date-to').value.split("-");
+    let fromDate = form.querySelector('#filter-date-from').value.split("-");
+    fromDate = fromDate.length === 3 ? fromDate : '';
+
+    let toDate = form.querySelector('#filter-date-to').value.split("-");
+    toDate = toDate.length === 3 ? toDate : '';
+
     const anyAllSelect = form.querySelector('#filter-any-all').value;
 
     const tags = tagElements
@@ -1020,106 +1024,203 @@ const searchEntries = (entries, regex) => {
 
 // returns list of entries that match filter criteria
 const filterEntries = (entries, criteria) => {
+    
+    // returns a list of booleans, one for each customer criteria matched
+    function customerMatch(entry) {
+        let customerMatches = [];
+        // for each customer in criteria, check if it matches the entry's customer:
+        for (let i = 0; i < criteria.customers.length; i++) {
+            const criteriaCustomer = criteria.customers[i];
+            if (
+                entry.customer.name === criteriaCustomer.name &&
+                entry.customer.id === criteriaCustomer.id    
+            ) {
+                // if the customer matches, add true to the array
+                customerMatches.push(true)
+            }
+            // otherwise add false (no match)
+            else customerMatches.push(false);
+        }
+        return customerMatches;
+    }
+
+    // returns a list of booleans, one for each contact criteria matched
+    function contactMatch(entry) {
+        let contactMatches = [];
+        // for each contact in criteria, check if it matches any of the entry contacts:
+        for (let i = 0; i < criteria.contacts.length; i++) {
+            const criteriaContact = criteria.contacts[i];
+            const contactMatch = entry.contacts.filter(contact => {
+                return contact.id === criteriaContact.id;
+            });
+            
+            // if a non-empty array was returned, add true to array:
+            if (contactMatch.length > 0) contactMatches.push(true);
+            else contactMatches.push(false);
+        }
+        return contactMatches;
+    }
+
+    // returns a list of booleans, one for each tag criteria matched
+    function tagMatch(entry) {
+        let tagMatches = [];
+        // for each tag in criteria, check if it matches any of the entry tags:
+        for (let i = 0; i < criteria.tags.length; i++) {
+            const criteriaTag = criteria.tags[i];
+            const tagMatch = entry.tags.filter(tag => {
+                return tag.id === criteriaTag.id;
+            });
+
+            // if a non-empty array was returned, add true to array.
+            if (tagMatch.length > 0) tagMatches.push(true);
+            else tagMatches.push(false);
+        }
+        return tagMatches;
+    }
+    
+    // returns a boolean
+    // true if entry timestamp matches date criteria
+    // type = "any" or "all"
+    function dateMatch(entry, type) {
+        
+        if (type === 'any') {
+            // if no date criteria specified, ignore all entries
+            if (criteria.fromDate === '' && criteria.toDate === '') return false;
+        }
+        else if (type === 'all') {
+            if (criteria.fromDate === '' && criteria.toDate === '') return true;
+        }
+
+        // if only toDate given, take all entries created up to that date:
+        else if (criteria.fromDate === '' && criteria.toDate !== '') {
+            const targetEndDate = new Date(
+                parseInt(criteria.toDate[0]),
+                parseInt(criteria.toDate[1]),
+                parseInt(criteria.toDate[2])
+            );
+
+            const entryDate = new Date(
+                entry.timestamp.year,
+                entry.timestamp.month,
+                entry.timestamp.day
+            );
+            
+            if (entryDate <= targetEndDate) return true;
+        }
+
+        // if only fromDate given, take all entries created after that date:
+        else if (criteria.fromDate !== '' && criteria.toDate === '') {
+            const targetStartDate = new Date(
+                parseInt(criteria.fromDate[0]),
+                parseInt(criteria.fromDate[1]),
+                parseInt(criteria.fromDate[2])
+            );
+
+            const entryDate = new Date(
+                entry.timestamp.year,
+                entry.timestamp.month,
+                entry.timestamp.day
+            );
+            
+            if (entryDate >= targetStartDate) return true;
+        }
+
+        // if both given, take entries created inside that range:
+        else if (criteria.fromDate !== '' && criteria.toDate !== '') {
+            const targetStartDate = new Date(
+                parseInt(criteria.fromDate[0]),
+                parseInt(criteria.fromDate[1]),
+                parseInt(criteria.fromDate[2])
+            );
+
+            const targetEndDate = new Date(
+                parseInt(criteria.toDate[0]),
+                parseInt(criteria.toDate[1]),
+                parseInt(criteria.toDate[2])
+            );
+
+            const entryDate = new Date(
+                entry.timestamp.year,
+                entry.timestamp.month,
+                entry.timestamp.day
+            );
+            
+            if (entryDate >= targetStartDate && entryDate <= targetEndDate) return true;
+        }
+        else return false;
+    }
+    
+    // if user chose "any" in dropdown
+    // i.e. return entries that include ANY of the filter criteria:
     if (criteria.type === 'any') {
         entries = entries.filter(entry => {
 
             // check if any customers match
             if (entry.customer) {
-                for (let i = 0; i < criteria.customers.length; i++) {
-                    const criteriaCustomer = criteria.customers[i];
-                    if (
-                        entry.customer.name === criteriaCustomer.name &&
-                        entry.customer.id === criteriaCustomer.id    
-                    ) {
-                        customerMatch = true;
-                        return true;
-                    }
-                }
+                const customerMatches = customerMatch(entry)
+                // if any of the criteria matched, add to filtered array
+                if (customerMatches.length > 0 && customerMatches.some(el => el === true)) return true;
             }
 
             // check if any contacts match
             if (entry.contacts) {
-                for (let i = 0; i < criteria.contacts.length; i++) {
-                    const criteriaContact = criteria.contacts[i];
-                    const contactMatch = entry.contacts.filter(contact => {
-                        return contact.id === criteriaContact.id;
-                    }).length > 0;
-
-                    if (contactMatch) return true;
-                }
+                const contactMatches = contactMatch(entry);
+                // if any of the criteria matched, add to filtered array
+                if (contactMatches.length > 0 && contactMatches.some(el => el === true)) return true;
             }
 
             // check if any tags match
             if (entry.tags) {
-                for (let i = 0; i < criteria.tags.length; i++) {
-                    const criteriaTag = criteria.tags[i];
-                    const tagMatch = entry.tags.filter(tag => {
-                        return tag.id === criteriaTag.id;
-                    }).length > 0;
-
-                    if (tagMatch) return true;
-                }
+                const tagMatches = tagMatch(entry);
+                // if any of the criteria matched, add to filtered array
+                if (tagMatches.length > 0 && tagMatches.some(el => el === true)) return true;
             }
 
             // check if date range matches
-            if (criteria.fromDate === '' && criteria.toDate === '') return false;
-
-            else if (criteria.fromDate === '' && criteria.toDate !== '') {
-                const targetEndDate = new Date(
-                    parseInt(criteria.toDate[0]),
-                    parseInt(criteria.toDate[1]),
-                    parseInt(criteria.toDate[2])
-                );
-
-                const entryDate = new Date(
-                    entry.timestamp.year,
-                    entry.timestamp.month,
-                    entry.timestamp.day
-                );
-                
-                if (entryDate <= targetEndDate) return true;
-            }
-
-            else if (criteria.fromDate !== '' && criteria.toDate === '') {
-                const targetStartDate = new Date(
-                    parseInt(criteria.fromDate[0]),
-                    parseInt(criteria.fromDate[1]),
-                    parseInt(criteria.fromDate[2])
-                );
-
-                const entryDate = new Date(
-                    entry.timestamp.year,
-                    entry.timestamp.month,
-                    entry.timestamp.day
-                );
-                
-                if (entryDate >= targetStartDate) return true;
-            }
-
-            else if (criteria.fromDate !== '' && criteria.toDate !== '') {
-                const targetStartDate = new Date(
-                    parseInt(criteria.fromDate[0]),
-                    parseInt(criteria.fromDate[1]),
-                    parseInt(criteria.fromDate[2])
-                );
-
-                const targetEndDate = new Date(
-                    parseInt(criteria.toDate[0]),
-                    parseInt(criteria.toDate[1]),
-                    parseInt(criteria.toDate[2])
-                );
-
-                const entryDate = new Date(
-                    entry.timestamp.year,
-                    entry.timestamp.month,
-                    entry.timestamp.day
-                );
-                
-                if (entryDate >= targetStartDate && entryDate <= targetEndDate) return true;
-            }
-
-        })
+            const dateMatches = dateMatch(entry, 'any');
+            if (dateMatches) return true;
+        });
         return entries;
+    }
+
+    // return entries that satisfy ALL the filter criteria at once:
+    else if (criteria.type === 'all') {
+        
+        return entries = entries.filter(entry => {
+            // array of booleans for each check
+            let allMatches = [];
+            
+            // check if entry matches date criteria:
+            if (dateMatch(entry, 'all')) allMatches.push(true);
+            else allMatches.push(false);
+            
+            // check if entry customer matches:
+            if (entry.customer && criteria.customers.length > 0) {
+                const matches = customerMatch(entry);
+                if (matches.length > 0 && matches.every(el => el === true)) {
+                    allMatches.push(true);
+                }
+                else allMatches.push(false);
+            }
+
+            if (entry.contacts && criteria.contacts.length > 0) {
+                const matches = contactMatch(entry);
+                if (matches.length > 0 && matches.every(el => el === true)) {
+                    allMatches.push(true);
+                }
+                else allMatches.push(false);
+            }
+
+            if (entry.tags && criteria.tags.length > 0) {
+                const matches = tagMatch(entry);
+                if (matches.length > 0 && matches.every(el => el === true)) {
+                    allMatches.push(true);
+                } 
+                else allMatches.push(false);
+            }
+
+            if (allMatches.length > 0 && allMatches.every(el => el === true)) return true;
+        })
     }
 }
 
