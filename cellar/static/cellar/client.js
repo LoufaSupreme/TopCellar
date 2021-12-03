@@ -270,7 +270,14 @@ const generateModalText = (customer, contacts) => {
 
   if (contacts) {
     const contactText = contacts
-      .map((contact) => `<div class='modal-object fs-400 text-accent'>${contact.first_name} ${contact.last_name}</div>`).join("");
+      .map((contact) => {
+        const name = contact.last_name ? `${contact.first_name} ${contact.last_name}` : contact.first_name;
+        
+        return `
+        <div class='modal-object fs-400 text-accent'>
+            ${name}
+        </div>`
+      }).join("");
 
     promptText += `
         <div class='modal-text fs-300'>We couldn't find the following contacts in your Rolodex:</div>
