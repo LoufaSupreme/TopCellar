@@ -34,8 +34,8 @@ const App = async (state) => {
         ${makeModal('new-entry-modal')}
         ${makeModal('add-objects-modal')}
         ${makeSearchBox()}
-        ${makeFilterBox()}
         ${makeAddBtn()}
+        ${makeFilterBox()}
 
         <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
     `;
@@ -327,8 +327,9 @@ const makeSearchBox = () => {
 // create a form to apply multiple filters to the entries
 const makeFilterBox = () => {
     return `
-    <div id='filter-container' class='search-container'>
-        <div class='text-accent fs-600'>Filter</div>
+    <div id='filter-container' class='accordion neupho'>
+        <div class='text-accent fs-500'>Filter</div>
+        <div>
             <div class='flex'>
                 <select class='neupho bg-dark'>
                     <option value='new'>New Custom Filter</option>
@@ -772,6 +773,7 @@ const statusChange = (dropdown, entry_id) => {
 // handles clicks anywhere on the document.  Called on window load.
 // this is to avoid having to make new event handlers for dynamic content (like the form)
 const handleClicks = (e) => {
+    // console.log(e.target);
     // fires when the entry submit button is clicked:
     if (e.target.id === "submit-new-btn") handleEntrySubmitClicked();
 
@@ -840,6 +842,11 @@ const handleClicks = (e) => {
         const filteredEntries = filterEntries(store.entries, filterParams);
         const entriesContainer = document.querySelector('#entries-container');
         entriesContainer.innerHTML = displayEntries(filteredEntries);
+    }
+
+    else if (e.target.id === 'toolbar-filter-btn') {
+        const filterAccordion = document.querySelector('#filter-container')
+        filterAccordion.classList.toggle('open');
     }
 };
 
