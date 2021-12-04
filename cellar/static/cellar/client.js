@@ -28,13 +28,18 @@ const App = async (state) => {
     await loadStore(state);
 
     return `
-        <section id='sidebar' class='accordion'>
-            ${makeFilterBox()}
-            ${makeSortBox()}
-        </section>
-        <section id='main'>
+        <section id='header'>
             <div class="navbar flex">
                 ${makeNavBar()}
+            </div>
+        </section>
+        <section id='main'>
+            <div id='sidebar' class='accordion'>
+                <div id='sidebar-open-btn'>
+                    <i class="bi bi-funnel"></i>
+                </div>
+                ${makeFilterBox()}
+                ${makeSortBox()}
             </div>
             <div class='welcome fs-700 ff-sans-cond letter-spacing-1 text-white uppercase'>
                 Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
@@ -394,25 +399,25 @@ const makeFilterBox = () => {
             </div>
             <div class='flex checkbox-container'>
                 <div>
-                    <input type="checkbox" name="flagged" value="flagged">
+                    <input class='cb-flagged' type="checkbox" name="flagged" value="true">
                     <label for="flagged"> Flagged</label>
                 </div>
                 <div>
-                    <input type="checkbox" name="unflagged" value="unflagged">
+                    <input class='cb-flagged' type="checkbox" name="unflagged" value="false">
                     <label for="unflagged"> Unflagged</label>
                 </div>
             </div>
             <div class='flex checkbox-container'>
                 <div>
-                    <input type="checkbox" name="active" value="active">
+                    <input class='cb-status' type="checkbox" name="active" value="active">
                     <label for="active"> Active</label>
                 </div>
                 <div>
-                    <input type="checkbox" name="completed" value="completed">
+                    <input class='cb-status' type="checkbox" name="completed" value="completed">
                     <label for="completed"> Completed</label>
                 </div>
                 <div>
-                    <input type="checkbox" name="archived" value="archived">
+                    <input class='cb-status' type="checkbox" name="archived" value="archived">
                     <label for="archived"> Archived</label>
                 </div>
             </div>
@@ -731,14 +736,6 @@ const getFilterFormData = (form) => {
                 last_name: last_name,
             };
         });
-    
-    let fromDate = form.querySelector('#filter-date-from').value.split("-");
-    fromDate = fromDate.length === 3 ? fromDate : '';
-
-    let toDate = form.querySelector('#filter-date-to').value.split("-");
-    toDate = toDate.length === 3 ? toDate : '';
-
-    const anyAllSelect = form.querySelector('#filter-any-all').value;
 
     const tags = tagElements
         .filter((tag) => tag.dataset.list === "tags")
@@ -749,6 +746,34 @@ const getFilterFormData = (form) => {
             };
         });
 
+    
+    let fromDate = form.querySelector('#filter-date-from').value.split("-");
+    fromDate = fromDate.length === 3 ? fromDate : '';
+
+    let toDate = form.querySelector('#filter-date-to').value.split("-");
+    toDate = toDate.length === 3 ? toDate : '';
+
+    const anyAllSelect = form.querySelector('#filter-any-all').value;
+
+    // get checkbox data:
+    const checkBoxes = Array.from(form.querySelectorAll('input[type="checkbox"]'));
+
+    const flagged = checkBoxes
+        .filter(box => box.classList.contains('cb-flagged') && box.checked === true)
+        .map(box => {
+            return {
+                name: box.name,
+                value: box.value,
+            }
+        });
+
+    const status = checkBoxes
+        .filter(box => box.classList.contains('cb-status') && box.checked === true)
+        .map(box => box.value);    
+
+        console.log(status)
+
+
     const filterParameters = {
         type: anyAllSelect,
         customers: customers,
@@ -756,10 +781,11 @@ const getFilterFormData = (form) => {
         tags: tags, 
         fromDate: fromDate,
         toDate: toDate,
+        flagged: flagged,
+        status: status,
     }
 
     return filterParameters;
-    
 }
 
 //////////////////////////////////////
@@ -924,6 +950,12 @@ const handleClicks = (e) => {
 
     // fires when user clicks "filter" or "sort" beside the add btn
     else if (e.target.id === 'toolbar-filter-btn' || e.target.id === 'toolbar-sort-btn' ) {
+        const sidebar = document.querySelector('#sidebar')
+        sidebar.classList.toggle('open');
+    }
+
+    // fires when user clicks on little filter cutout on sidebar:
+    else if (e.target.id === 'sidebar-open-btn') {
         const sidebar = document.querySelector('#sidebar')
         sidebar.classList.toggle('open');
     }
@@ -1171,6 +1203,38 @@ const filterEntries = (entries, criteria) => {
         }
         return tagMatches;
     }
+
+
+    function flagMatch(entry) {
+        let flagMatches = [];
+
+        for (let i = 0; i < criteria.flagged.length; i++) {
+            const flagType = criteria.flagged[i];
+            if (String(entry.flagged) === flagType.value) flagMatches.push(true);
+            else flagMatches.push(false);
+        }
+        return flagMatches;
+    }
+
+    function statusMatch(entry) {
+        let statusMatches = [];
+
+        for (let i = 0; i < criteria.status.length; i++) {
+            const criteriaStatus = criteria.status[i];
+            if (
+                criteriaStatus === 'active' && 
+                entry.completed === false &&
+                entry.archived === false
+            ) {
+                statusMatches.push(true)
+            }
+            else if (entry[criteriaStatus] === true) {
+                statusMatches.push(true)
+            }
+            else statusMatches.push(false);
+        }
+        return statusMatches;
+    }
     
     // returns a boolean
     // true if entry timestamp matches date criteria
@@ -1243,6 +1307,7 @@ const filterEntries = (entries, criteria) => {
         }
         else return false;
     }
+
     
     // if user chose "any" in dropdown
     // i.e. return entries that include ANY of the filter criteria:
@@ -1271,6 +1336,13 @@ const filterEntries = (entries, criteria) => {
                 // if any of the criteria matched, add to filtered array
                 if (tagMatches.length > 0 && tagMatches.some(el => el === true)) return true;
             }
+
+            // check if flag criteria matches:
+            const flagMatches = flagMatch(entry);
+            if (flagMatches.length > 0 && flagMatches.some(el => el === true)) return true;
+
+            const statusMatches = statusMatch(entry);
+            if (statusMatches.length > 0 && statusMatches.some(el => el === true)) return true;
 
             // check if date range matches
             const dateMatches = dateMatch(entry, 'any');

@@ -227,18 +227,56 @@ body {
     justify-content: center;  */
 }
 
+/* SIDEBAR ////////////////////*/
+
 #sidebar {
     background: hsl(var(--clr-dark));
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
     position: fixed;
-    top: 0;
-    left: 0;
     bottom: 0;
+    min-height: 85vh;
     z-index: 20;
+    border-top: 2px solid hsl(var(--clr-light));
     border-right: 2px solid hsl(var(--clr-light));
+    border-bottom: 2px solid hsl(var(--clr-light));
 }
+
+#sidebar-open-btn {
+    /* font-family: "Font Awesome 5 Free"; */
+    /* font-family: var(--ff-sans-normal); */
+    display: inline-block;
+    /* font-weight: 900; */
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.5em;
+    border-radius: 0 0.5em 0.5em 0;
+    color: hsl(var(--clr-light));
+    position: fixed;
+    top: 10%;
+    right: 0;
+    transform: translateX(100%);
+    cursor: pointer;
+}
+
+#sidebar-open-btn i {
+    pointer-events: none;
+}
+
+/* #sidebar::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f0b0";
+    display: inline-block;
+    font-weight: 900;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.5em;
+    border-radius: 0 0.5em 0.5em 0;
+    color: hsl(var(--clr-light));
+    position: fixed;
+    top: 10%;
+    right: 0;
+    transform: translateX(100%)
+} */
 
 .accordion {
     transform: translateX(-100%);
@@ -248,6 +286,40 @@ body {
 .open {
     transform: translateX(0%);
 }
+
+/* FILTER AND SORT AREA ///////////////*/
+
+/* filter input */
+#filter-container {
+    margin-inline: 2rem;
+    padding: 0.5rem 1.2rem;
+    color: hsl(var(--clr-white) / 0.7);
+}
+
+#sort-container {
+    margin-inline: 2rem;
+    padding: 0.5rem 1.2rem;
+    color: hsl(var(--clr-white) / 0.7);
+}
+
+.datebox-container {
+    justify-content: center;
+}
+
+.checkbox-container {
+    justify-content: space-evenly;
+}
+
+.toolbar-container {
+  justify-content: center;
+  align-items: center;
+}
+
+.toolbar {
+  justify-content: center;
+  align-items: center;
+}
+
 
 #main {
     display: flex;
@@ -308,38 +380,7 @@ body {
   padding-left: 1rem;
 }
 
-/* FILTER AND SORT AREA ///////////////*/
-
-/* filter input */
-#filter-container {
-    margin-inline: 5rem;
-    padding: 0.5rem 1.2rem;
-    color: hsl(var(--clr-white) / 0.7);
-}
-
-#sort-container {
-    margin-inline: 5rem;
-    padding: 0.5rem 1.2rem;
-    color: hsl(var(--clr-white) / 0.7);
-}
-
-.datebox-container {
-    justify-content: center;
-}
-
-.checkbox-container {
-    justify-content: space-evenly;
-}
-
-.toolbar-container {
-  justify-content: center;
-  align-items: center;
-}
-
-.toolbar {
-  justify-content: center;
-  align-items: center;
-}
+/* ADD FILTER SORT BUTTONS ************/
 
 #toolbar-filter-btn {
   width: 120px;
