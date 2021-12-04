@@ -426,7 +426,7 @@ const makeFilterBox = () => {
                 ${makeSuggestionDiv("tags")}
             </div>
             <div class='form-btn-container flex'>
-                <button type="buton" class='neupho bg-dark' id="filter-btn">FILTER</button>
+                <button type="buton" class='neupho bg-dark' id="filter-btn">Filter</button>
             </div>
         </div>
     </div>
@@ -448,6 +448,9 @@ const makeSortBox = () => {
                     <option value='descending'>Descending</option>
                     <option value='ascending'>Ascending</option>
                 </select>
+            </div>
+            <div class='form-btn-container flex'>
+                <button type="buton" class='neupho bg-dark' id="sort-btn">Sort</button>
             </div>
         </div>
     `;
@@ -1360,6 +1363,20 @@ const filterEntries = (entries, criteria) => {
             
             // check if entry matches date criteria:
             if (dateMatch(entry, 'all')) allMatches.push(true);
+            else allMatches.push(false);
+
+            // check if flag criteria matches:
+            const flagMatches = flagMatch(entry);
+            // if the flagMatches array is empty, treat it as if it passed the match test
+            if (flagMatches.length === 0) allMatches.push(true);
+            else if (flagMatches.length > 0 && flagMatches.every(el => el === true)) allMatches.push(true);
+            else allMatches.push(false);
+
+            // check if status (completed, archived, active) matches:
+            const statusMatches = statusMatch(entry);
+            // if the statusMatches array is empty, treat it as if it passed the match test
+            if (statusMatches.length === 0) allMatches.push(true);
+            else if (statusMatches.length > 0 && statusMatches.every(el => el === true)) allMatches.push(true);
             else allMatches.push(false);
             
             // check if entry customer matches:
