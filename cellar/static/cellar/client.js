@@ -439,12 +439,12 @@ const makeSortBox = () => {
         <div id='sort-container' class='neupho'>
             <div class='text-accent fs-500'>Sort</div>
             <div class='flex'>
-                <select class='neupho bg-dark'>
+                <select id='sortBy' class='neupho bg-dark'>
                     <option value='date'>Date Created</option>
                     <option value='customer_name'>Customer Name</option>
                     <option value='flagged'>Flagged</option>
                 </select>
-                <select class='neupho bg-dark'>
+                <select id='sortDirection' class='neupho bg-dark'>
                     <option value='descending'>Descending</option>
                     <option value='ascending'>Ascending</option>
                 </select>
@@ -951,6 +951,20 @@ const handleClicks = (e) => {
         entriesContainer.innerHTML = displayEntries(filteredEntries);
     }
 
+    // fires when user clicks on "sort" btn within the sort container
+    else if (e.target.id === 'sort-btn') {
+        const form = document.querySelector('#sort-container');
+        const sortBy = form.querySelector('#sortBy').value;
+        const sortDirection = form.querySelector('#sortDirection').value;
+        const sortParams = {
+            sortBy: sortBy,
+            sortDirection: sortDirection,
+        }
+        const sortedEntries = sortEntries(store.entries, sortParams);
+        const entriesContainer = document.querySelector('#entries-container');
+        entriesContainer.innerHTML = displayEntries(sortedEntries, true);
+    }
+
     // fires when user clicks "filter" or "sort" beside the add btn
     else if (e.target.id === 'toolbar-filter-btn' || e.target.id === 'toolbar-sort-btn' ) {
         const sidebar = document.querySelector('#sidebar')
@@ -962,6 +976,7 @@ const handleClicks = (e) => {
         const sidebar = document.querySelector('#sidebar')
         sidebar.classList.toggle('open');
     }
+
 
 };
 
@@ -1409,13 +1424,62 @@ const filterEntries = (entries, criteria) => {
     }
 }
 
+const sortEntries = (entries, criteria) => {
+    console.log(`Sorting entries by ${criteria.sortBy} in ${criteria.sortDirection} order...`);
+
+    if (criteria.sortBy === 'date') {
+        entries = entries.sort((a, b) => {
+            const a_date = new Date(
+                a.timestamp.year, 
+                a.timestamp.month - 1, 
+                a.timestamp.day, 
+                a.timestamp.hour,
+                a.timestamp.minute,
+                a.timestamp.second
+            );
+            const b_date = new Date(
+                b.timestamp.year, 
+                b.timestamp.month - 1, 
+                b.timestamp.day, 
+                b.timestamp.hour,
+                b.timestamp.minute,
+                b.timestamp.second
+            );
+            if (criteria.sortDirection === 'descending') {
+                return a_date > b_date ? -1 : 1;
+            }
+            else return a_date > b_date ? 1 : -1;
+        })
+    }
+    else if (criteria.sortBy === 'customer_name') {
+        entries = entries.sort((a, b) => {
+            const a_customer_name = a.customer ? a.customer.name : null;
+            const b_customer_name = b.customer ? b.customer.name : null;
+            if (criteria.sortDirection === 'descending') {
+                return a_customer_name > b_customer_name ? -1 : 1;
+            }
+            else return a_customer_name > b_customer_name ? 1 : -1;
+        })
+    }
+    else if (criteria.sortBy === 'flagged') {
+        entries = entries.sort((a, b) => {
+            if (criteria.sortDirection === 'descending') {
+                return a.flagged > b.flagged ? 1 : -1;
+            }
+            else return a.flagged > b.flagged ? -1 : 1;
+        })
+    }
+
+    return entries;
+}
+
 // display each entry on the page:
+// regex is for the search function
 const displayEntries = (entries, regex = null) => {
   console.log("Displaying Entries...");
 
   return entries
     .map((entry) => makeEntryHTML(entry, regex))
-    .reverse()
     .join("");
 };
 

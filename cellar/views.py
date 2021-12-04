@@ -33,7 +33,7 @@ def index(request):
 # send list of all entries for the user
 def getEntries(request):
     user = request.user
-    entries = Entry.objects.filter(author=user).all()
+    entries = Entry.objects.filter(author=user).all().order_by('-timestamp')
 
     return JsonResponse([entry.serialize() for entry in entries], safe=False)
 
