@@ -28,16 +28,23 @@ const App = async (state) => {
     await loadStore(state);
 
     return `
-        <div class='welcome fs-700 ff-sans-cond letter-spacing-1 text-white uppercase'>
-            Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
-        </div>
-        ${makeModal('new-entry-modal')}
-        ${makeModal('add-objects-modal')}
-        ${makeSearchBox()}
-        ${makeAddBtn()}
-        ${makeFilterBox()}
+        <section id='sidebar' class='accordion'>
+            ${makeFilterBox()}
+            ${makeSortBox()}
+        </section>
+        <section id='main'>
+            <div class="navbar flex">
+                ${makeNavBar()}
+            </div>
+            <div class='welcome fs-700 ff-sans-cond letter-spacing-1 text-white uppercase'>
+                Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
+            </div>
+            ${makeModal('new-entry-modal')}
+            ${makeModal('add-objects-modal')}
+            ${makeAddBtn()}
 
-        <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
+            <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
+        </section>
     `;
   }
 };
@@ -59,6 +66,43 @@ const loadStore = async (state) => {
 // HTML COMPONENTS ///////////////////
 //////////////////////////////////////
 
+// navbar
+const makeNavBar = () => {
+    return `
+        <h1><a class='navbar-brand text-accent' href="#">TopCellar</a></h1>
+        ${makeSearchBox()}
+        <div class="nav-content flex">
+            <ul class="navbar-nav flex">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Sales Activity</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Rolodex</a>
+                </li>    
+                <li class="nav-item">
+                    <a class="nav-link" href="#">KPIs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Log Out</a>
+                </li>
+            </ul>
+        </div>
+    `;
+}
+
+// create search box at top of screen to filter entries:
+const makeSearchBox = () => {
+    return `
+        <div class='flex search-container'>
+            <div class='search-bar-container flex neupho inset'>
+                <input type="text" id="search" placeholder="Search">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class='search-count fs-200 text-white'></div>
+        </div>
+      `;
+  };
+  
 // generate HTML for one entry:
 const makeEntryHTML = (entry, regex = null) => {
   let contacts = entry.contacts.map((c) => `${c.first_name}${c.last_name !== null ? " " + c.last_name : ""}`);
@@ -314,29 +358,19 @@ const makeTagElement = (type, id, content, status = 'locked') => {
     return tag;
 };
 
-// create search box at top of screen to filter entries:
-const makeSearchBox = () => {
-  return `
-        <div class='search-container neupho inset'>
-            <input type="text" id="search" placeholder="Search">
-        </div>
-        <div class='search-count fs-200 text-white'></div>
-    `;
-};
-
 // create a form to apply multiple filters to the entries
 const makeFilterBox = () => {
     return `
-    <div id='filter-container' class='accordion neupho'>
-        <div class='text-accent fs-500'>Filter</div>
+    <div id='filter-container' class='neupho'>
+        <div class='flex'>
+            <div class='text-accent fs-500'>Filter</div>
+            <select class='neupho bg-dark'>
+                <option value='new'>New Custom Filter</option>
+                <option value='custom1'>Custom Filter 1</option>
+                <option value='custom2'>Custom Filter 2</option>
+            </select>
+        </div>
         <div>
-            <div class='flex'>
-                <select class='neupho bg-dark'>
-                    <option value='new'>New Custom Filter</option>
-                    <option value='custom1'>Custom Filter 1</option>
-                    <option value='custom2'>Custom Filter 2</option>
-                </select>
-            </div>
             <div class='flex'>
                 <span>Show entries with</span>
                 <select id='filter-any-all' class='neupho bg-dark'>
@@ -353,10 +387,34 @@ const makeFilterBox = () => {
                 <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
                 ${makeSuggestionDiv("contacts")}
             </div>
-            <div class='flex'>
+            <div class='flex datebox-container'>
                 <input id='filter-date-from' class='neupho inset' type="date">
                 <div class='text-white'>TO</div>
                 <input id='filter-date-to' class='neupho inset' type="date">
+            </div>
+            <div class='flex checkbox-container'>
+                <div>
+                    <input type="checkbox" name="flagged" value="flagged">
+                    <label for="flagged"> Flagged</label>
+                </div>
+                <div>
+                    <input type="checkbox" name="unflagged" value="unflagged">
+                    <label for="unflagged"> Unflagged</label>
+                </div>
+            </div>
+            <div class='flex checkbox-container'>
+                <div>
+                    <input type="checkbox" name="active" value="active">
+                    <label for="active"> Active</label>
+                </div>
+                <div>
+                    <input type="checkbox" name="completed" value="completed">
+                    <label for="completed"> Completed</label>
+                </div>
+                <div>
+                    <input type="checkbox" name="archived" value="archived">
+                    <label for="archived"> Archived</label>
+                </div>
             </div>
             <div class="tag-container neupho inset flex">
                 <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
@@ -367,6 +425,26 @@ const makeFilterBox = () => {
             </div>
         </div>
     </div>
+    `;
+}
+
+// create a form to apply sorting criteria to the entries:
+const makeSortBox = () => {
+    return `
+        <div id='sort-container' class='neupho'>
+            <div class='text-accent fs-500'>Sort</div>
+            <div class='flex'>
+                <select class='neupho bg-dark'>
+                    <option value='date'>Date Created</option>
+                    <option value='customer_name'>Customer Name</option>
+                    <option value='flagged'>Flagged</option>
+                </select>
+                <select class='neupho bg-dark'>
+                    <option value='descending'>Descending</option>
+                    <option value='ascending'>Ascending</option>
+                </select>
+            </div>
+        </div>
     `;
 }
 
@@ -844,10 +922,12 @@ const handleClicks = (e) => {
         entriesContainer.innerHTML = displayEntries(filteredEntries);
     }
 
-    else if (e.target.id === 'toolbar-filter-btn') {
-        const filterAccordion = document.querySelector('#filter-container')
-        filterAccordion.classList.toggle('open');
+    // fires when user clicks "filter" or "sort" beside the add btn
+    else if (e.target.id === 'toolbar-filter-btn' || e.target.id === 'toolbar-sort-btn' ) {
+        const sidebar = document.querySelector('#sidebar')
+        sidebar.classList.toggle('open');
     }
+
 };
 
 

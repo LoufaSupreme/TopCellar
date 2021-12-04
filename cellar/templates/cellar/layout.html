@@ -9,12 +9,12 @@
     <!-- Google fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700&family=Bellefair&family=Barlow:wght@400;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700&family=Bellefair&family=Barlow:wght@400;700&display=swap" rel="stylesheet">
     <!-- Stylesheets -->
     <link href="{% static 'cellar/resets.css' %}" rel="stylesheet">
     <link href="{% static 'cellar/style.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="https://kit.fontawesome.com/b8474acc28.js" crossorigin="anonymous"></script> 
     <!-- Scripts -->
     <script src="{% static 'cellar/api.js' %}" defer></script>
     <script src="{% static 'cellar/client.js' %}" defer></script>
@@ -22,41 +22,6 @@
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
-    <div class="navbar bg-dark flex">
-        <h1><a class='navbar-brand text-accent' href="{% url 'cellar:index' %}">TopCellar</a></h1>
-        <div class="nav-content flex">
-            <div class="login-status">
-                {% if user.is_authenticated %}
-                    Logged in as <strong>{{ user.username }}</strong>
-                {% else %}
-                    Not logged in.
-                {% endif %}
-            </div>
-            <ul class="navbar-nav flex">
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'cellar:index' %}">Sales Activity</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Rolodex</a>
-                </li>    
-                <li class="nav-item">
-                    <a class="nav-link" href="#">KPIs</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'cellar:logout' %}">Log Out</a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'cellar:login' %}">Log In</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'cellar:register' %}">Register</a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
     {% block body %}
     {% endblock %}
 </body>
