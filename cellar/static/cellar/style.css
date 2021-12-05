@@ -697,7 +697,7 @@ button i {
     background: hsl(var(--clr-dark));
     width: 350px;
     height: 200px;
-    margin: 3rem auto;
+    margin: 0.5rem auto;
     align-items: center;
     overflow: hidden;
     border-radius: 1em;
@@ -706,7 +706,7 @@ button i {
 .company-container {
     display: flex;
     flex-direction: column;
-    background-image:linear-gradient(to left top, rgba(0,0,0,0.8), hsl(var(--clr-white) / 0.01));
+    background-image:linear-gradient(to left top, rgba(0,0,0,0.7), hsl(var(--clr-white) / 0.01));
     width: 45%;
     height: 150%;
     transform: rotate(-20deg) translateX(-30px);
@@ -723,9 +723,15 @@ button i {
 }
 
 .company-container .company-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
     height: 50px;
     width: 50px;
     background: grey;
+    border-radius: 0.5rem;
+    font-size: var(--fs-500);
 }
 
 .company-container .company-name {
@@ -746,10 +752,18 @@ button i {
 }
 
 .accent-rect {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background: hsl(var(--clr-light) / 0.75);
     min-height: 30px;
     transform: rotate(20deg) translateX(-15%);
     width: 150%;
+}
+
+.accent-rect i {
+    color: rgba(0, 0, 0, 1);
+    padding-right: 0.3rem;
 }
 
 .info-container {

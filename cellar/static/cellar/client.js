@@ -129,18 +129,43 @@ const makeSearchBox = () => {
 //// ROLODEX /////////////////////////////////
 
 const makeContactCard = (contact, regex = null) => {
+    const company = contact.company ? contact.company.name : "";
+    const position = contact.position ? contact.position : "";
+    const email = contact.email ? contact.email : "";
+    const phone_cell = contact.phone_cell ? contact.phone_cell : "";
+    const phone_office = contact.phone_office ? contact.phone_office : "";
+    
+    
     return `
-        <div id='contact-${contact.id}' class='neupho'>
-            <div id='' class=''>
-                ${contact.name}
+        <div class='contact-card neupho'>
+            <div class='company-container'>
+                <div class='company-info-container'>
+                    <div class='company-logo'>?</div>
+                    <div class='company-name'>${company}</div>
+                </div>
             </div>
-            <div id='' class=''>
-                ${contact.position}
+            <div class='accent-rect-container'>
+                <div class='accent-rect'><i class="bi bi-person-circle"></i></div>
+                <div class='accent-rect'><i class="bi bi-globe"></i></div>
+                <div class='accent-rect'><i class="bi bi-telephone"></i></div>
+                <div class='accent-rect'><i class="bi bi-card-list"></i></div>
             </div>
-            <div id='' class=''>
-                ${contact.company ? contact.company.name : ''}
+            <div class='info-container'>
+                <div class='info'>
+                    <div class='name'><span class='fs-400 text-accent'>${contact.name}</span></div>
+                    <div class='position'>${position}</div>
+                </div>
+                <div class='info'>
+                    <div class='email'>${email}</div>
+                </div>
+                <div class='info'>
+                    <div class='cell'>${phone_cell}</div>
+                    <div class='office'>${phone_office}</div>
+                </div>
+                <div class='info'>
+                    <div class='notes'>Notes</div>
+                </div>
             </div>
-            <div id='' class=''></div>
         </div>
     `;
 }
