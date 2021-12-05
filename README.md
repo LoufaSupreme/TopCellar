@@ -39,9 +39,10 @@ This app aims to help address the common sales problem of tracking sales activit
 - [x] Implement custom filtering of entries by adding tags (matching ANY criteria)
 - [x] Implement custom filtering (matching ALL criteria)
 - [ ] Allow user to save custom filters for later date
-- [ ] Implement sorting of entries by at least one criteria.  Sorting preference should be saved in user preferences each time
-- [ ] 
-- [ ] 
+- [x] Implement sorting of entries by at least one criteria.  
+- [ ] Allow sorting preference to be saved in user preferences each time
+- [ ] Display user friendly error message if any console error
+- [ ] Display user friendly success message if task completed successfully
 - [ ] 
 - [ ] 
 

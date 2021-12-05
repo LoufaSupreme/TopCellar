@@ -14,6 +14,9 @@ from .models import User, Profile, Entry, Address, Customer, Contact, Tag
 def index(request):
 
     user = request.user
+    
+    if not user.is_authenticated:
+        return render(request, 'cellar/login.html')
 
     # trigger the register modal if "new_register" is set to True as a sesssion variable.
     # immediately pop it from the session upon redirect form the register view function.
