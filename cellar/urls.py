@@ -9,6 +9,7 @@ app_name = "cellar"
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('rolodex', views.rolodex, name='rolodex'),
     path('login', views.login_view, name='login'),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),

@@ -111,7 +111,8 @@ class Contact(models.Model):
             "user": self.user.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "name": f'{self.first_name}',
+            "name": self.first_name,
+            "position": self.position, 
             "email": self.email,
             "phone_cell": self.phone_cell,
             "phone_office": self.phone_office,
@@ -120,7 +121,10 @@ class Contact(models.Model):
         }
 
         if self.company != None:
-            serialized['company'] = self.company.name
+            serialized['company'] = {
+                "id": self.company.id,
+                "name": self.company.name
+            }
 
         if self.last_name != None:
             serialized['name'] = f'{self.first_name} {self.last_name}'

@@ -48,9 +48,26 @@ const App = async (state) => {
             ${makeModal('add-objects-modal')}
             ${makeAddBtn()}
 
-            <div class='container flex' id='entries-container'>${displayEntries(state.entries)}</div>
+            <div class='container flex' id='entries-container'>
+                ${displayEntries(state.entries)}
+            </div>
         </section>
     `;
+  }
+  else if (state.page === 'rolodex') {
+      return `
+        <section id='header'>
+            <div class="navbar flex">
+                ${makeNavBar()}
+            </div>
+        </section>
+        <section id='main'>
+            <div class='container flex' id='entries-container'>
+                ${displayContacts(state.contacts)}
+            </div>
+        </section>
+  
+      `;
   }
 };
 
@@ -71,7 +88,7 @@ const loadStore = async (state) => {
 // HTML COMPONENTS ///////////////////
 //////////////////////////////////////
 
-// navbar
+//// navbar /////////////////////////
 const makeNavBar = () => {
     return `
         <h1><a class='navbar-brand text-accent' href="#">TopCellar</a></h1>
@@ -82,7 +99,7 @@ const makeNavBar = () => {
                     <a class="nav-link" href="/">Sales Activity</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Rolodex</a>
+                    <a id='rolodex-link' class="nav-link" href="#">Rolodex</a>
                 </li>    
                 <li class="nav-item">
                     <a class="nav-link" href="#">KPIs</a>
@@ -108,6 +125,28 @@ const makeSearchBox = () => {
       `;
   };
   
+
+//// ROLODEX /////////////////////////////////
+
+const makeContactCard = (contact, regex = null) => {
+    return `
+        <div id='contact-${contact.id}' class='neupho'>
+            <div id='' class=''>
+                ${contact.name}
+            </div>
+            <div id='' class=''>
+                ${contact.position}
+            </div>
+            <div id='' class=''>
+                ${contact.company ? contact.company.name : ''}
+            </div>
+            <div id='' class=''></div>
+        </div>
+    `;
+}
+
+//// INDEX ///////////////////////////////////
+
 // generate HTML for one entry:
 const makeEntryHTML = (entry, regex = null) => {
   let contacts = entry.contacts.map((c) => `${c.first_name}${c.last_name !== null ? " " + c.last_name : ""}`);
@@ -977,7 +1016,12 @@ const handleClicks = (e) => {
         sidebar.classList.toggle('open');
     }
 
-
+    // click on Rolodex nav link - switch page
+    else if (e.target.id === 'rolodex-link') {
+        e.preventDefault();
+        store.page = 'rolodex';
+        render(root, store);
+    }
 };
 
 
@@ -1476,12 +1520,20 @@ const sortEntries = (entries, criteria) => {
 // display each entry on the page:
 // regex is for the search function
 const displayEntries = (entries, regex = null) => {
-  console.log("Displaying Entries...");
+    console.log("Displaying Entries...");
 
-  return entries
-    .map((entry) => makeEntryHTML(entry, regex))
-    .join("");
+    return entries
+        .map((entry) => makeEntryHTML(entry, regex))
+        .join("");
 };
+
+const displayContacts = (contacts, regex = null) => {
+    console.log("DIsplaying Contacts...");
+
+    return contacts
+        .map(contact => makeContactCard(contact, regex))
+        .join("");
+}
 
 // run on DOM content loaded:
 window.addEventListener("load", () => {

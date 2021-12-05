@@ -31,6 +31,14 @@ def index(request):
         "new_register": new_register,
         "user": user
     })
+    
+
+def rolodex(request):
+    user = request.user
+    return render(request, "cellar/rolodex.html", {
+        "user": user
+    })
+
 
 # API route
 # send list of all entries for the user
