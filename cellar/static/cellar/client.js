@@ -138,17 +138,9 @@ const makeContactCard = (contact, regex = null) => {
     let company = contact.company ? contact.company.name : "";
     let position = contact.position ? contact.position : "";
     let email = contact.email ? contact.email : "";
-    let phone_cell = "";
-    if (contact.phone_cell) {
-        cell = contact.phone_cell.toString();
-        const four = cell.substring(cell.length-4, cell.length);
-        const three = cell.substring(cell.length-7, cell.length-4);
-        const areaCode = cell.substring(cell.length-10, cell.length-7);
-        const countryCode = cell.length > 10 ? `${cell.substring(0,1) + '-'}` : '';
-        phone_cell = `${countryCode}${areaCode}-${three}-${four}`;
-    }
-    let phone_office = contact.phone_office ? contact.phone_office.toString() : "";
-    let notes = contact.notes ? 'Notes...' : 'No Notes' 
+    let phone_cell = contact.phone_cell ? contact.phone_cell : "";
+    let phone_office = contact.phone_office ? contact.phone_office : "";
+    let notes = contact.notes ? 'Notes...' : 'No Notes'; 
     
     // if a regular expression was given to filter the contacts,
     // then find and replace that regex with a highlight span
@@ -365,10 +357,10 @@ const makeContactForm = () => {
                 <input id="email-input" class="" type="email" placeholder="Email">
             </div>
             <div class="neupho inset">
-                <input id="cell-input" class="" type="tel" pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' placeholder="Cell Phone">
+                <input id="cell-input" class="" type="tel" pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Cell Phone">
             </div>
             <div class="neupho inset">
-                <input id="office-input" class="" type="tel" pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' placeholder="Office Phone">
+                <input id="office-input" class="" type="tel" pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Office Phone">
             </div>
             <div class="neupho tag-container inset flex">
                 <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Company">
@@ -620,6 +612,26 @@ const makeAddBtn = () => {
 //////////////////////////////////////
 // HELPER FUNCTIONS /////////////////
 //////////////////////////////////////
+
+// add dashes to phonenumbers as user types.
+// triggered by oninput in input[type='tel']
+const formatPhoneNum = (inputField) => {
+    const nums = inputField.value.split('-').join("");
+    
+    if (nums.length === 3) inputField.value = nums;
+    else if (nums.length === 4) {
+        inputField.value = nums.slice(0, 3) + '-' + nums.slice(3, 4);
+    }
+    else if (nums.length === 6) {
+        inputField.value = nums.slice(0,3) + '-' + nums.slice(3,6);
+    }
+    else if (nums.length === 7) {
+        inputField.value = nums.slice(0,3) + '-' + nums.slice(3,6) + '-' + nums.slice(6,7);
+    }
+    else if (nums.length > 10) {
+        inputField.value = inputField.value.slice(0, 12);
+    }
+}
 
 // creates a new entry:
 // fired if user clicks on the accept btn in the popup modal (when creating entries with new customer or contacts):

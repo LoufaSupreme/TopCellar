@@ -63,6 +63,7 @@ class Customer(models.Model):
     industry = models.CharField(max_length=255, null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
     tags = models.ManyToManyField(Tag, blank=True, related_name="customers")
+    date_created = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f'{self.name}' 
@@ -75,7 +76,8 @@ class Customer(models.Model):
             "address": None,
             "industry": self.industry,
             "notes": self.notes,
-            "tags": [tag.name for tag in self.tags.all()]
+            "tags": [tag.name for tag in self.tags.all()],
+            "date_created": self.date_created,
         }
 
         if self.address != None:
@@ -97,10 +99,11 @@ class Contact(models.Model):
     last_name = models.CharField(max_length=55, null=True, blank=True)
     position = models.CharField(max_length=155, null=True, blank=True)
     email = EmailField(max_length=254, null=True, blank=True)
-    phone_cell = PositiveBigIntegerField(null=True, blank=True)
-    phone_office = PositiveBigIntegerField(null=True, blank=True)
+    phone_cell = models.CharField(max_length=15, null=True, blank=True)
+    phone_office = models.CharField(max_length=15, null=True, blank=True)
     company = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.PROTECT, related_name='contacts')
     notes = models.TextField(null=True, blank=True)
+    date_created = models.DateTimeField(default=timezone.now);
 
     def __str__(self):
         return f'{self.first_name} {self.last_name} ({self.company})' 
@@ -118,6 +121,7 @@ class Contact(models.Model):
             "phone_office": self.phone_office,
             "company": None,
             "notes": self.notes,
+            "date_created": self.date_created,
         }
 
         if self.company != None:
