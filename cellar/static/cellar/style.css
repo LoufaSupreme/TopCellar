@@ -769,7 +769,8 @@ button i {
 .info-container {
     display: flex;
     flex-direction: column;
-    width: auto;
+    /* width: auto; */
+    flex: 1;
     height: 150%;
     transform: rotate(-20deg);
     gap: 0.5rem;
@@ -790,5 +791,5 @@ button i {
     width: 200%;
     padding: 0 0 0.1em 4.5em;
     /* overflow: hidden; */
-    transform: rotate(20deg) translateY(13px);    
+    transform: rotate(20deg) translateY(15px);    
 }
