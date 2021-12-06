@@ -48,7 +48,7 @@ const App = async (state) => {
             ${makeModal('add-objects-modal')}
             ${makeAddBtn()}
 
-            <div class='container flex' id='entries-container'>
+            <div class='container flex' id='cards-container'>
                 ${displayEntries(state.entries)}
             </div>
         </section>
@@ -62,7 +62,7 @@ const App = async (state) => {
             </div>
         </section>
         <section id='main'>
-            <div class='container flex' id='entries-container'>
+            <div class='container flex' id='cards-container'>
                 ${displayContacts(state.contacts)}
             </div>
         </section>
@@ -128,13 +128,13 @@ const makeSearchBox = () => {
 
 //// ROLODEX /////////////////////////////////
 
+// create contact card html for one contact:
 const makeContactCard = (contact, regex = null) => {
     const company = contact.company ? contact.company.name : "";
     const position = contact.position ? contact.position : "";
     const email = contact.email ? contact.email : "";
     const phone_cell = contact.phone_cell ? contact.phone_cell : "";
     const phone_office = contact.phone_office ? contact.phone_office : "";
-    
     
     return `
         <div class='contact-card neupho'>
@@ -551,7 +551,7 @@ const handleModalAccept = async () => {
     newEntryModal.classList.remove('open');
 
     // grab the entry container div, so we can update it:
-    const entriesContainer = document.querySelector('#entries-container');
+    const entriesContainer = document.querySelector('#cards-container');
 
     // 
     if (store.uncreated) {
@@ -629,7 +629,7 @@ const initiateNewEntry = async (form) => {
     // otherwise send post request to DB to make new entry:
     newInstance(newEntryData, "Entry");
     await loadStore(store);
-    const entriesContainer = document.querySelector('#entries-container');
+    const entriesContainer = document.querySelector('#cards-container');
     entriesContainer.innerHTML = displayEntries(store.entries);
 
     return {
@@ -656,7 +656,7 @@ const initiateEdit = async (form, entry_id) => {
 
     const newObjects = checkNewInstances(newEntryData, "update");
     newObjects.entry.id = entry_id;
-    const entriesContainer = document.querySelector('#entries-container');
+    const entriesContainer = document.querySelector('#cards-container');
 
     // if there are some new objects, let the user know:
     if (newObjects.customer !== null || newObjects.contacts !== null) {
@@ -1011,7 +1011,7 @@ const handleClicks = (e) => {
         const form = document.querySelector('#filter-container');
         const filterParams = getFilterFormData(form);
         const filteredEntries = filterEntries(store.entries, filterParams);
-        const entriesContainer = document.querySelector('#entries-container');
+        const entriesContainer = document.querySelector('#cards-container');
         entriesContainer.innerHTML = displayEntries(filteredEntries);
     }
 
@@ -1025,7 +1025,7 @@ const handleClicks = (e) => {
             sortDirection: sortDirection,
         }
         const sortedEntries = sortEntries(store.entries, sortParams);
-        const entriesContainer = document.querySelector('#entries-container');
+        const entriesContainer = document.querySelector('#cards-container');
         entriesContainer.innerHTML = displayEntries(sortedEntries, true);
     }
 
@@ -1080,36 +1080,52 @@ const listSuggestions = (inputBox) => {
 // fires everytime a user types in the search box.
 // used to filter the entries on screen
 const handleSearchInput = (searchInput) => {
-  let targetValue = searchInput.value;
-  const currentEntries = [...store.entries];  // creates a copy
-  const entryContainer = document.querySelector("#entries-container");
-  const searchCount = document.querySelector('.search-count');
+    // create an "or" regex statement for each word in search bar:
+    const targetValue = searchInput.value.split(' ').join('|');
+    const regex = new RegExp(targetValue, "gi");
+
+    // display for # of returned results:
+    const searchCount = document.querySelector('.search-count');
+    const cardsContainer = document.querySelector("#cards-container");
+    const currentEntries = [...store.entries];  // creates a copy
+    const currentContacts = [...store.contacts];
 
     // if only typed 1 letter, display the full set of entries: 
-  if (targetValue.length < 2) {
-    entryContainer.innerHTML = displayEntries(currentEntries);
-    searchCount.style.display = 'none';
-  }
-  else {
-    //   targetValue = targetValue.split(' ').reduce((acc, curr) => {
-    //     return acc += `(?=.*${curr})`;
-    //   },'');
-
-      targetValue = targetValue.split(' ').join('|');
-
-    const regex = new RegExp(targetValue, "gi");
-    const filtered = searchEntries(currentEntries, regex);
-    entryContainer.innerHTML = displayEntries(filtered, regex);
-    searchCount.style.display = 'block';
-    if (filtered.length === 0) {
-        searchCount.innerHTML = `No results found`;
+    if (targetValue.length < 1 && store.page === 'index') {
+        cardsContainer.innerHTML = displayEntries(currentEntries);
+        searchCount.style.display = 'none';
     }
-    else if (filtered.length === 1) {
-        searchCount.innerHTML = `${filtered.length} result`;
-    } else {
-        searchCount.innerHTML = `${filtered.length} results`;
+    // or the full set of contacts:
+    else if (targetValue.length < 1 && store.page === 'rolodex') {
+        cardsContainer.innerHTML = displayContacts(currentContacts);
+        searchCount.style.display = 'none';
     }
-  }
+    else if (store.page === 'index') {
+        const filtered = searchEntries(currentEntries, regex);
+        cardsContainer.innerHTML = displayEntries(filtered, regex);
+        searchCount.style.display = 'block';
+        if (filtered.length === 0) {
+            searchCount.innerHTML = `No results found`;
+        }
+        else if (filtered.length === 1) {
+            searchCount.innerHTML = `${filtered.length} result`;
+        } else {
+            searchCount.innerHTML = `${filtered.length} results`;
+        }
+    }
+    else if (store.page === 'rolodex') {
+        const filtered = searchContacts(currentContacts, regex);
+        cardsContainer.innerHTML = displayContacts(filtered, regex);
+        searchCount.style.display = 'block';
+        if (filtered.length === 0) {
+            searchCount.innerHTML = `No results found`;
+        }
+        else if (filtered.length === 1) {
+            searchCount.innerHTML = `${filtered.length} result`;
+        } else {
+            searchCount.innerHTML = `${filtered.length} results`;
+        }
+    }
 };
 
 // handles keyup events anywhere on the document.  Called on window load.
@@ -1203,7 +1219,7 @@ const addTag = (inputField) => {
     inputField.dataset.id = undefined; // reset data-id
 };
 
-// returns any entry that contains the target string anywhere:
+// returns list of entries that contain the target string anywhere:
 const searchEntries = (entries, regex) => {
     const filtered = entries.filter((entry) => {
         let customerMatch = false;
@@ -1234,6 +1250,37 @@ const searchEntries = (entries, regex) => {
 
   return filtered;
 };
+
+// returns list of contacts that contain the target string anywhere:
+const searchContacts = (contacts, regex) => {
+    const filtered = contacts.filter(contact => {
+        let companyMatch = false;
+        let contactMatch = false;
+        let emailMatch = false;
+        let positionMatch = false;
+        let cellPhoneMatch = false;
+        let officePhoneMatch = false;
+        let notesMatch = false;
+
+        if (contact.company) companyMatch = contact.company.name.match(regex);
+        if (contact.name) contactMatch = contact.name.match(regex);
+        if (contact.email) emailMatch = contact.email.match(regex);
+        if (contact.phone_cell) {
+            const cell = contact.phone_cell.toString();
+            cellPhoneMatch = cell.match(regex);
+        }
+        if (contact.phone_office) {
+            const office = contact.phone_office.toString();
+            officePhoneMatch = office.match(regex);
+        }
+        if (contact.position) positionMatch = contact.position.match(regex);
+        if (contact.notes) notesMatch = contact.notes.match(regex);
+
+        return companyMatch || contactMatch || emailMatch || positionMatch || cellPhoneMatch || officePhoneMatch || notesMatch;
+    });
+
+    return filtered;
+}
 
 // returns list of entries that match filter criteria
 const filterEntries = (entries, criteria) => {
