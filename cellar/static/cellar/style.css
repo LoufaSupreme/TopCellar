@@ -793,3 +793,13 @@ button i {
     /* overflow: hidden; */
     transform: rotate(20deg) translateY(15px);    
 }
+
+/* NEW CONTACT FORM */
+
+#contact-form-container > div {
+    margin-bottom: 0.3rem;
+}
+
+#contact-form-container input {
+    padding: 0.2rem 0.4rem;
+}

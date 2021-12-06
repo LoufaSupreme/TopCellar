@@ -31,7 +31,7 @@ def index(request):
         "new_register": new_register,
         "user": user
     })
-    
+
 
 def rolodex(request):
     user = request.user
@@ -266,7 +266,7 @@ def newEntry(request):
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
     else:
         return JsonResponse({"error": "Post method required"}, status=400)
-
+    
 
 # create new customer instance
 def newCustomer(request):
@@ -288,24 +288,79 @@ def newCustomer(request):
     else:
         return JsonResponse({"error": "Post method required"}, status=400)
 
+
+def consolidate_contact_data(request):
+    user = request.user
+    data = json.loads(request.body)
+
+    first_name = data.get('first_name')
+    if first_name == '':
+        raise ValidationError('First name cannot be blank.')
+    
+    last_name = data.get('first_name')
+    position = data.get('position')
+    email = data.get('email')
+    phone_cell = data.get('phone_cell')
+    phone_office = data.get('phone_office')
+    notes = data.get('notes')
+
+    company = data.get('company')
+    company = Customer.objects.get(id=company['id'], name=company['name'])
+
+    contact_data = {
+        'user': user,
+        'first_name': first_name,
+        'last_name': last_name,
+        'position': position,
+        'company': company,
+        'email': email,
+        'phone_cell': phone_cell,
+        'phone_office': phone_office,
+        'notes': notes,
+    }
+
+    return contact_data
+
+
 # create new contact instance(s)
 def newContacts(request):
     if request.method == 'POST':
         try:
             user = request.user
-            contacts = json.loads(request.body)
-            print(f'Creating new Contact(s) for {user}: {contacts}')
+            data = json.loads(request.body)
 
-            # create new 
-            new_contacts = []
-            for c in contacts:
-                new_contact = Contact(user=user, first_name=c['first_name'], last_name=c['last_name'])
-                new_contact.save()
-                new_contacts.append(new_contact)
+            if isinstance(data, list):
+                contacts = data
+                print(f'Creating new Contact(s) for {user}: {contacts}')
 
-            return JsonResponse([contact.serialize() for contact in new_contacts], safe=False, status=201)
+                # create new 
+                new_contacts = []
+                for c in contacts:
+                    new_contact = Contact(user=user, first_name=c['first_name'], last_name=c['last_name'])
+                    new_contact.save()
+                    new_contacts.append(new_contact)
+
+                return JsonResponse([contact.serialize() for contact in new_contacts], safe=False, status=201)
+
+            else:
+                contact_data = consolidate_contact_data(request)
+                contact = Contact(
+                    user=contact_data['user'],
+                    first_name=contact_data['first_name'],
+                    last_name=contact_data['last_name'],
+                    position=contact_data['position'],
+                    company=contact_data['company'],
+                    phone_cell=contact_data['phone_cell'],
+                    phone_office=contact_data['phone_office'],
+                    email=contact_data['email'],
+                    notes=contact_data['notes'],
+                )
+                contact.save()
+
+                return JsonResponse(contact.serialize(), safe=False, status=201)
         
         except Exception as e:
+            traceback.print_exc()
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
     else:
         return JsonResponse({"error": "Post method required"}, status=400)

@@ -62,6 +62,10 @@ const App = async (state) => {
             </div>
         </section>
         <section id='main'>
+            ${makeModal('new-entry-modal')}
+            ${makeModal('add-objects-modal')}
+            ${makeAddBtn()}
+
             <div class='container flex' id='cards-container'>
                 ${displayContacts(state.contacts)}
             </div>
@@ -134,7 +138,15 @@ const makeContactCard = (contact, regex = null) => {
     let company = contact.company ? contact.company.name : "";
     let position = contact.position ? contact.position : "";
     let email = contact.email ? contact.email : "";
-    let phone_cell = contact.phone_cell ? contact.phone_cell.toString() : "";
+    let phone_cell = "";
+    if (contact.phone_cell) {
+        cell = contact.phone_cell.toString();
+        const four = cell.substring(cell.length-4, cell.length);
+        const three = cell.substring(cell.length-7, cell.length-4);
+        const areaCode = cell.substring(cell.length-10, cell.length-7);
+        const countryCode = cell.length > 10 ? `${cell.substring(0,1) + '-'}` : '';
+        phone_cell = `${countryCode}${areaCode}-${three}-${four}`;
+    }
     let phone_office = contact.phone_office ? contact.phone_office.toString() : "";
     let notes = contact.notes ? 'Notes...' : 'No Notes' 
     
@@ -334,6 +346,44 @@ const makeEntryForm = () => {
         </div>
     `;
 };
+
+// make html to render a new Contact form:
+const makeContactForm = () => {
+    return `
+        <div class="prompt-container neupho container bg-dark text-white" id="contact-form-container">
+            <div class='text-accent fs-700'>New Contact</div>
+            <div class="neupho inset">
+                <input id="first-name-input" class="" type="text" placeholder="First Name" required>
+            </div>
+            <div class="neupho inset">
+                <input id="last-name-input" class="" type="text" placeholder="Last Name">
+            </div>
+            <div class="neupho inset">
+                <input id="position-input" class="" type="text" placeholder="Title / Position">
+            </div>
+            <div class="neupho inset">
+                <input id="email-input" class="" type="email" placeholder="Email">
+            </div>
+            <div class="neupho inset">
+                <input id="cell-input" class="" type="tel" pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' placeholder="Cell Phone">
+            </div>
+            <div class="neupho inset">
+                <input id="office-input" class="" type="tel" pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' placeholder="Office Phone">
+            </div>
+            <div class="neupho tag-container inset flex">
+                <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Company">
+                ${makeSuggestionDiv("customers")}
+            </div>
+            <div class='description-wrapper flex'>
+                <textarea id='notes-input' class='description neupho inset bg-dark' placeholder="Notes" cols="10" rows="1"></textarea>
+            </div>
+            <div class='form-btn-container flex'>
+                <button type="buton" class='neupho bg-dark' id="submit-new-btn">CREATE</button>
+                <button type="buton" class='neupho bg-dark' id="cancel-new-btn">CANCEL</button>
+            </div>
+        </div>
+    `;
+}
 
 // fires when an Edit btn is clicked within an existing entry
 const makeEditForm = async (entryContainer) => {
@@ -590,6 +640,8 @@ const handleModalAccept = async () => {
 
         if (store.uncreated.contacts) {
             const newContacts = await newInstance(store.uncreated.contacts,"Contacts"); // create new contacts in db
+
+            // update contact ID in store:
             newContacts.forEach((c) => {
                 const target = store.uncreated.contacts.find((el) => {
                     return c.first_name === el.first_name && c.last_name === el.last_name
@@ -636,7 +688,7 @@ const promptUserMakeObj = (newObjects) => {
 
 // fired when the "create" btn is clicked to submit a new entry
 const initiateNewEntry = async (form) => {
-  console.log("Initiated new entry...");
+  console.log("Initiating new entry...");
 
   // get all the inputted data from the entry form
   const newEntryData = getFormData(form);
@@ -655,7 +707,7 @@ const initiateNewEntry = async (form) => {
   } 
   else {
     // otherwise send post request to DB to make new entry:
-    newInstance(newEntryData, "Entry");
+    await newInstance(newEntryData, "Entry");
     await loadStore(store);
     const entriesContainer = document.querySelector('#cards-container');
     entriesContainer.innerHTML = displayEntries(store.entries);
@@ -664,11 +716,41 @@ const initiateNewEntry = async (form) => {
         status: 'complete',
         message: 'Sending request to create new entry...'
     };
-    // render(root, store);
-    // const tagElements = Array.from(form.querySelectorAll('.tag')); // grab all of the tag elements
-    // tagElements.forEach(el => el.remove());  // remove them from the DOM now that the entry is created
   }
 };
+
+// fired when the "create" btn is clicked to make a new contact:
+const initiateNewContact = async (form) => {
+    console.log('Initiating new contact...');
+
+    // get all the inputted data from the entry form
+    const newContactData = getContactFormData(form);
+    const newObjects = checkNewInstances(newContactData, "create");
+
+    // if there are some new objects, let the user know:
+    if (newObjects.customer !== null) {
+        console.log("Found new Customer instance. Prompting user...");
+        store.uncreated = newObjects; // load new objects into store so they can be created if the user wishes
+        promptUserMakeObj(newObjects); // create a modal user prompt to ask them if they want to create the new objects
+        
+        return {
+            status: 'incomplete',
+            message: 'New customer or contact objects to be created'
+        };
+    }
+    else {
+        // otherwise send post request to DB to make new contact:
+        await newInstance(newContactData, "Contacts");
+        await loadStore(store);
+        const contactsContainer = document.querySelector('#cards-container');
+        contactsContainer.innerHTML = displayContacts(store.contacts);
+    
+        return {
+            status: 'complete',
+            message: 'Sending request to create new contact...'
+        };
+      }
+}
 
 const initiateEdit = async (form, entry_id) => {
     console.log(`Updating Entry ${entry_id}`);
@@ -703,8 +785,8 @@ const initiateEdit = async (form, entry_id) => {
 // takes the data from an entry form (new or edit) and checks if there are customers or contacts that don't yet exist:
 // returns the new objects in a newObjects object:
 const checkNewInstances = (data, keyword) => {
-  const customer = data.customer;
-  const contacts = data.contacts;
+  const customer = data.customer || data.company;
+  const contacts = data.contacts || [];
 
   // check for inputted customers or contacts that don't yet exist and add them to a newObjects object
   const newContacts = contactExists(contacts);
@@ -805,6 +887,42 @@ const getFormData = (form) => {
   return newEntryDetails;
 };
 
+// get the data from the new contact form:
+const getContactFormData = (form) => {
+    const tagElements = Array.from(form.querySelectorAll(".tag")); // grab all of the tag elements
+
+    const company = tagElements
+        .filter((tag) => tag.dataset.list === "customers")
+        .map((cust) => {
+            return {
+                id: parseInt(cust.dataset.id),
+                name: cust.innerText,
+            };
+        })[0];
+
+    const first_name = form.querySelector('#first-name-input').value;
+    const last_name = form.querySelector('#last-name-input').value;
+    const position = form.querySelector('#position-input').value;
+    const email = form.querySelector('#email-input').value;
+    const cell = form.querySelector('#cell-input').value;
+    const office = form.querySelector('#office-input').value;
+    const notes = form.querySelector('#notes-input').value;
+
+    const newContactDetails = {
+        first_name: first_name,
+        last_name: last_name,
+        company: company,
+        position: position,
+        email: email,
+        phone_cell: cell,
+        phone_office: office,
+        notes: notes,
+    };
+    console.log('Got contact form data:');
+    console.log(newContactDetails);
+    return newContactDetails;
+}
+
 // gets the data from the filter form:
 const getFilterFormData = (form) => {
     const tagElements = Array.from(form.querySelectorAll(".tag")); // grab all of the tag elements
@@ -866,8 +984,7 @@ const getFilterFormData = (form) => {
         .filter(box => box.classList.contains('cb-status') && box.checked === true)
         .map(box => box.value);    
 
-        console.log(status)
-
+    console.log(status);
 
     const filterParameters = {
         type: anyAllSelect,
@@ -897,7 +1014,19 @@ const handleEntrySubmitClicked = async () => {
     modal.classList.remove('open');
     console.log(newEntryStatus.message);
   }
-};
+}
+
+// handles the new contact form "create" btn being clicked:
+const handleContactSubmit = async () => {
+    const form = document.querySelector('#contact-form-container');
+    const modal = document.querySelector('#new-entry-modal');
+    const createStatus = await initiateNewContact(form);
+
+    if (createStatus === 'complete') {
+        modal.classList.remove('open');
+        console.log(createStatus.message);
+    }
+}
 
 // handles a dropdown suggestion being clicked:
 const handleSuggestionClicked = (suggestion) => {
@@ -974,7 +1103,10 @@ const statusChange = (dropdown, entry_id) => {
 const handleClicks = (e) => {
     // console.log(e.target);
     // fires when the entry submit button is clicked:
-    if (e.target.id === "submit-new-btn") handleEntrySubmitClicked();
+    if (e.target.id === "submit-new-btn") {
+        if (store.page === 'index') handleEntrySubmitClicked();
+        else if (store.page === 'rolodex') handleContactSubmit();
+    }
 
     if (e.target.id === "cancel-new-btn") {
         // const entryForm = document.querySelector(".form-container");
@@ -984,16 +1116,18 @@ const handleClicks = (e) => {
     }
 
     // fires when a dropdown suggestion is clicked:
-    else if (e.target.classList.contains("suggestion"))
+    else if (e.target.classList.contains("suggestion")) {
         handleSuggestionClicked(e.target);
+    }
 
     // cancel or accept changes btn on user prompt modal to add customers and contacts:
-    else if (e.target.classList.contains("modal-btn"))
+    else if (e.target.classList.contains("modal-btn")) {
         handleModalBtnClicked(e.target);
+    }
 
-        else if (e.target.classList.contains('fave-entry-btn')) {
-            handleEntryFlag(e.target.dataset.id);
-        }
+    else if (e.target.classList.contains('fave-entry-btn')) {
+        handleEntryFlag(e.target.dataset.id);
+    }
 
     // fires when user clicks on edit btn inside an existing entry:
     else if (e.target.classList.contains("edit-entry-btn")) {
@@ -1020,13 +1154,22 @@ const handleClicks = (e) => {
         const entry = store.entries.find((ent) => ent.id === entry_id);
         entryContainer.outerHTML = makeEntryHTML(entry);
     } 
-        // fires when user clicks big "+" btn:
-        // generates new entry form for entry creation:
+
+    // fires when user clicks big "+" btn:
+    // generates new entry form for entry creation:
     else if (e.target.id === "add-btn") {
+        if (store.page === 'index') {
             const entryForm = makeEntryForm();
             const modal = document.querySelector('#new-entry-modal');
             modal.innerHTML = entryForm;
             modal.classList.add('open');
+        }
+        else if (store.page === 'rolodex') {
+            const contactForm = makeContactForm();
+            const modal = document.querySelector('#new-entry-modal');
+            modal.innerHTML = contactForm;
+            modal.classList.add('open');
+        }
     }
 
         // fires when user clicks on a tag's "X"
