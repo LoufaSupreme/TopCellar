@@ -130,12 +130,40 @@ const makeSearchBox = () => {
 
 // create contact card html for one contact:
 const makeContactCard = (contact, regex = null) => {
-    const company = contact.company ? contact.company.name : "";
-    const position = contact.position ? contact.position : "";
-    const email = contact.email ? contact.email : "";
-    const phone_cell = contact.phone_cell ? contact.phone_cell : "";
-    const phone_office = contact.phone_office ? contact.phone_office : "";
+    let name = contact.name;
+    let company = contact.company ? contact.company.name : "";
+    let position = contact.position ? contact.position : "";
+    let email = contact.email ? contact.email : "";
+    let phone_cell = contact.phone_cell ? contact.phone_cell.toString() : "";
+    let phone_office = contact.phone_office ? contact.phone_office.toString() : "";
+    let notes = contact.notes ? 'Notes...' : 'No Notes' 
     
+    // if a regular expression was given to filter the contacts,
+    // then find and replace that regex with a highlight span
+    if (regex) {
+        name = name.replace(regex, (match) => {
+            return `<span class='hl'>${match}</span>`;
+          });
+        company = company.replace(regex, (match) => {
+            return `<span class='hl'>${match}</span>`;
+          });
+        position = position.replace(regex, (match) => {
+            return `<span class='hl'>${match}</span>`;
+          });
+        email = email.replace(regex, (match) => {
+            return `<span class='hl'>${match}</span>`;
+          });
+        phone_cell = phone_cell.replace(regex, (match) => {
+            return `<span class='hl'>${match}</span>`;
+          });
+        phone_office = phone_office.replace(regex, (match) => {
+            return `<span class='hl'>${match}</span>`;
+          });
+        if (contact.notes && contact.notes.match(regex)) {
+            notes = `<span class='hl'>${notes}</span>`;
+        }
+    }
+
     return `
         <div class='contact-card neupho'>
             <div class='company-container'>
@@ -152,7 +180,7 @@ const makeContactCard = (contact, regex = null) => {
             </div>
             <div class='info-container'>
                 <div class='info'>
-                    <div class='name'><span class='fs-400 text-accent'>${contact.name}</span></div>
+                    <div class='name'><span class='fs-400 text-accent'>${name}</span></div>
                     <div class='position'>${position}</div>
                 </div>
                 <div class='info'>
@@ -163,7 +191,7 @@ const makeContactCard = (contact, regex = null) => {
                     <div class='office'>${phone_office}</div>
                 </div>
                 <div class='info'>
-                    <div class='notes'>Notes</div>
+                    <div class='notes'>${notes}</div>
                 </div>
             </div>
         </div>
