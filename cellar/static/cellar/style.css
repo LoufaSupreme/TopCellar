@@ -24,7 +24,7 @@
   --ff-sans-normal: "Barlow", sans-serif;
 }
 
-@media (min-width: 35em) {
+@media (max-width: 35em) {
   /* MOBILE.  35em = 560px.  use em instead of rem b/c safari can have issues with rem */
   :root {
     --fs-800: 5rem;
@@ -199,7 +199,7 @@
 }
 
 .neupho {
-  box-shadow:  6px 6px 8px rgba(0, 0, 0, 0.4),
+  box-shadow:  4px 4px 8px rgba(0, 0, 0, 0.4),
               -2px -2px 8px rgba(255,255,255,0.05);
 }
 
@@ -263,7 +263,7 @@ body {
     /* background-color: hsl(var(--clr-dark)); */
     color: hsl(var(--clr-white));  
     /* max-height: 100vh; */
-    /* overflow: hidden; */
+    overflow-x: hidden;
 }
 
 #root {
@@ -378,6 +378,7 @@ body {
   justify-content: space-between;
   padding: 1rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .search-container {
@@ -386,7 +387,7 @@ body {
 }
 
 .search-bar-container {
-    margin: 1rem 4rem 0 4rem;
+    margin: 0.5rem 0;
     padding: 0.3rem 1.2rem;
     border-radius: 20px;
     align-items: center;
@@ -413,6 +414,7 @@ body {
 
 .navbar-nav {
   --gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .nav-link:hover {
@@ -484,7 +486,8 @@ body {
 /* INDIVIDUAL ENTRY CONTAINERS ////////////*/
 
 #cards-container {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     /* overflow-y: scroll; */
@@ -493,7 +496,7 @@ body {
 
 .entry-container {
   flex-direction: column;
-  max-width: 80vw;
+  max-width: min(500px, 90vw);
   min-width: 40vw;
   border-radius: 1em;
   margin: 0;
@@ -569,12 +572,13 @@ select {
 }
 
 .round-btn {
-  width: 45px;
-  height: 45px;
+  /* width: 45px; */
+  /* height: 45px; */
   border-radius: 100%;
   border: none;
   color: hsl(var(--clr-light));
   font-size: 1.2rem;
+  padding: 0.5rem 0.7rem;
 }
 
 
