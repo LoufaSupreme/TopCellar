@@ -216,6 +216,7 @@
     justify-content: center;
     align-items: center;
     padding-top: 4rem;
+    --gap: 0;
 }
 
 #login-form-container {
@@ -234,12 +235,12 @@
 }
 
 #login-form-container form div {
-    margin-bottom: 0.5rem 0;
+    margin: 0.5rem 0;
     border-radius: 0.5em;
 }
 
 #login-form-container input {
-    padding-left: 1em;
+    padding: 0.2rem 1em;
     width: 100%;
 }
 
