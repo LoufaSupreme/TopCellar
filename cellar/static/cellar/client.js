@@ -32,17 +32,18 @@ const App = async (state) => {
             <div class="navbar flex">
                 ${makeNavBar()}
             </div>
+            <div id='filter-accordion' class='accordion'>
+                ${makeEntryFilterBox()}
+            </div>
+            <div id='sort-accordion' class='accordion'>
+                ${makeEntrySortBox()}
+            </div>
         </section>
         <section id='main'>
             <div id='sidebar' class='accordion'>
                 <div id='sidebar-open-btn'>
                     <i class="bi bi-funnel"></i>
                 </div>
-                ${makeFilterBox()}
-                ${makeSortBox()}
-            </div>
-            <div class='welcome fs-700 ff-sans-cond letter-spacing-1 text-white uppercase'>
-                Welcome, <span class='fs-700 ff-sans-cond letter-spacing-1 text-accent uppercase'>${state.user}!</span>
             </div>
             ${makeModal('new-entry-modal')}
             ${makeModal('add-objects-modal')}
@@ -498,11 +499,15 @@ const makeTagElement = (type, id, content, status = 'locked') => {
 };
 
 // create a form to apply multiple filters to the entries
-const makeFilterBox = () => {
+const makeEntryFilterBox = () => {
     return `
-    <div id='filter-container' class='neupho'>
+    <div class='accordion-title flex fs-300'>
+        <i class="bi bi-funnel"></i>
+        <span>Filter</span>
+        <i class="bi bi-chevron-down"></i>
+    </div>
+    <div id='filter-container' class=''>
         <div class='flex'>
-            <div class='text-accent fs-500'>Filter</div>
             <select class='neupho bg-dark'>
                 <option value='new'>New Custom Filter</option>
                 <option value='custom1'>Custom Filter 1</option>
@@ -511,12 +516,11 @@ const makeFilterBox = () => {
         </div>
         <div>
             <div class='flex'>
-                <span>Show entries with</span>
+                <span>Filter by: </span>
                 <select id='filter-any-all' class='neupho bg-dark'>
                     <option value='any'>ANY</option>
                     <option value='all'>ALL</option>
                 </select>
-                <span>of the below parameters</span>
             </div>
             <div class="neupho tag-container inset flex">
                 <input id="customers-input" class="tag-input filter-input" type="text" data-id="undefined" data-list="customers" placeholder="Accounts">
@@ -525,6 +529,10 @@ const makeFilterBox = () => {
             <div class="neupho tag-container inset flex">
                 <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
                 ${makeSuggestionDiv("contacts")}
+            </div>
+            <div class="tag-container neupho inset flex">
+                <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+                ${makeSuggestionDiv("tags")}
             </div>
             <div class='flex datebox-container'>
                 <input id='filter-date-from' class='neupho inset' type="date">
@@ -555,10 +563,6 @@ const makeFilterBox = () => {
                     <label for="archived"> Archived</label>
                 </div>
             </div>
-            <div class="tag-container neupho inset flex">
-                <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
-                ${makeSuggestionDiv("tags")}
-            </div>
             <div class='form-btn-container flex'>
                 <button type="buton" class='neupho bg-dark' id="filter-btn">Filter</button>
             </div>
@@ -568,10 +572,14 @@ const makeFilterBox = () => {
 }
 
 // create a form to apply sorting criteria to the entries:
-const makeSortBox = () => {
+const makeEntrySortBox = () => {
     return `
-        <div id='sort-container' class='neupho'>
-            <div class='text-accent fs-500'>Sort</div>
+        <div class='accordion-title flex fs-300'>
+            <i class="bi bi-arrow-down-up"></i>
+            <span>Sort</span>
+            <i class="bi bi-chevron-down"></i>
+        </div>
+        <div id='sort-container' class=''>
             <div class='flex'>
                 <select id='sortBy' class='neupho bg-dark'>
                     <option value='date'>Date Created</option>
@@ -582,9 +590,9 @@ const makeSortBox = () => {
                     <option value='descending'>Descending</option>
                     <option value='ascending'>Ascending</option>
                 </select>
-            </div>
-            <div class='form-btn-container flex'>
-                <button type="buton" class='neupho bg-dark' id="sort-btn">Sort</button>
+                <div class='form-btn-container flex'>
+                    <button type="buton" class='neupho bg-dark' id="sort-btn">Sort</button>
+                </div>
             </div>
         </div>
     `;
@@ -592,18 +600,21 @@ const makeSortBox = () => {
 
 // create a button to make the new entry form appear:
 const makeAddBtn = () => {
-  return `
+  
+    // deprecated:
+    // <div id='toolbar-filter-btn' class='neupho inset'>
+    //     <span class='fs-400 text-accent'>FILTER<span>
+    // </div>
+    // <div id='toolbar-sort-btn' class='neupho inset'>
+    //     <span class='fs-400 text-accent'>SORT<span>
+    // </div>
+
+    return `
         <div class='toolbar-container flex'>
             <div class='toolbar flex'>
-                <div id='toolbar-filter-btn' class='neupho inset'>
-                    <span class='fs-400 text-accent'>FILTER<span>
-                </div>
                 <button id='add-btn' class='round-btn bg-dark text-accent neupho'>
                     <i class="bi bi-plus-lg"></i>
                 </button>
-                <div id='toolbar-sort-btn' class='neupho inset'>
-                    <span class='fs-400 text-accent'>SORT<span>
-                </div>
             </div>
         </div>
     `;
@@ -1213,9 +1224,11 @@ const handleClicks = (e) => {
     }
 
     // fires when user clicks "filter" or "sort" beside the add btn
-    else if (e.target.id === 'toolbar-filter-btn' || e.target.id === 'toolbar-sort-btn' ) {
-        const sidebar = document.querySelector('#sidebar')
-        sidebar.classList.toggle('open');
+    else if (e.target.classList.contains('accordion')) {
+        e.target.classList.toggle('open');
+        const chevron = e.target.querySelector('.bi-chevron-down');
+        chevron.classList.toggle('bi-chevron');
+        chevron.classList.toggle('bi-chevron-up');
     }
 
     // fires when user clicks on little filter cutout on sidebar:

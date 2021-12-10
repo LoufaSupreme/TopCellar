@@ -325,12 +325,31 @@ body {
 } */
 
 .accordion {
-    transform: translateX(-100%);
-    transition: transform 0.4s ease-in-out;
+    max-height: 1.6em;
+    transition: max-height 0.4s ease-in-out;
+    overflow-y: hidden;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    /* transform: translateX(-100%);
+    transition: transform 0.4s ease-in-out; */
 }
 
 .open {
-    transform: translateX(0%);
+    max-height: 450px;
+    /* transform: translateX(0%); */
+}
+
+.accordion-title {
+    display: flex;
+    height: 100%;
+    padding: 0 1rem;  
+    color: hsl(var(--clr-white) / 0.7); 
+    pointer-events: none; 
+}
+
+.accordion-title span {
+    flex: 1 1 auto;
 }
 
 /* FILTER AND SORT AREA ///////////////*/
@@ -342,6 +361,10 @@ body {
     color: hsl(var(--clr-white) / 0.7);
 }
 
+#filter-container select {
+    margin: 0.4rem 0;
+}
+
 #sort-container {
     margin-inline: 2rem;
     padding: 0.5rem 1.2rem;
@@ -349,21 +372,11 @@ body {
 }
 
 .datebox-container {
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .checkbox-container {
-    justify-content: space-evenly;
-}
-
-.toolbar-container {
-  justify-content: center;
-  align-items: center;
-}
-
-.toolbar {
-  justify-content: center;
-  align-items: center;
+    justify-content: flex-start;
 }
 
 
@@ -433,8 +446,20 @@ body {
 }
 
 /* ADD FILTER SORT BUTTONS ************/
+/* TOOLBAR */
 
-#toolbar-filter-btn {
+.toolbar-container {
+    padding-top: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.toolbar {
+  justify-content: center;
+  align-items: center;
+}
+
+/* #toolbar-filter-btn {
   width: 120px;
   height: 45px;
   margin-right: -3rem;
@@ -449,15 +474,15 @@ body {
   height: 100%;
   padding-left: 1.5rem;
   pointer-events: none;
-}
+} */
 
 #add-btn {
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 3;
-    width: 75px;
-    height: 75px;
+    width: 60px;
+    height: 60px;
     box-shadow:  3px 3px 10px rgba(0, 0, 0, 0.2),
                  -3px -3px 10px rgba(0,0,0,0.2);
 }
@@ -466,7 +491,7 @@ body {
   font-size: var(--fs-700);
 }
 
-#toolbar-sort-btn {
+/* #toolbar-sort-btn {
   width: 120px;
   height: 45px;
   margin-left: -3rem;
@@ -482,7 +507,7 @@ body {
   height: 100%;
   padding-right: 1.5rem;
   pointer-events: none;
-}
+} */
 
 /* INDIVIDUAL ENTRY CONTAINERS ////////////*/
 
