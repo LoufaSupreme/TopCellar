@@ -122,9 +122,9 @@ const makeSearchBox = () => {
         <div class='flex search-container'>
             <div class='search-bar-container flex neupho inset'>
                 <input type="text" id="search" placeholder="Search">
+                <div class='search-count fs-200 text-white'></div>
                 <i class="fas fa-search"></i>
             </div>
-            <div class='search-count fs-200 text-white'></div>
         </div>
       `;
   };
@@ -284,11 +284,11 @@ const makeEntryHTML = (entry, regex = null) => {
 // generate HTML for suggestion dropdowns:
 // entry_ID is the ID of the entry div that this dropdown is associated with.  Null if not associated with one (e.g. making new entry)
 const makeSuggestionDiv = (type, entry_ID = null) => {
-  return `
-    <div class='suggestions ${type}-suggestions flex' style='display: none' data-type='${type}' data-id='${entry_ID}'>
-        DUMMY TEXT
-    </div>
-  `;
+    return `
+        <div class='suggestions ${type}-suggestions flex' style='display: none' data-type='${type}' data-id='${entry_ID}'>
+            DUMMY TEXT
+        </div>    
+    `;
 };
 
 const displaySuggestions = (inputID, options, type) => {
@@ -298,7 +298,7 @@ const displaySuggestions = (inputID, options, type) => {
       })
       .join("");
       
-      options = '<li class="fs-200 text-white">Choose Existing:</li>' + options;
+      options = '<ul class="fs-200 text-white">Choose Existing:' + options + '</ul>';
       return options;
   };
 
@@ -313,11 +313,11 @@ const makeEntryForm = () => {
         <div class="prompt-container neupho container bg-dark text-white" id="entry-form-container">
             <div class='text-accent fs-700'>New Entry</div>
             <div class="neupho tag-container inset flex">
-                <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+                <input id="new-entry-customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
                 ${makeSuggestionDiv("customers")}
             </div>
             <div class="neupho tag-container inset flex">
-                <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+                <input id="new-entry-contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
                 ${makeSuggestionDiv("contacts")}
             </div>
             <div class='description-wrapper flex'>
@@ -328,7 +328,7 @@ const makeEntryForm = () => {
                 <input class='neupho inset' type="number" placeholder="Rank">
             </div>
             <div class="tag-container neupho inset flex">
-                <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+                <input id="new-entry-tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
                 ${makeSuggestionDiv("tags")}
             </div>
             <div class='form-btn-container flex'>
@@ -1329,7 +1329,7 @@ const handleKeyUp = (e) => {
             const options = listSuggestions(inputBox);
             if (options.length > 0) {
                 suggestionArea.style.display = "block";
-                suggestionArea.innerHTML = `<ul>${displaySuggestions(inputBox.id, options, listType)}</ul>`;
+                suggestionArea.innerHTML = displaySuggestions(inputBox.id, options, listType);
             }
         }
         else {
@@ -1363,7 +1363,6 @@ const findMatches = (targetWord, arr, propertyList) => {
 // used for customers, contacts and tags
 const addTag = (inputField) => {
     const parent = inputField.parentNode; // container div
-
     // if there's already a customer name in the parent div, remove it.
     // only want one customer to be able to be selected at a time
     if (inputField.dataset.list === "customers" && parent.querySelector(".tag") && !inputField.classList.contains('filter-input')) {

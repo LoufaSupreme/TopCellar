@@ -377,9 +377,10 @@ body {
 
 .navbar {
   justify-content: space-between;
-  padding: 1rem;
+  padding: 0.5rem 1rem;
   align-items: center;
   flex-wrap: wrap;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .search-container {
@@ -405,7 +406,6 @@ body {
 /* number of search results when typing in search box */
 .search-count {
     display: none;
-    margin: 0.2rem 0 0.5rem 5.5rem;
 }
 
 .nav-content {
