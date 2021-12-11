@@ -59,7 +59,7 @@ class Tag(models.Model):
 class Customer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customers')
     name = models.CharField(max_length=255)
-    address = models.ForeignKey(Address, on_delete=models.PROTECT, null=True, default='', blank=True, related_name='customers')
+    address = models.ForeignKey(Address, on_delete=models.PROTECT, null=True, blank=True, related_name='customers')
     industry = models.CharField(max_length=255, null=True, default='', blank=True)
     notes = models.TextField(null=True, default='', blank=True)
     tags = models.ManyToManyField(Tag, blank=True, related_name="customers")
@@ -80,7 +80,7 @@ class Customer(models.Model):
             "date_created": self.date_created,
         }
 
-        if self.address != None:
+        if (self.address != None and self.address != ""):
             serialized['address'] = {
                 "street_addr_1": self.address.street_addr_1,
                 "street_addr_2": self.address.street_addr_2,

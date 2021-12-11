@@ -341,6 +341,7 @@ def newCustomer(request):
 
             return JsonResponse(new_customer.serialize(), safe=False, status=201)
         except Exception as e:
+            traceback.print_exc()
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
     else:
         return JsonResponse({"error": "Post method required"}, status=400)

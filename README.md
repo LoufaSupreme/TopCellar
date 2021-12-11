@@ -48,18 +48,18 @@ This app aims to help address the common sales problem of tracking sales activit
 
 ##### Roledex Page
 - [ ] Display all customers (companies)
-- [ ] Display all contacts
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
+- [x] Display all contacts
+- [x] Search contacts with search bar
+- [x] Ability to create new contacts
+- [x] Ability to delete contacts
+- [x] Ability to edit existing contacts
+- [ ] Automatically create new customers if a contact is associated with a customer that doesn't yet exist
 - [ ] 
 
 ##### KPIs Page
 - [ ] Show User's profile info (picture, name, email, date joined, company)
 - [ ] Ability to print page?
-- [ ]
+- [ ] Ability to export as excel
 - [ ]
 - [ ]
 - [ ]
