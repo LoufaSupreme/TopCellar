@@ -340,38 +340,59 @@ const makeEntryForm = () => {
 };
 
 // make html to render a new Contact form:
-const makeContactForm = () => {
+const makeContactForm = (contact = null) => {
+    // if a contact is passed in, then preload the contact's info into the form:
+    const title = contact ? 'Edit Contact' : 'New Contact';
+    const btn = contact ? 'Accept' : 'Create';
+    const type = contact ? 'edit' : 'new';
+    const contact_id = contact ? contact.id : undefined;
+    const first_name = contact ? contact.first_name : "";
+    const last_name = contact ? contact.last_name : "";
+    const position = contact ? contact.position : "";
+    const phone_cell = contact ? contact.phone_cell : "";
+    const phone_office = contact ? contact.phone_office : "";
+    const email = contact ? contact.email : "";
+    const notes = contact ? contact.notes : "";
+
+    let company = "";
+    if (contact) {
+        if (contact.company) {
+            company = makeTagElement('customer', contact.company.id, contact.company.name, 'unlocked').outerHTML;
+        }
+    }
+    
     return `
         <div class="prompt-container neupho container bg-dark text-white" id="contact-form-container">
-            <div class='text-accent fs-700'>New Contact</div>
+            <div class='text-accent fs-700'>${title}</div>
             <div class="neupho inset">
-                <input id="first-name-input" class="" type="text" placeholder="First Name" required>
+                <input id="first-name-input" type="text" placeholder="First Name" value='${first_name}'required>
             </div>
             <div class="neupho inset">
-                <input id="last-name-input" class="" type="text" placeholder="Last Name">
+                <input id="last-name-input" type="text" placeholder="Last Name" value='${last_name}'>
             </div>
             <div class="neupho inset">
-                <input id="position-input" class="" type="text" placeholder="Title / Position">
+                <input id="position-input" type="text" placeholder="Title / Position" value='${position}'>
             </div>
             <div class="neupho inset">
-                <input id="email-input" class="" type="email" placeholder="Email">
+                <input id="email-input" type="email" placeholder="Email" value='${email}'>
             </div>
             <div class="neupho inset">
-                <input id="cell-input" class="" type="tel" pattern='^(1-)?[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Cell Phone">
+                <input id="cell-input" class="" type="tel" pattern='^(1-)?[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Cell Phone" value='${phone_cell}'>
             </div>
             <div class="neupho inset">
-                <input id="office-input" class="" type="tel" pattern='^(1-)?[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Office Phone">
+                <input id="office-input" class="" type="tel" pattern='^(1-)?[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Office Phone" value='${phone_office}'>
             </div>
             <div class="neupho tag-container inset flex">
+                ${company}
                 <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Company">
                 ${makeSuggestionDiv("customers")}
             </div>
             <div class='description-wrapper flex'>
-                <textarea id='notes-input' class='description neupho inset bg-dark' placeholder="Notes" cols="10" rows="1"></textarea>
+                <textarea id='notes-input' class='description neupho inset bg-dark' placeholder="Notes" cols="10" rows="1">${notes}</textarea>
             </div>
             <div class='form-btn-container flex'>
-                <button type="buton" class='neupho bg-dark' id="submit-new-btn">CREATE</button>
-                <button type="buton" class='neupho bg-dark' id="cancel-new-btn">CANCEL</button>
+                <button type="button" class='neupho bg-dark' id="submit-${type}-btn" data-id='${contact_id}'>${btn}</button>
+                <button type="button" class='neupho bg-dark' id="cancel-new-btn">Cancel</button>
             </div>
         </div>
     `;
@@ -382,15 +403,15 @@ const makeEditForm = async (entryContainer) => {
     const entry_ID = entryContainer.id.split("-")[1];
     const entry = await getInstance("entry", entry_ID);
   
-    const customerTag = makeTagElement(
-      "customers",
-      entry.customer.id,
-      entry.customer.name,
-      'active',
-    ).outerHTML;
+    let customerTag = '';
+    if (entry.customer) {
+        customerTag = makeTagElement("customers", entry.customer.id, entry.customer.name,'active').outerHTML;
+    }
+
     const contactTags = entry.contacts
       .map((c) => makeTagElement("contacts", c.id, `${c.first_name} ${c.last_name !== null ? c.last_name : ""}`, 'active').outerHTML)
       .join("");
+
     const tagTags = entry.tags
       .map((t) => makeTagElement("tags", t.id, t.name, 'active').outerHTML)
       .join("");
@@ -746,13 +767,24 @@ const initiateNewEntry = async (form) => {
   }
 };
 
-// fired when the "create" btn is clicked to make a new contact:
-const initiateNewContact = async (form) => {
-    console.log('Initiating new contact...');
+// fired when the "create" or "accept" btn is clicked to make/edit a contact:
+const initiateNewContact = async (form, contact_id = null) => {
+    if (contact_id) {
+        console.log(`Initiating edit of contact ${contact_id}`);
+    }
+    else console.log('Initiating new contact...');
+    console.log(contact_id)
 
     // get all the inputted data from the entry form
     const newContactData = getContactFormData(form);
-    const newObjects = checkNewInstances(newContactData, "create");
+    let newObjects;
+    if (contact_id) {
+        newObjects = checkNewInstances(newContactData, 'update');
+        // newObjects.contact.id = contact_id;
+    }
+    else {
+        newObjects = checkNewInstances(newContactData, "create");
+    }
 
     // if there are some new objects, let the user know:
     if (newObjects.customer !== null) {
@@ -766,15 +798,21 @@ const initiateNewContact = async (form) => {
         };
     }
     else {
-        // otherwise send post request to DB to make new contact:
-        await newInstance(newContactData, "Contacts");
+        // otherwise send post/put request to DB to create/edit:
+        if (!contact_id) {
+            await newInstance(newContactData, "Contacts");
+        }
+        else {
+            await updateInstance(newContactData, 'contact', contact_id)
+        }
+
         await loadStore(store);
         const contactsContainer = document.querySelector('#cards-container');
         contactsContainer.innerHTML = displayContacts(store.contacts);
-    
+
         return {
             status: 'complete',
-            message: 'Sending request to create new contact...'
+            message: `Contact request sent to DB.`
         };
       }
 }
@@ -811,6 +849,7 @@ const initiateEdit = async (form, entry_id) => {
 
 // takes the data from an entry form (new or edit) and checks if there are customers or contacts that don't yet exist:
 // returns the new objects in a newObjects object:
+// keyword = 'update' or 'create'
 const checkNewInstances = (data, keyword) => {
   const customer = data.customer || data.company;
   const contacts = data.contacts || [];
@@ -831,13 +870,14 @@ const checkNewInstances = (data, keyword) => {
 // checks if a passed customer object already exists:
 // returns boolean
 const customerExists = (customer) => {
-  const existingCustomers = store.customers;
+    if (!customer) return true;
+    const existingCustomers = store.customers;
 
-  return (
-    existingCustomers.filter((el) => {
-      return (el.id === customer.id && el.name.toLowerCase() === customer.name.toLowerCase());
-    }).length > 0
-  );
+    return (
+        existingCustomers.filter((el) => {
+        return (el.id === customer.id && el.name.toLowerCase() === customer.name.toLowerCase());
+        }).length > 0
+    );
 };
 
 // checks if a passed array of contact objects already exists:
@@ -1044,10 +1084,12 @@ const handleEntrySubmitClicked = async () => {
 }
 
 // handles the new contact form "create" btn being clicked:
-const handleContactSubmit = async () => {
+// pass in contact id if editing existing contact:
+const handleContactSubmit = async (contact_id = null) => {
     const form = document.querySelector('#contact-form-container');
     const modal = document.querySelector('#new-entry-modal');
-    const createStatus = await initiateNewContact(form);
+    
+    const createStatus = await initiateNewContact(form, contact_id);
 
     if (createStatus === 'complete') {
         modal.classList.remove('open');
@@ -1142,11 +1184,17 @@ const handleClicks = (e) => {
         else if (store.page === 'rolodex') handleContactSubmit();
     }
 
-    if (e.target.id === "cancel-new-btn") {
+    else if (e.target.id === "cancel-new-btn") {
         // const entryForm = document.querySelector(".form-container");
         // entryForm.style.display = "none";
         const modal = document.querySelector('#new-entry-modal');
         modal.classList.remove('open');
+    }
+
+    // submit when editing an existing contact:
+    else if (e.target.id === 'submit-edit-btn') {
+        // console.log(e.target)
+        handleContactSubmit(+e.target.dataset.id);
     }
 
     // fires when a dropdown suggestion is clicked:
@@ -1259,6 +1307,14 @@ const handleClicks = (e) => {
     else if (e.target.classList.contains('contact-card-del')) {
         const contact_id = e.target.dataset.id;
         handleContactDelete(contact_id);
+    }
+
+    else if (e.target.classList.contains('contact-card-edit')) {
+        const contact = store.contacts.find(el => el.id === +e.target.dataset.id);
+        const contactForm = makeContactForm(contact);
+        const modal = document.querySelector('#new-entry-modal');
+        modal.innerHTML = contactForm;
+        modal.classList.add('open');
     }
 };
 

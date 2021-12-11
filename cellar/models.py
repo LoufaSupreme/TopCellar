@@ -44,7 +44,7 @@ class Address(models.Model):
 # descriptive words that act as optional parameters to sort data by
 class Tag(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tags')
-    name = models.CharField(max_length=100, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, default='', blank=True)
 
     def __str__(self):
         return f'{self.name}' 
@@ -59,9 +59,9 @@ class Tag(models.Model):
 class Customer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customers')
     name = models.CharField(max_length=255)
-    address = models.ForeignKey(Address, on_delete=models.PROTECT, null=True, blank=True, related_name='customers')
-    industry = models.CharField(max_length=255, null=True, blank=True)
-    notes = models.TextField(null=True, blank=True)
+    address = models.ForeignKey(Address, on_delete=models.PROTECT, null=True, default='', blank=True, related_name='customers')
+    industry = models.CharField(max_length=255, null=True, default='', blank=True)
+    notes = models.TextField(null=True, default='', blank=True)
     tags = models.ManyToManyField(Tag, blank=True, related_name="customers")
     date_created = models.DateTimeField(default=timezone.now)
 
@@ -96,13 +96,13 @@ class Customer(models.Model):
 class Contact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contacts')
     first_name = models.CharField(max_length=55)
-    last_name = models.CharField(max_length=55, null=True, blank=True)
-    position = models.CharField(max_length=155, null=True, blank=True)
-    email = EmailField(max_length=254, null=True, blank=True)
-    phone_cell = models.CharField(max_length=15, null=True, blank=True)
-    phone_office = models.CharField(max_length=15, null=True, blank=True)
-    company = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.PROTECT, related_name='contacts')
-    notes = models.TextField(null=True, blank=True)
+    last_name = models.CharField(max_length=55, null=True, default='', blank=True)
+    position = models.CharField(max_length=155, null=True, default='', blank=True)
+    email = EmailField(max_length=254, null=True, default='', blank=True)
+    phone_cell = models.CharField(max_length=15, null=True, default='', blank=True)
+    phone_office = models.CharField(max_length=15, null=True, default='', blank=True)
+    company = models.ForeignKey(Customer, null=True, default='', blank=True, on_delete=models.PROTECT, related_name='contacts')
+    notes = models.TextField(null=True, default='', blank=True)
     date_created = models.DateTimeField(default=timezone.now);
 
     def __str__(self):
@@ -140,9 +140,9 @@ class Entry(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='entries')
     description = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, related_name='entries')
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, default='', blank=True, related_name='entries')
     contacts = models.ManyToManyField(Contact, blank=True, related_name='entries')
-    rank = models.PositiveIntegerField(null=True, blank=True)
+    rank = models.PositiveIntegerField(null=True, default='', blank=True)
     completed = models.BooleanField(default=False)
     archived = models.BooleanField(default=False)
     flagged = models.BooleanField(default=False)

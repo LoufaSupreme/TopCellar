@@ -66,6 +66,7 @@ def entryDetail(request, pk):
     # if put request to update entry:
     elif request.method == 'PUT':
         try:
+            # have to use filter here, so can call the update function later:
             entry = Entry.objects.filter(id=pk)
             entry_data = consolidateEntryData(request)
             contacts = entry_data['contacts'];
@@ -84,6 +85,8 @@ def entryDetail(request, pk):
                 completed=entry_data['completed'],
             )
 
+            # clear any existing contacts or tags, and replace with the new ones:
+            # need to do it this way because they are list elements
             entry = Entry.objects.get(id=pk)
             entry.contacts.clear()
             entry.tags.clear()
@@ -126,6 +129,7 @@ def getContacts(request):
 # API route
 # send details of just one contact
 def contactDetail(request, pk):
+    # get details:
     if request.method == 'GET':
         print(f'Getting details for contact {pk}')
         try:
@@ -134,7 +138,38 @@ def contactDetail(request, pk):
         except Exception as e:
             print(f'{e.__class__.__name__}: {e}')
             traceback.print_exc()
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
 
+    # edit contact
+    elif request.method == 'PUT':
+        print(f'Updating contact {pk}: {json.loads(request.body)}')
+        try:
+            # have to use filter here, so we can call the update method later:
+            contact = Contact.objects.filter(id=pk)
+            contact_data = consolidate_contact_data(request)
+            contact.update(
+                user=contact_data['user'],
+                first_name=contact_data['first_name'],
+                last_name=contact_data['last_name'],
+                position=contact_data['position'],
+                company=contact_data['company'],
+                phone_cell=contact_data['phone_cell'],
+                phone_office=contact_data['phone_office'],
+                email=contact_data['email'],
+                notes=contact_data['notes'],
+            )
+            
+            # need to "get" contact so can use the serialize function
+            contact = Contact.objects.get(id=pk);
+
+            return JsonResponse(contact.serialize(), safe=False, status=201)
+
+        except Exception as e:
+            print(f'{e.__class__.__name__}: {e}')
+            traceback.print_exc() 
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
+    # delete contact:
     elif request.method == 'DELETE':
         print(f'Deleting contact {pk}')
         try:
@@ -189,7 +224,10 @@ def consolidateEntryData(request):
     # get customer object:
     customer = data.get('customer')
     # try to get the exact customer (e.g. if they chose one of the dropdown options)
-    customer = Customer.objects.get(id=customer['id'], name=customer['name'])
+    try:
+        customer = Customer.objects.get(id=customer['id'], name=customer['name'])
+    except:
+        customer = None
 
     # get contact object for each contact. If it doesn't exist, create one:
     contact_names = data.get('contacts')
@@ -275,7 +313,7 @@ def newEntry(request):
                 entry.contacts.add(contact)
             for tag in tags:
                 entry.tags.add(tag)
-
+            
             entry.save()
 
             return JsonResponse(entry.serialize(), safe=False, status=201)
@@ -324,7 +362,8 @@ def consolidate_contact_data(request):
     notes = data.get('notes')
 
     company = data.get('company')
-    company = Customer.objects.get(id=company['id'], name=company['name'])
+    if company != None:
+        company = Customer.objects.get(id=company['id'], name=company['name'])
 
     contact_data = {
         'user': user,
