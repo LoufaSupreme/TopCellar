@@ -165,10 +165,10 @@ const makeContactCard = (contact, regex = null) => {
     }
 
     return `
-        <div class='contact-card neupho'>
+        <div id='contact-${contact.id}' class='contact-card neupho'>
             <div class='contact-btns-container flex'>
-                <button>Edit</button>
-                <button>Delete</button>
+                <button class='contact-card-edit' data-id=${contact.id}>Edit</button>
+                <button class='contact-card-del' data-id=${contact.id}>Delete</button>
             </div>
             <div class='company-container'>
                 <div class='company-info-container'>
@@ -1081,6 +1081,13 @@ const handleEntryDelete = (entry_id) => {
   deleteInstance("entry", entry_id);
 };
 
+// deletes a contact:
+const handleContactDelete = (contact_id) => {
+    const contactCard = document.querySelector(`#contact-${contact_id}`);
+    contactCard.remove();
+    deleteInstance('contact', contact_id);
+}
+
 // changes entry flagged status:
 const handleEntryFlag = (entry_id) => {
     const entry = store.entries.find(entry => entry.id === parseInt(entry_id));
@@ -1246,6 +1253,12 @@ const handleClicks = (e) => {
         e.preventDefault();
         store.page = 'rolodex';
         render(root, store);
+    }
+
+    // click on "delete" btn inside contact card:
+    else if (e.target.classList.contains('contact-card-del')) {
+        const contact_id = e.target.dataset.id;
+        handleContactDelete(contact_id);
     }
 };
 

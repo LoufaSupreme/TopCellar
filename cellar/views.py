@@ -115,7 +115,6 @@ def entryDetail(request, pk):
         return JsonResponse({"error": "Unsupported HTTP method."}, status=400)
 
 
-
 # API route
 # send list of all contacts for the user
 def getContacts(request):
@@ -127,9 +126,29 @@ def getContacts(request):
 # API route
 # send details of just one contact
 def contactDetail(request, pk):
-    contact = Contact.objects.get(id=pk)
+    if request.method == 'GET':
+        print(f'Getting details for contact {pk}')
+        try:
+            contact = Contact.objects.get(id=pk)
+            return JsonResponse(contact.serialize(), safe=False)
+        except Exception as e:
+            print(f'{e.__class__.__name__}: {e}')
+            traceback.print_exc()
 
-    return JsonResponse(contact.serialize(), safe=False)
+    elif request.method == 'DELETE':
+        print(f'Deleting contact {pk}')
+        try:
+            contact = Contact.objects.get(id=pk)
+            contact.delete()
+            return JsonResponse({"success": f'Contact {pk} successfully deleted.'}, status=201)
+        except Exception as e:
+            print(f'{e.__class__.__name__}: {e}')
+            traceback.print_exc()
+
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
+    else:
+        return JsonResponse({"error": "Unsupported HTTP method."}, status=400)
 
 
 # API route

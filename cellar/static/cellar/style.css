@@ -492,7 +492,7 @@ body {
 }
 
 #add-btn > i {
-  font-size: var(--fs-700);
+  font-size: 3rem;
 }
 
 /* #toolbar-sort-btn {
