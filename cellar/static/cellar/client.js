@@ -166,6 +166,10 @@ const makeContactCard = (contact, regex = null) => {
 
     return `
         <div class='contact-card neupho'>
+            <div class='contact-btns-container flex'>
+                <button>Edit</button>
+                <button>Delete</button>
+            </div>
             <div class='company-container'>
                 <div class='company-info-container'>
                     <div class='company-logo'>?</div>
@@ -353,10 +357,10 @@ const makeContactForm = () => {
                 <input id="email-input" class="" type="email" placeholder="Email">
             </div>
             <div class="neupho inset">
-                <input id="cell-input" class="" type="tel" pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Cell Phone">
+                <input id="cell-input" class="" type="tel" pattern='^(1-)?[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Cell Phone">
             </div>
             <div class="neupho inset">
-                <input id="office-input" class="" type="tel" pattern='[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Office Phone">
+                <input id="office-input" class="" type="tel" pattern='^(1-)?[0-9]{3}-[0-9]{3}-[0-9]{4}' oninput='formatPhoneNum(this)' placeholder="Office Phone">
             </div>
             <div class="neupho tag-container inset flex">
                 <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Company">
@@ -607,7 +611,7 @@ const makeAddBtn = () => {
     return `
         <div class='toolbar-container flex'>
             <div class='toolbar flex'>
-                <button id='add-btn' class='round-btn bg-dark text-accent neupho'>
+                <button id='add-btn' class='round-btn neupho bg-dark text-accent neupho'>
                     <i class="bi bi-plus-lg"></i>
                 </button>
             </div>

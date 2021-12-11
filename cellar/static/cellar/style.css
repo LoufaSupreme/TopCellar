@@ -487,8 +487,8 @@ body {
     z-index: 3;
     width: 60px;
     height: 60px;
-    box-shadow:  3px 3px 10px rgba(0, 0, 0, 0.2),
-                 -3px -3px 10px rgba(0,0,0,0.2);
+    /* box-shadow:  3px 3px 10px rgba(0, 0, 0, 0.2),
+                 -3px -3px 10px rgba(0,0,0,0.2); */
 }
 
 #add-btn > i {
@@ -729,6 +729,7 @@ button i {
 
 .contact-card {
     display: flex;
+    position: relative;
     background: hsl(var(--clr-dark));
     width: 350px;
     height: 200px;
@@ -737,6 +738,34 @@ button i {
     overflow: hidden;
     border-radius: 1em;
 }
+
+.contact-card .contact-btns-container {
+    position: absolute;
+    left: 5%;
+    bottom: 10px;
+    --gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    z-index: 10;
+}
+
+.contact-card .contact-btns-container button {
+    padding: 0.1em 0.4em;
+    font-size: var(--fs-300);
+    color: hsl(var(--clr-light));
+    background: transparent;
+    border-radius: 0.5rem;
+    transition: all 0.1s ease-in-out;
+}
+
+.contact-card:hover .contact-btns-container {
+    opacity: 1;
+}
+
+.contact-btns-container button:hover {
+    background: hsl(var(--clr-dark));
+}
+
 
 .company-container {
     display: flex;

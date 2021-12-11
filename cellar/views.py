@@ -297,7 +297,7 @@ def consolidate_contact_data(request):
     if first_name == '':
         raise ValidationError('First name cannot be blank.')
     
-    last_name = data.get('first_name')
+    last_name = data.get('last_name')
     position = data.get('position')
     email = data.get('email')
     phone_cell = data.get('phone_cell')
