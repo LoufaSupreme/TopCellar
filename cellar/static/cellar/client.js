@@ -29,22 +29,17 @@ const App = async (state) => {
 
     return `
         <section id='header'>
-            <div class="navbar flex">
+            <div class="navbar flex bottom-shadow">
                 ${makeNavBar()}
             </div>
-            <div id='filter-accordion' class='accordion'>
+            <div id='filter-accordion' class='accordion bottom-shadow'>
                 ${makeEntryFilterBox()}
             </div>
-            <div id='sort-accordion' class='accordion'>
+            <div id='sort-accordion' class='accordion bottom-shadow'>
                 ${makeEntrySortBox()}
             </div>
         </section>
         <section id='main'>
-            <div id='sidebar' class='accordion'>
-                <div id='sidebar-open-btn'>
-                    <i class="bi bi-funnel"></i>
-                </div>
-            </div>
             ${makeModal('new-entry-modal')}
             ${makeModal('add-objects-modal')}
             ${makeAddBtn()}
@@ -629,18 +624,23 @@ const makeAddBtn = () => {
 const formatPhoneNum = (inputField) => {
     const nums = inputField.value.split('-').join("");
     
-    if (nums.length === 3) inputField.value = nums;
-    else if (nums.length === 4) {
-        inputField.value = nums.slice(0, 3) + '-' + nums.slice(3, 4);
+    const digits = nums[0] === '1' ? 1 : 0;
+
+    if (nums.length === 1 && digits === 1) inputField.value === 1;
+    else if (nums.length === 2 && digits === 1) {
+        inputField.value = nums.slice(0,digits) + '-' + nums.slice(digits, digits+1);
     }
-    else if (nums.length === 6) {
-        inputField.value = nums.slice(0,3) + '-' + nums.slice(3,6);
+    else if (nums.length === digits+4) {
+        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits, digits+3) + '-' + nums.slice(digits+3, digits+4);
     }
-    else if (nums.length === 7) {
-        inputField.value = nums.slice(0,3) + '-' + nums.slice(3,6) + '-' + nums.slice(6,7);
+    else if (nums.length === digits+6) {
+        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits,digits+3) + '-' + nums.slice(digits+3,digits+6);
     }
-    else if (nums.length > 10) {
-        inputField.value = inputField.value.slice(0, 12);
+    else if (nums.length === digits+7) {
+        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits,digits+3) + '-' + nums.slice(digits+3,digits+6) + '-' + nums.slice(digits+6,digits+7);
+    }
+    else if (nums.length > digits+10) {
+        inputField.value = inputField.value.slice(0, digits+digits+12);
     }
 }
 
@@ -1225,7 +1225,7 @@ const handleClicks = (e) => {
 
     // fires when user clicks "filter" or "sort" beside the add btn
     else if (e.target.classList.contains('accordion')) {
-        e.target.classList.toggle('open');
+        e.target.classList.toggle('accordion-open');
         const chevron = e.target.querySelector('.bi-chevron-down');
         chevron.classList.toggle('bi-chevron');
         chevron.classList.toggle('bi-chevron-up');

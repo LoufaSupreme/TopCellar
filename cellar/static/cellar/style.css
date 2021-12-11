@@ -207,6 +207,10 @@
     box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.4);
 }
 
+.bottom-shadow {
+    box-shadow: 0 4px 8px -5px rgba(0, 0, 0, 0.2);
+}
+
 /* ------------------------------------------ */
 /* LOGIN PAGE --------------------------------- */
 /* ------------------------------------------ */
@@ -251,7 +255,6 @@
     margin-inline: auto;
     border-radius: 0.5em;
 }
-
 
 
 /* ------------------------------------------ */
@@ -324,61 +327,6 @@ body {
     transform: translateX(100%)
 } */
 
-.accordion {
-    max-height: 1.6em;
-    transition: max-height 0.4s ease-in-out;
-    overflow-y: hidden;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    /* transform: translateX(-100%);
-    transition: transform 0.4s ease-in-out; */
-}
-
-.open {
-    max-height: 450px;
-    /* transform: translateX(0%); */
-}
-
-.accordion-title {
-    display: flex;
-    height: 100%;
-    padding: 0 1rem;  
-    color: hsl(var(--clr-white) / 0.7); 
-    pointer-events: none; 
-}
-
-.accordion-title span {
-    flex: 1 1 auto;
-}
-
-/* FILTER AND SORT AREA ///////////////*/
-
-/* filter input */
-#filter-container {
-    margin-inline: 2rem;
-    padding: 0.5rem 1.2rem;
-    color: hsl(var(--clr-white) / 0.7);
-}
-
-#filter-container select {
-    margin: 0.4rem 0;
-}
-
-#sort-container {
-    margin-inline: 2rem;
-    padding: 0.5rem 1.2rem;
-    color: hsl(var(--clr-white) / 0.7);
-}
-
-.datebox-container {
-    justify-content: flex-start;
-}
-
-.checkbox-container {
-    justify-content: flex-start;
-}
-
 
 #main {
     display: flex;
@@ -393,7 +341,7 @@ body {
   padding: 0.5rem 1rem;
   align-items: center;
   flex-wrap: wrap;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  /* border-bottom: 1px solid rgba(0, 0, 0, 0.2); */
 }
 
 .search-container {
@@ -439,11 +387,67 @@ body {
   margin-left: auto;
 }
 
+
+.accordion {
+    max-height: 1.6em;
+    transition: max-height 0.4s ease-in-out;
+    overflow-y: hidden;
+    /* border-bottom: 1px solid rgba(0, 0, 0, 0.2); */
+    cursor: pointer;
+    /* transform: translateX(-100%);
+    transition: transform 0.4s ease-in-out; */
+}
+
+.accordion-open {
+    max-height: 450px;
+    /* transform: translateX(0%); */
+}
+
+.accordion-title {
+    display: flex;
+    height: 100%;
+    padding: 0 1rem;  
+    color: hsl(var(--clr-white) / 0.7); 
+    pointer-events: none; 
+}
+
+.accordion-title span {
+    flex: 1 1 auto;
+}
+
+/* FILTER AND SORT AREA ///////////////*/
+
+/* filter input */
+#filter-container {
+    margin-inline: 2rem;
+    padding: 0.5rem 1.2rem;
+    color: hsl(var(--clr-white) / 0.7);
+}
+
+#filter-container select {
+    margin: 0.4rem 0;
+}
+
+#sort-container {
+    margin-inline: 2rem;
+    padding: 0.5rem 1.2rem;
+    color: hsl(var(--clr-white) / 0.7);
+}
+
+.datebox-container {
+    justify-content: flex-start;
+}
+
+.checkbox-container {
+    justify-content: flex-start;
+}
+
+
 /* PAGE HEADER  //////////////////*/
 
-.welcome {
+/* .welcome {
   padding-left: 1rem;
-}
+} */
 
 /* ADD FILTER SORT BUTTONS ************/
 /* TOOLBAR */
@@ -617,6 +621,7 @@ select {
   opacity: 0;
   top: 0;
   left: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
