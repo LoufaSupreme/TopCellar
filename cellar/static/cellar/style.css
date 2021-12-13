@@ -56,6 +56,12 @@
   gap: var(--gap, 1rem);
 }
 
+.flex-center {
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+
 .grid {
   display: grid;
   gap: var(--gap, 1rem);
@@ -427,10 +433,6 @@ body {
     color: hsl(var(--clr-white) / 0.7);
 }
 
-#filter-container select {
-    margin: 0.4rem 0;
-}
-
 #sort-container {
     margin-inline: 2rem;
     padding: 0.5rem 1.2rem;
@@ -443,6 +445,7 @@ body {
 
 .checkbox-container {
     justify-content: flex-start;
+    padding: 0.2rem 0;
 }
 
 
@@ -605,6 +608,7 @@ input[type='number'] {
     justify-content: center;
     align-items: center;
     position: relative;
+    padding: 0.3rem 0;
 }
 
 select {
@@ -616,6 +620,7 @@ select {
     height: 100%;
     appearance: none;
     -moz-appearance: none;
+    margin: 0;
 }
 
 .select-arrow {

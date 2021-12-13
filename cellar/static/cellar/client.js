@@ -542,19 +542,25 @@ const makeEntryFilterBox = () => {
     </div>
     <div id='filter-container' class=''>
         <div class='flex'>
-            <select class='neupho bg-dark'>
-                <option value='new'>New Custom Filter</option>
-                <option value='custom1'>Custom Filter 1</option>
-                <option value='custom2'>Custom Filter 2</option>
-            </select>
+            <div class='select-container'>
+                <select class='neupho bg-dark'>
+                    <option value='new'>New Custom Filter</option>
+                    <option value='custom1'>Custom Filter 1</option>
+                    <option value='custom2'>Custom Filter 2</option>
+                </select>
+                <span class='select-arrow'><i class="bi bi-chevron-down"></i></span>
+            </div>        
         </div>
         <div>
             <div class='flex'>
-                <span>Filter by: </span>
-                <select id='filter-any-all' class='neupho bg-dark'>
-                    <option value='any'>ANY</option>
-                    <option value='all'>ALL</option>
-                </select>
+                <div class='flex flex-center'>Filter by: </div>
+                <div class='select-container'>
+                    <select id='filter-any-all' class='neupho bg-dark'>
+                        <option value='any'>Any</option>
+                        <option value='all'>All</option>
+                    </select>
+                    <span class='select-arrow'><i class="bi bi-chevron-down"></i></span>
+                </div>
             </div>
             <div class="neupho tag-container inset flex">
                 <input id="customers-input" class="tag-input filter-input" type="text" data-id="undefined" data-list="customers" placeholder="Accounts">
