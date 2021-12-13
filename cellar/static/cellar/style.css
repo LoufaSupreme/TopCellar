@@ -366,7 +366,9 @@ body {
 }
   
 #search {
-    flex-grow: 1;
+    flex: 1;
+    flex-shrink: 1;
+    min-width: 50px;
 }
 
 .search-bar-container i {
@@ -376,6 +378,7 @@ body {
 /* number of search results when typing in search box */
 .search-count {
     display: none;
+    flex-wrap: nowrap;
 }
 
 .nav-content {
