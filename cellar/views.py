@@ -221,6 +221,9 @@ def getUser(request):
 def consolidateEntryData(request):
     user = request.user
     data = json.loads(request.body)
+
+    print(f'Consolidating Entry Data: {data}')
+
     # get customer object:
     customer = data.get('customer')
     # try to get the exact customer (e.g. if they chose one of the dropdown options)
@@ -229,12 +232,12 @@ def consolidateEntryData(request):
     except:
         customer = None
 
-    # get contact object for each contact. If it doesn't exist, create one:
+    # get contact object for each contact.
     contact_names = data.get('contacts')
     contacts = []
     for c in contact_names:
         # print('Contact:', c)
-        contact = Contact.objects.get(id=c['id'], first_name=c['first_name'], last_name=c['last_name'])
+        contact = Contact.objects.get(id=c['id'])
         contacts.append(contact)
 
     # get date and make datetime object:

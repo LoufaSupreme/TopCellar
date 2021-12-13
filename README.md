@@ -75,7 +75,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] 
 
 
-##### General
+##### Bonus
 - [ ] Create alternative theme 1
 - [ ] Create alternative theme 2
 - [ ] Create alternative theme 3
