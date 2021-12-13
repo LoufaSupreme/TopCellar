@@ -621,15 +621,21 @@ const makeEntrySortBox = () => {
         </div>
         <div id='sort-container' class=''>
             <div class='flex'>
-                <select id='sortBy' class='neupho bg-dark'>
-                    <option value='date'>Date Created</option>
-                    <option value='customer_name'>Customer Name</option>
-                    <option value='flagged'>Flagged</option>
-                </select>
-                <select id='sortDirection' class='neupho bg-dark'>
-                    <option value='descending'>Descending</option>
-                    <option value='ascending'>Ascending</option>
-                </select>
+                <div class='select-container'>
+                    <select id='sortBy' class='neupho bg-dark'>
+                        <option value='date'>Date Created</option>
+                        <option value='customer_name'>Customer Name</option>
+                        <option value='flagged'>Flagged</option>
+                    </select>
+                    <span class='select-arrow'><i class="bi bi-chevron-down"></i></span>
+                </div>  
+                <div class='select-container'>              
+                    <select id='sortDirection' class='neupho bg-dark'>
+                        <option value='descending'>Descending</option>
+                        <option value='ascending'>Ascending</option>
+                    </select>
+                    <span class='select-arrow'><i class="bi bi-chevron-down"></i></span>
+                </div>            
                 <div class='form-btn-container flex'>
                     <button type="buton" class='neupho bg-dark' id="sort-btn">Sort</button>
                 </div>
