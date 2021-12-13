@@ -117,6 +117,7 @@ const getList = async (target) => {
 
 // create a new model instance in the db:
 // returns newly created object(s)
+// keywords: entry, customer, contact
 const newInstance = async (details, keyword) => {
 
     console.log(`Creating new ${keyword} instance...`)
@@ -124,7 +125,7 @@ const newInstance = async (details, keyword) => {
     const csrf_token = getCookie('csrftoken');
 
     try {
-        const res = await fetch(`api/new${keyword}/`, {
+        const res = await fetch(`api/new_${keyword}/`, {
             method: 'POST',
             body: JSON.stringify(details),
             headers: { "X-CSRFToken": csrf_token }

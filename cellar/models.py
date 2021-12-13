@@ -80,7 +80,7 @@ class Customer(models.Model):
             "date_created": self.date_created,
         }
 
-        if (self.address != None and self.address != ""):
+        if (self.address != None):
             serialized['address'] = {
                 "street_addr_1": self.address.street_addr_1,
                 "street_addr_2": self.address.street_addr_2,
@@ -101,7 +101,7 @@ class Contact(models.Model):
     email = EmailField(max_length=254, null=True, default='', blank=True)
     phone_cell = models.CharField(max_length=15, null=True, default='', blank=True)
     phone_office = models.CharField(max_length=15, null=True, default='', blank=True)
-    company = models.ForeignKey(Customer, null=True, default='', blank=True, on_delete=models.PROTECT, related_name='contacts')
+    company = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.PROTECT, related_name='contacts')
     notes = models.TextField(null=True, default='', blank=True)
     date_created = models.DateTimeField(default=timezone.now);
 
@@ -140,7 +140,7 @@ class Entry(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='entries')
     description = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, default='', blank=True, related_name='entries')
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, related_name='entries')
     contacts = models.ManyToManyField(Contact, blank=True, related_name='entries')
     rank = models.PositiveIntegerField(null=True, default='', blank=True)
     completed = models.BooleanField(default=False)

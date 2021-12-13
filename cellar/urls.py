@@ -24,7 +24,7 @@ urlpatterns = [
     path('api/entry/<str:pk>', views.entryDetail, name='entryDetail'),
     path('api/contact/<str:pk>', views.contactDetail, name='contactDetail'),
     path('api/customer/<str:pk>', views.customerDetail, name='customerDetail'),
-    path('api/newEntry/', views.newEntry, name='newEntry'),
-    path('api/newCustomer/', views.newCustomer, name='newCustomer'),
-    path('api/newContacts/', views.newContacts, name='newContacts'),
+    path('api/new_entry/', views.new_entry, name='new_entry'),
+    path('api/new_customer/', views.new_customer, name='new_customer'),
+    path('api/new_contact/', views.new_contact, name='new_contact'),
 ]

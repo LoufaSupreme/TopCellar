@@ -290,7 +290,7 @@ def consolidateEntryData(request):
 
 # API route
 # create new entry
-def newEntry(request):
+def new_entry(request):
     if request.method == 'POST':
         try:
             entry_data = consolidateEntryData(request)
@@ -326,7 +326,7 @@ def newEntry(request):
     
 
 # create new customer instance
-def newCustomer(request):
+def new_customer(request):
     if request.method == 'POST':
         try:
             user = request.user
@@ -382,37 +382,42 @@ def consolidate_contact_data(request):
 
 
 # create new contact instance(s)
-def newContacts(request):
+def new_contact(request):
     if request.method == 'POST':
         try:
             user = request.user
-            data = json.loads(request.body)
+            contacts_data = json.loads(request.body)
 
-            if isinstance(data, list):
-                contacts = data
-                print(f'Creating new Contact(s) for {user}: {contacts}')
+            # if a list of new contacts was passed:
+            if isinstance(contacts_data, list):
+                print(f'Creating new Contact(s) (from list) for {user}: {contacts_data}')
 
                 # create new 
                 new_contacts = []
-                for c in contacts:
-                    new_contact = Contact(user=user, first_name=c['first_name'], last_name=c['last_name'])
+                for c in contacts_data:
+                    new_contact = Contact(
+                        user=user, 
+                        first_name=c['first_name'], 
+                        last_name=c['last_name']
+                    )
                     new_contact.save()
                     new_contacts.append(new_contact)
 
                 return JsonResponse([contact.serialize() for contact in new_contacts], safe=False, status=201)
 
             else:
-                contact_data = consolidate_contact_data(request)
+                print(f'Creating new Contact instance for {user}: {contacts_data}')
+                consolidated_data = consolidate_contact_data(request)
                 contact = Contact(
-                    user=contact_data['user'],
-                    first_name=contact_data['first_name'],
-                    last_name=contact_data['last_name'],
-                    position=contact_data['position'],
-                    company=contact_data['company'],
-                    phone_cell=contact_data['phone_cell'],
-                    phone_office=contact_data['phone_office'],
-                    email=contact_data['email'],
-                    notes=contact_data['notes'],
+                    user=consolidated_data['user'],
+                    first_name=consolidated_data['first_name'],
+                    last_name=consolidated_data['last_name'],
+                    position=consolidated_data['position'],
+                    company=consolidated_data['company'],
+                    phone_cell=consolidated_data['phone_cell'],
+                    phone_office=consolidated_data['phone_office'],
+                    email=consolidated_data['email'],
+                    notes=consolidated_data['notes'],
                 )
                 contact.save()
 
