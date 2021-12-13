@@ -659,25 +659,37 @@ const makeAddBtn = () => {
 // triggered by oninput in input[type='tel']
 const formatPhoneNum = (inputField) => {
     const nums = inputField.value.split('-').join("");
-    
     const digits = nums[0] === '1' ? 1 : 0;
 
+    // get character position of the cursor:
+    let cursorPosition = inputField.selectionStart;
+
+    // add dashes
     if (nums.length === 1 && digits === 1) inputField.value === 1;
-    else if (nums.length === 2 && digits === 1) {
-        inputField.value = nums.slice(0,digits) + '-' + nums.slice(digits, digits+1);
-    }
-    else if (nums.length === digits+4) {
-        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits, digits+3) + '-' + nums.slice(digits+3, digits+4);
-    }
-    else if (nums.length === digits+6) {
-        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits,digits+3) + '-' + nums.slice(digits+3,digits+6);
-    }
-    else if (nums.length === digits+7) {
-        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits,digits+3) + '-' + nums.slice(digits+3,digits+6) + '-' + nums.slice(digits+6,digits+7);
-    }
     else if (nums.length > digits+10) {
-        inputField.value = inputField.value.slice(0, digits+digits+12);
+        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits,digits+3) + '-' + nums.slice(digits+3,digits+6) + '-' + nums.slice(digits+6,digits+10);
     }
+    else if (nums.length > digits+6) {
+        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits,digits+3) + '-' + nums.slice(digits+3,digits+6) + '-' + nums.slice(digits+6,nums.length);
+    }
+    else if (nums.length > digits+5) {
+        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits,digits+3) + '-' + nums.slice(digits+3,nums.length);
+    }
+    else if (nums.length > digits+3) {
+        inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits, digits+3) + '-' + nums.slice(digits+3, nums.length);
+    }
+    else if (nums.length > 1 && digits === 1) {
+        inputField.value = nums.slice(0,digits) + '-' + nums.slice(digits, nums.length);
+    }
+
+    // reseting the input value automatically puts the cursor at the end, which is annoying,
+    // so reset the cursor back to where it was before, taking into account any dashes that we added...
+    if (cursorPosition === 1 && digits === 1) cursorPosition++;
+    else if (cursorPosition === digits+4) cursorPosition++;
+    else if (cursorPosition === digits+8) cursorPosition++;
+    
+    inputField.selectionStart = cursorPosition;
+    inputField.selectionEnd = cursorPosition;
 }
 
 // creates a new entry:
