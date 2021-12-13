@@ -464,30 +464,30 @@ const makeModal = (type = null) => {
 
 // generates HTML for the popup modal with details on the to-be-created customer and/or contacts:
 const generateModalText = (customer, contacts) => {
-  let promptText = "";
-  if (customer) {
-    promptText += `
-        <div class='modal-text fs-300'>We couldn't find the following customer in your Rolodex:</div>
-        <div class='modal-object fs-400 text-accent'>${customer.name}</div>
-    `;
-  }
+    let promptText = "";
+    if (customer) {
+        promptText += `
+            <div class='modal-text fs-300'>We couldn't find the following customer in your Rolodex:</div>
+            <div class='modal-object fs-400 text-accent'>${customer.name}</div>
+        `;
+    }
 
-  if (contacts) {
-    const contactText = contacts
-      .map((contact) => {
-        const name = contact.last_name ? `${contact.first_name} ${contact.last_name}` : contact.first_name;
-        
-        return `
-        <div class='modal-object fs-400 text-accent'>
-            ${name}
-        </div>`
-      }).join("");
+    if (contacts) {
+        const contactText = contacts
+        .map((contact) => {
+            const name = contact.last_name ? `${contact.first_name} ${contact.last_name}` : contact.first_name;
+            
+            return `
+            <div class='modal-object fs-400 text-accent'>
+                ${name}
+            </div>`
+        }).join("");
 
-    promptText += `
-        <div class='modal-text fs-300'>We couldn't find the following contacts in your Rolodex:</div>
-        ${contactText}
-    `;
-  }
+        promptText += `
+            <div class='modal-text fs-300'>We couldn't find the following contacts in your Rolodex:</div>
+            ${contactText}
+        `;
+    }
 
     promptText += `            
         <div class='modal-text fs-300'>Would you like to add them now?</div>
@@ -773,7 +773,6 @@ const initiateNewContact = async (form, contact_id = null) => {
         console.log(`Initiating edit of contact ${contact_id}`);
     }
     else console.log('Initiating new contact...');
-    console.log(contact_id)
 
     // get all the inputted data from the entry form
     const newContactData = getContactFormData(form);
@@ -951,6 +950,7 @@ const getFormData = (form) => {
 
   console.log("Got form data:");
   console.log(newEntryDetails);
+
   return newEntryDetails;
 };
 
@@ -1176,11 +1176,39 @@ const statusChange = (dropdown, entry_id) => {
 
 // handles clicks anywhere on the document.  Called on window load.
 // this is to avoid having to make new event handlers for dynamic content (like the form)
-const handleClicks = (e) => {
+const handleClicks = async (e) => {
     // console.log(e.target);
+    
+    // fires when user clicks big "+" btn:
+    // generates new entry form for entry creation:
+    if (e.target.id === "add-btn") {
+        if (store.page === 'index') {
+            const entryForm = makeEntryForm();
+            const modal = document.querySelector('#new-entry-modal');
+            modal.innerHTML = entryForm;
+            modal.classList.add('open');
+        }
+        else if (store.page === 'rolodex') {
+            const contactForm = makeContactForm();
+            const modal = document.querySelector('#new-entry-modal');
+            modal.innerHTML = contactForm;
+            modal.classList.add('open');
+        }
+    }
+    
     // fires when the entry submit button is clicked:
-    if (e.target.id === "submit-new-btn") {
-        if (store.page === 'index') handleEntrySubmitClicked();
+    else if (e.target.id === "submit-new-btn") {
+        if (store.page === 'index') {
+            // handleEntrySubmitClicked()
+            const form = document.querySelector("#entry-form-container"); // grab the parent elem of the form
+            const modal = document.querySelector('#new-entry-modal');
+            const newEntryStatus = await initiateNewEntry(form); // initiate the creation of a new entry
+            
+            if (newEntryStatus.status === 'complete') {
+              modal.classList.remove('open');
+              console.log(newEntryStatus.message);
+            }
+        }
         else if (store.page === 'rolodex') handleContactSubmit();
     }
 
@@ -1236,23 +1264,6 @@ const handleClicks = (e) => {
         const entry = store.entries.find((ent) => ent.id === entry_id);
         entryContainer.outerHTML = makeEntryHTML(entry);
     } 
-
-    // fires when user clicks big "+" btn:
-    // generates new entry form for entry creation:
-    else if (e.target.id === "add-btn") {
-        if (store.page === 'index') {
-            const entryForm = makeEntryForm();
-            const modal = document.querySelector('#new-entry-modal');
-            modal.innerHTML = entryForm;
-            modal.classList.add('open');
-        }
-        else if (store.page === 'rolodex') {
-            const contactForm = makeContactForm();
-            const modal = document.querySelector('#new-entry-modal');
-            modal.innerHTML = contactForm;
-            modal.classList.add('open');
-        }
-    }
 
         // fires when user clicks on a tag's "X"
     else if (e.target.classList.contains('tag-close-btn')) {
