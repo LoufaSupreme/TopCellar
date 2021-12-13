@@ -746,26 +746,50 @@ const initiateNewEntry = async (form) => {
   if (newObjects.customer !== null || newObjects.contacts !== null) {
     console.log("Found new Customer or Contact instances. Prompting user...");
     store.uncreated = newObjects; // load new objects into store so they can be created if the user wishes
-    promptUserMakeObj(newObjects); // create a modal user prompt to ask them if they want to create the new objects
-    
-    return {
-        status: 'incomplete',
-        message: 'New customer or contact objects to be created'
-    };
+    promptUserMakeObj(newObjects); // create a modal user prompt to ask them if they want to create the new objects    
   } 
   else {
     // otherwise send post request to DB to make new entry:
-    await newInstance(newEntryData, "Entry");
-    await loadStore(store);
-    const entriesContainer = document.querySelector('#cards-container');
-    entriesContainer.innerHTML = displayEntries(store.entries);
-
-    return {
-        status: 'complete',
-        message: 'Sending request to create new entry...'
-    };
+    const newEntry = createNewInstance(newEntryData, 'Entry');
+    // if a new object is returned:
+    if (newEntry) {
+        // grab the modal of the form:
+        const modal = document.querySelector('#new-entry-modal');
+        // remove it's visibility:
+        modal.classList.remove('open');
+    }
   }
 };
+
+// sends API call to make a new instance of type 'Entry' or 'Customer'
+// updates DOM with newly created instance
+// returns newly created instance
+const createNewInstance = async (instanceData, instanceType) => {
+    try {
+        // create new instance:
+        const newObject = await newInstance(instanceData, instanceType);
+        // grab DOM container that displays the instances (entries or customers depending on the page (index / rolodex))
+        const objectsContainer = document.querySelector('#cards-container');
+
+        if (instanceType === 'Entry') {
+            // add new entry to store:
+            store.entries.unshift(newObject);
+            // display it:
+            objectsContainer.innerHTML = displayEntries(store.entries);
+        }
+
+        if (instanceType === 'Customer') {
+            store.customers.unshift(newObject);
+            objectsContainer.innerHTML = displayContacts(store.contacts);
+        }
+
+        return newObject;
+    }
+    catch (err) {
+        console.error(err);
+        return null;
+    }
+}
 
 // fired when the "create" or "accept" btn is clicked to make/edit a contact:
 const initiateNewContact = async (form, contact_id = null) => {
@@ -1200,14 +1224,9 @@ const handleClicks = async (e) => {
     else if (e.target.id === "submit-new-btn") {
         if (store.page === 'index') {
             // handleEntrySubmitClicked()
-            const form = document.querySelector("#entry-form-container"); // grab the parent elem of the form
-            const modal = document.querySelector('#new-entry-modal');
-            const newEntryStatus = await initiateNewEntry(form); // initiate the creation of a new entry
-            
-            if (newEntryStatus.status === 'complete') {
-              modal.classList.remove('open');
-              console.log(newEntryStatus.message);
-            }
+            // grab the form from which the entry data came from:
+            const form = document.querySelector("#entry-form-container"); 
+            initiateNewEntry(form); // initiate the creation of a new entry            
         }
         else if (store.page === 'rolodex') handleContactSubmit();
     }
