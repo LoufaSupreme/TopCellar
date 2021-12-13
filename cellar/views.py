@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import render
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
 import json, datetime
@@ -10,7 +11,7 @@ import traceback
 from .models import User, Profile, Entry, Address, Customer, Contact, Tag
 
 
-
+@login_required
 def index(request):
 
     user = request.user
@@ -32,7 +33,7 @@ def index(request):
         "user": user
     })
 
-
+@login_required
 def rolodex(request):
     user = request.user
     return render(request, "cellar/rolodex.html", {

@@ -599,10 +599,37 @@ input[type='number'] {
     padding: 0.2rem 0.6rem;
 }
 
+.select-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
 select {
     border-radius: var(--border-radius);
     padding: 0.2rem 0.6rem;
     color: hsl(var(--clr-light));
+    position: relative;
+    width: 100%;
+    height: 100%;
+    appearance: none;
+    -moz-appearance: none;
+}
+
+.select-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background:inherit;
+    width: 2em;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    pointer-events: none;
+    color:hsl(var(--clr-light));
 }
 
 .entry-btn-container {

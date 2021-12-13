@@ -102,7 +102,7 @@ const loadStore = async (state) => {
 //// navbar /////////////////////////
 const makeNavBar = () => {
     return `
-        <h1><a class='navbar-brand text-accent' href="#">TopCellar</a></h1>
+        <h1><a class='navbar-brand text-accent' href="/">TopCellar</a></h1>
         ${makeSearchBox()}
         <div class="nav-content flex">
             <ul class="navbar-nav flex">
@@ -282,11 +282,14 @@ const makeEntryHTML = (entry, regex = null) => {
                 <button id='entry-${entry.id}-delete-btn' class='neupho round-btn bg-dark delete-entry-btn' data-id='${entry.id}'>
                     <i class="bi bi-x-lg"></i>
                 </button>
-                <select class='neupho text-accent bg-dark' onchange='statusChange(this, ${entry.id})'>
-                    <option value='active'>Active</option>
-                    <option ${entry.completed ? 'selected' : ''} value='complete'>Complete</option>
-                    <option ${entry.archived ? 'selected' : ''} value='archived'>Archived</option>
-                </select>
+                <div class='select-container'>
+                    <select class='neupho text-accent bg-dark' onchange='statusChange(this, ${entry.id})'>
+                        <option value='active'>Active</option>
+                        <option ${entry.completed ? 'selected' : ''} value='complete'>Complete</option>
+                        <option ${entry.archived ? 'selected' : ''} value='archived'>Archived</option>
+                    </select>
+                    <span class='select-arrow'><i class="bi bi-chevron-down"></i></span>
+                </div>
             </div>
         </div>
     `;
@@ -666,8 +669,7 @@ const formatPhoneNum = (inputField) => {
     let cursorPosition = inputField.selectionStart;
 
     // add dashes (format 1-xxx-xxx-xxxx or xxx-xxx-xxxx):
-    if (nums.length === 1 && digits === 1) inputField.value === 1;
-    else if (nums.length > digits+10) {
+    if (nums.length > digits+10) {
         inputField.value = `${digits === 1 ? nums.slice(0, digits) + '-' : ""}` + nums.slice(digits,digits+3) + '-' + nums.slice(digits+3,digits+6) + '-' + nums.slice(digits+6,digits+10);
     }
     else if (nums.length > digits+6) {
