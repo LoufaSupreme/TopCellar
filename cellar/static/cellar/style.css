@@ -729,18 +729,26 @@ select {
     background: rgba(0, 0, 0, 1);
     max-height: 150px;
     overflow-y: scroll;
-    padding: 0.2rem 0.5rem;
+    /* padding: 0.2rem 0.5rem; */
     border-radius: 1rem;
     border: 2px solid hsl(var(--clr-light) / 0.7);
     z-index: 20;
     /* transform: translateY(2rem); */
 }
 
+.suggestions ul {
+    padding: 0.5rem 0 0.4rem 0;
+}
+
+.suggestions #suggestions-title {
+    padding-left: 0.5rem;
+}
+
 /* individual suggestion in dropdown box */
 .suggestion {
     cursor: pointer;
     color: hsl(var(--clr-light));
-    padding: 0 1rem;
+    padding: 0 1.4rem;
 }
 
 .suggestion:hover {

@@ -307,13 +307,17 @@ const makeSuggestionDiv = (type, entry_ID = null) => {
 
 const displaySuggestions = (inputID, options, type) => {
     options = options
-      .map((option) => {
-        return `<li class="suggestion ${type}-suggestion fs-300" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">${option.suggestion.name}</li>`;
-      })
-      .join("");
-      
-      options = '<ul class="fs-200 text-white">Choose Existing:' + options + '</ul>';
-      return options;
+        .map((option) => {
+            return `
+                <li class="suggestion ${type}-suggestion fs-300" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">
+                    ${option.suggestion.name}
+                </li>
+            `;
+        })
+        .join("");
+        
+    options = '<ul class="fs-200 text-white"><span id="suggestions-title">Choose Existing:</span>' + options + '</ul>';
+    return options;
   };
 
 // make html to render a new Entry form:
@@ -327,11 +331,11 @@ const makeEntryForm = () => {
         <div class="prompt-container neupho container bg-dark text-white" id="entry-form-container">
             <div class='text-accent fs-700'>New Entry</div>
             <div class="neupho tag-container inset flex">
-                <input id="new-entry-customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+                <input id="new-entry-customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account" onfocusout='inputFocusOut(this)'>
                 ${makeSuggestionDiv("customers")}
             </div>
             <div class="neupho tag-container inset flex">
-                <input id="new-entry-contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+                <input id="new-entry-contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts" onfocusout='inputFocusOut(this)'>
                 ${makeSuggestionDiv("contacts")}
             </div>
             <div class='description-wrapper flex'>
@@ -342,7 +346,7 @@ const makeEntryForm = () => {
                 <input class='neupho inset' type="number" placeholder="Rank">
             </div>
             <div class="tag-container neupho inset flex">
-                <input id="new-entry-tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+                <input id="new-entry-tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags" onfocusout='inputFocusOut(this)'>
                 ${makeSuggestionDiv("tags")}
             </div>
             <div class='form-btn-container flex'>
@@ -398,7 +402,7 @@ const makeContactForm = (contact = null) => {
             </div>
             <div class="neupho tag-container inset flex">
                 ${company}
-                <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Company">
+                <input id="customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Company" onfocusout='inputFocusOut(this)'>
                 ${makeSuggestionDiv("customers")}
             </div>
             <div class='description-wrapper flex'>
@@ -437,12 +441,12 @@ const makeEditForm = async (entryContainer) => {
     entryContainer.innerHTML = `
         <div class="tag-container neupho inset flex">
             ${customerTag}
-            <input id="customers-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
+            <input id="customers-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account" onfocusout='inputFocusOut(this)'>
             ${makeSuggestionDiv("customers", entry_ID)}
         </div>
         <div class="tag-container neupho inset flex">
             ${contactTags}
-            <input id="contacts-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+            <input id="contacts-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts" onfocusout='inputFocusOut(this)'>
             ${makeSuggestionDiv("contacts", entry_ID)}
         </div>
         <div class='description-wrapper flex'>
@@ -454,7 +458,7 @@ const makeEditForm = async (entryContainer) => {
         </div>
         <div class="neupho tag-container inset flex">
             ${tagTags}
-            <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+            <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags" onfocusout='inputFocusOut(this)'>
             ${makeSuggestionDiv("tags", entry_ID)}
         </div>
         <div class='form-btn-container flex'>
@@ -563,15 +567,15 @@ const makeEntryFilterBox = () => {
                 </div>
             </div>
             <div class="neupho tag-container inset flex">
-                <input id="customers-input" class="tag-input filter-input" type="text" data-id="undefined" data-list="customers" placeholder="Accounts">
+                <input id="customers-input" class="tag-input filter-input" type="text" data-id="undefined" data-list="customers" placeholder="Accounts" onfocusout='inputFocusOut(this)'>
                 ${makeSuggestionDiv("customers")}
             </div>
             <div class="neupho tag-container inset flex">
-                <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
+                <input id="contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts" onfocusout='inputFocusOut(this)'>
                 ${makeSuggestionDiv("contacts")}
             </div>
             <div class="tag-container neupho inset flex">
-                <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags">
+                <input id="tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags" onfocusout='inputFocusOut(this)'>
                 ${makeSuggestionDiv("tags")}
             </div>
             <div class='flex datebox-container'>
@@ -647,14 +651,6 @@ const makeEntrySortBox = () => {
 // create a button to make the new entry form appear:
 const makeAddBtn = () => {
   
-    // deprecated:
-    // <div id='toolbar-filter-btn' class='neupho inset'>
-    //     <span class='fs-400 text-accent'>FILTER<span>
-    // </div>
-    // <div id='toolbar-sort-btn' class='neupho inset'>
-    //     <span class='fs-400 text-accent'>SORT<span>
-    // </div>
-
     return `
         <div class='toolbar-container flex'>
             <div class='toolbar flex'>
@@ -669,6 +665,12 @@ const makeAddBtn = () => {
 //////////////////////////////////////
 // HELPER FUNCTIONS /////////////////
 //////////////////////////////////////
+
+// triggered via onfocusout event handler on .tag-input elements
+// hides the suggestion dropdown box if focus is lost
+const inputFocusOut = (input) => {
+    input.parentNode.querySelector('.suggestions').style.display = 'none'
+}
 
 // add dashes to phonenumbers as user types.
 // triggered by oninput in input[type='tel']
@@ -1391,10 +1393,7 @@ const listSuggestions = (inputBox) => {
         options = findMatches(inputBox.value, listItems, ["name"]);
     } 
     else if (listType === "contacts") {
-        options = findMatches(inputBox.value, listItems, [
-        "first_name",
-        "last_name",
-        ]);
+        options = findMatches(inputBox.value, listItems, ["first_name", "last_name"]);
     } 
     else {
         options = findMatches(inputBox.value, listItems, ["name"]);
@@ -1467,21 +1466,22 @@ const handleKeyUp = (e) => {
         const parentHeight = parent.getBoundingClientRect().height;
         const suggestionArea = parent.querySelector(".suggestions");
         // set the position of the suggestion box to be just underneath the input box
-        suggestionArea.style.setProperty('transform', `translateY(${parentHeight}px)`);
+        suggestionArea.style.setProperty('transform', `translateY(${parentHeight-5}px)`);
+
+        suggestionArea.style.setProperty('width', `75%`);
 
         const listType = inputBox.dataset.list;
 
-        // if the input box is not empty
-        if (inputBox.value.trim() !== '') {
+        // if the input box is not empty and its in focus, display the suggestions:
+        if (inputBox.value.trim() !== '' && inputBox === document.activeElement) {
             const options = listSuggestions(inputBox);
             if (options.length > 0) {
                 suggestionArea.style.display = "block";
                 suggestionArea.innerHTML = displaySuggestions(inputBox.id, options, listType);
             }
+            else suggestionArea.style.display = "none";
         }
-        else {
-            suggestionArea.style.display = "none";
-        }
+        else suggestionArea.style.display = "none";
     }
 
     // if user hits enter while inside an input box w/ class 'tag-input', create a new tag element:
@@ -1495,14 +1495,15 @@ const handleKeyUp = (e) => {
 // returns a filtered array
 // for each el[prop] combination of el in arr and prop in propertyList, checks whether targetWord matches:
 const findMatches = (targetWord, arr, propertyList) => {
-  return arr.filter((el) => {
-    const regex = new RegExp(targetWord, "gi");
-    return propertyList
-      .map((prop) => {
-        return el[prop] !== null ? el[prop].match(regex) : null;
-      })
-      .filter((prop) => prop !== null)[0];
-  });
+    const results = arr.filter((el) => {
+        const regex = new RegExp(targetWord, "gi");
+        return propertyList
+            .map((prop) => {
+                return el[prop] !== null ? el[prop].match(regex) : null;
+            })
+            .filter((prop) => prop !== null)[0];
+    });
+    return results;
 };
 
 
