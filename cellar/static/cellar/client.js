@@ -916,6 +916,11 @@ const initiateEdit = (form, entry_id) => {
     newEntryData.archived = originalEntry.archived;
     newEntryData.completed = originalEntry.completed;
 
+    newEntryData.date_edited = originalEntry.date_edited;
+    newEntryData.date_flagged = originalEntry.date_flagged;
+    newEntryData.date_completed = originalEntry.date_completed;
+    newEntryData.date_archived = originalEntry.date_archived;
+
     const newObjects = checkNewInstances(newEntryData, {mode:'update', type: 'entry'});
     newObjects.data.id = entry_id;
 
@@ -1016,6 +1021,7 @@ const getFormData = (form) => {
   const description = form.querySelector("textarea").value;
   const rank = form.querySelector('input[type="number"]').value;
   const date = form.querySelector('input[type="date"]').value.split("-");
+  const time = new Date();
 
   // create details for new entry:
   const newEntryDetails = {
@@ -1028,6 +1034,9 @@ const getFormData = (form) => {
       year: parseInt(date[0]),
       month: parseInt(date[1]),
       day: parseInt(date[2]),
+      hour: time.getHours(),
+      minute: time.getMinutes(),
+      second: time.getSeconds(),
     },
     flagged: false,
     archived: false,
@@ -1187,17 +1196,29 @@ const handleEntryFlag = (entry_id) => {
     const entry = store.entries.find(entry => entry.id === parseInt(entry_id));
     const entryContainer = document.querySelector(`#entry-${entry_id}`); // get the container div of the entry
     const flagBtn = entryContainer.querySelector('.fave-entry-btn');
+
+    let flagTime = new Date();
+    flagTime = {
+        day: flagTime.getDate(),
+        month: flagTime.getMonth()+1,
+        year: flagTime.getFullYear(),
+        hour: flagTime.getHours(),
+        minute: flagTime.getMinutes(),
+        second: flagTime.getSeconds(),
+    }
     
     if (entry.flagged) {
         flagBtn.classList.remove('inset');
         flagBtn.innerHTML = "<i class='bi bi-flag'></i>";  
         entry.flagged = false;
+        entry.date_flagged = null;
         updateInstance(entry, 'entry', entry_id);  
     }
     else {
         flagBtn.classList.add('inset');
         flagBtn.innerHTML = "<i class='bi bi-flag-fill'></i>";  
-        entry.flagged = true;  
+        entry.flagged = true; 
+        entry.date_flagged = flagTime; 
         updateInstance(entry, 'entry', entry_id);  
     }
 }

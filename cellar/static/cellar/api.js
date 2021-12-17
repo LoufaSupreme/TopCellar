@@ -106,7 +106,6 @@ const getList = async (target) => {
     try {
         const res = await fetch(`api/all${target}/`);
         const listItems = await res.json();
-
         return listItems;
     }
     catch (err) {

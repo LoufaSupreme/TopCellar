@@ -70,8 +70,12 @@ def entryDetail(request, pk):
             # have to use filter here, so can call the update function later:
             entry = Entry.objects.filter(id=pk)
             entry_data = consolidateEntryData(request)
-            contacts = entry_data['contacts'];
+            contacts = entry_data['contacts']
             tags = entry_data['tags']
+            
+            date_edited = entry_data['date_edited']
+            date_flagged = entry_data['date_flagged']
+
             print(f'Updating Entry {pk}: {json.loads(request.body)}')
 
             # update entry object:
@@ -216,6 +220,14 @@ def getTags(request):
 def getUser(request):
     return JsonResponse(request.user.username, safe=False)
 
+# helper function
+# creates a datetime object from a json date:
+def parse_JSONdate(date):
+    if date != None:
+        return datetime.datetime(date["year"], date["month"], date["day"], date["hour"], date["minute"], date["second"])
+    else:
+        return None
+
 
 # handles checking and summarizing json data to create or update a post
 # returns a dict
@@ -242,10 +254,13 @@ def consolidateEntryData(request):
         contacts.append(contact)
 
     # get date and make datetime object:
-    entry_date = data.get('timestamp')
-    now = datetime.datetime.now()
-    # use current time for the datetime instance.
-    entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], now.hour, now.minute, now.second)
+    entry_date = parse_JSONdate(data.get('timestamp'))
+    date_edited = parse_JSONdate(data.get('date_edited'))
+    date_flagged = parse_JSONdate(data.get('date_flagged'))
+    date_completed = parse_JSONdate(data.get('date_completed'))
+    date_archived = parse_JSONdate(data.get('date_archived'))
+
+    # entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], entry_date["hour"], entry_date["minute"], entry_date["second"])
 
     # get description:
     descrip = data.get('description').strip()
@@ -287,6 +302,10 @@ def consolidateEntryData(request):
         'archived': archived,
         'completed': completed,
         'tags': tags,
+        'date_edited': date_edited,
+        'date_flagged': date_flagged,
+        'date_completed': date_completed,
+        'date_archived': date_archived,  
     }
     # print(entry_data)
     return entry_data

@@ -140,19 +140,33 @@ class Entry(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='entries')
     description = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
+    date_edited = models.DateTimeField(default=timezone.now)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, related_name='entries')
     contacts = models.ManyToManyField(Contact, blank=True, related_name='entries')
     rank = models.PositiveIntegerField(null=True, default='', blank=True)
     completed = models.BooleanField(default=False)
+    date_completed = models.DateTimeField(null=True, default=None)
     archived = models.BooleanField(default=False)
+    date_archived = models.DateTimeField(null=True, default=None)
     flagged = models.BooleanField(default=False)
+    date_flagged = models.DateTimeField(null=True, default=None)
     tags = models.ManyToManyField(Tag, blank=True, related_name="entries")
 
     def __str__(self):
         return f'{self.id} - {self.description[0:10]}...({self.author.username})'
 
+    def serialize_dateTime(self, dateTime):
+        return {
+            "full": dateTime.strftime("%b %d %Y, %I:%M %p"),
+            "year": dateTime.year,
+            "month": dateTime.month,
+            "day": dateTime.day,
+            "hour": dateTime.hour,
+            "minute": dateTime.minute,
+            "second": dateTime.second,
+        }
+    
     def serialize(self):
-        
         serialized = {
             "id": self.id,
             "author": {
@@ -161,21 +175,17 @@ class Entry(models.Model):
                 "email": self.author.email
             },
             "description": self.description,
-            "timestamp": {
-                "full": self.timestamp.strftime("%b %d %Y, %I:%M %p"),
-                "year": self.timestamp.year,
-                "month": self.timestamp.month,
-                "day": self.timestamp.day,
-                "hour": self.timestamp.hour,
-                "minute": self.timestamp.minute,
-                "second": self.timestamp.second,
-            },
+            "timestamp": self.serialize_dateTime(self.timestamp),
+            "date_edited": self.serialize_dateTime(self.date_edited),
             "customer": None,
             "contacts": [{"id": contact.id, "first_name": contact.first_name, "last_name": contact.last_name} for contact in self.contacts.all()],
             "rank": self.rank,
             "completed": self.completed,
+            "date_completed": self.serialize_dateTime(self.date_completed) if self.date_completed != None else None,
             "archived": self.archived,
+            "date_archived": self.serialize_dateTime(self.date_archived) if self.date_archived != None else None,
             "flagged": self.flagged,
+            "date_flagged": self.serialize_dateTime(self.date_flagged) if self.date_flagged != None else None,
             "tags": [{"id": tag.id, "name": tag.name} for tag in self.tags.all()],
         }
 
