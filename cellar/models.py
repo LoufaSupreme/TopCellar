@@ -140,7 +140,7 @@ class Entry(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='entries')
     description = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
-    date_edited = models.DateTimeField(default=timezone.now)
+    date_edited = models.DateTimeField(null=True, default=None)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, related_name='entries')
     contacts = models.ManyToManyField(Contact, blank=True, related_name='entries')
     rank = models.PositiveIntegerField(null=True, default='', blank=True)
@@ -176,7 +176,7 @@ class Entry(models.Model):
             },
             "description": self.description,
             "timestamp": self.serialize_dateTime(self.timestamp),
-            "date_edited": self.serialize_dateTime(self.date_edited),
+            "date_edited": self.serialize_dateTime(self.date_edited) if self.date_edited != None else None,
             "customer": None,
             "contacts": [{"id": contact.id, "first_name": contact.first_name, "last_name": contact.last_name} for contact in self.contacts.all()],
             "rank": self.rank,

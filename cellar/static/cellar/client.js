@@ -669,7 +669,10 @@ const makeAddBtn = () => {
 // triggered via onfocusout event handler on .tag-input elements
 // hides the suggestion dropdown box if focus is lost
 const inputFocusOut = (input) => {
-    input.parentNode.querySelector('.suggestions').style.display = 'none'
+    // have to put inside a setTimeout, otherwise clicking on a suggestion dropdown item create a new tag properly, b/c the data from the dropdown menu will be gone
+    setTimeout(() => {
+        input.parentNode.querySelector('.suggestions').style.display = 'none';
+    }, 100);
 }
 
 // add dashes to phonenumbers as user types.
@@ -905,7 +908,7 @@ const initiateNewContact = async (form, contact_id = null) => {
 }
 
 const initiateEdit = (form, entry_id) => {
-    console.log(`Updating Entry ${entry_id}`);
+    console.log(`Initiating update for Entry ${entry_id}`);
     const originalEntry = store.entries.find(entry => entry.id === parseInt(entry_id));
 
     // get all the inputted data from the entry form
@@ -916,12 +919,15 @@ const initiateEdit = (form, entry_id) => {
     newEntryData.archived = originalEntry.archived;
     newEntryData.completed = originalEntry.completed;
 
-    newEntryData.date_edited = originalEntry.date_edited;
     newEntryData.date_flagged = originalEntry.date_flagged;
     newEntryData.date_completed = originalEntry.date_completed;
     newEntryData.date_archived = originalEntry.date_archived;
 
+    // set the edited date to now:
+    newEntryData.date_edited = rightAboutNow();
+
     const newObjects = checkNewInstances(newEntryData, {mode:'update', type: 'entry'});
+    console.log(newObjects)
     newObjects.data.id = entry_id;
 
     // if there are some new objects, let the user know:
@@ -1191,21 +1197,27 @@ const handleContactDelete = (contact_id) => {
     deleteInstance('contact', contact_id);
 }
 
+// helper function
+// returns a json object for the date/time of right meow:
+const rightAboutNow = () => {
+    let now = new Date();
+    return {
+        day: now.getDate(),
+        month: now.getMonth()+1,
+        year: now.getFullYear(),
+        hour: now.getHours(),
+        minute: now.getMinutes(),
+        second: now.getSeconds(),
+    }
+}
+
 // changes entry flagged status:
 const handleEntryFlag = (entry_id) => {
     const entry = store.entries.find(entry => entry.id === parseInt(entry_id));
     const entryContainer = document.querySelector(`#entry-${entry_id}`); // get the container div of the entry
     const flagBtn = entryContainer.querySelector('.fave-entry-btn');
 
-    let flagTime = new Date();
-    flagTime = {
-        day: flagTime.getDate(),
-        month: flagTime.getMonth()+1,
-        year: flagTime.getFullYear(),
-        hour: flagTime.getHours(),
-        minute: flagTime.getMinutes(),
-        second: flagTime.getSeconds(),
-    }
+    const flagTime = rightAboutNow();
     
     if (entry.flagged) {
         flagBtn.classList.remove('inset');
@@ -1227,17 +1239,24 @@ const handleEntryFlag = (entry_id) => {
 // fired from the select dropdown onchange event
 const statusChange = (dropdown, entry_id) => {
     const entry = store.entries.find(entry => entry.id === parseInt(entry_id));
+
     if (dropdown.value === 'active') {
         entry.completed = false;
+        entry.date_completed = null;
         entry.archived = false;
+        entry.date_archived = null;
     }
     else if (dropdown.value === 'complete') {
         entry.completed = true;
+        entry.date_completed = rightAboutNow();
         entry.archived = false;
+        entry.date_archived = null;
     }
     else if (dropdown.value === 'archived') {
         entry.completed = false;
+        entry.date_completed = null;
         entry.archived = true;
+        entry.date_archived = rightAboutNow();
     }
     else {
         console.error('Status not recognized');

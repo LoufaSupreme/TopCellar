@@ -73,9 +73,6 @@ def entryDetail(request, pk):
             contacts = entry_data['contacts']
             tags = entry_data['tags']
             
-            date_edited = entry_data['date_edited']
-            date_flagged = entry_data['date_flagged']
-
             print(f'Updating Entry {pk}: {json.loads(request.body)}')
 
             # update entry object:
@@ -84,6 +81,10 @@ def entryDetail(request, pk):
                 customer=entry_data['customer'],
                 description=entry_data['description'],
                 timestamp=entry_data['timestamp'],
+                date_edited=entry_data['date_edited'],
+                date_completed=entry_data['date_completed'],
+                date_archived=entry_data['date_archived'],
+                date_flagged=entry_data['date_flagged'],
                 rank=entry_data['rank'],
                 flagged=entry_data['flagged'],
                 archived=entry_data['archived'],
