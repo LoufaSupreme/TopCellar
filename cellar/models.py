@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.db.models.fields import EmailField, PositiveBigIntegerField, PositiveIntegerField, related
+from django.db.models.fields import EmailField
 from django.utils import timezone
 
 
@@ -156,6 +156,9 @@ class Entry(models.Model):
         return f'{self.id} - {self.description[0:10]}...({self.author.username})'
 
     def serialize_dateTime(self, dateTime):
+        # convert to local date time:
+        # dateTime = timezone.localtime(dateTime) if dateTime is not None else None
+        # serialize:
         return {
             "full": dateTime.strftime("%b %d %Y, %I:%M %p"),
             "year": dateTime.year,

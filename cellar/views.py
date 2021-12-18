@@ -2,11 +2,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
 import json, datetime
 import traceback
+import pytz
 
 from .models import User, Profile, Entry, Address, Customer, Contact, Tag
 
@@ -225,7 +227,7 @@ def getUser(request):
 # creates a datetime object from a json date:
 def parse_JSONdate(date):
     if date != None:
-        return datetime.datetime(date["year"], date["month"], date["day"], date["hour"], date["minute"], date["second"])
+        return datetime.datetime(date["year"], date["month"], date["day"], date["hour"], date["minute"], date["second"], tzinfo=pytz.UTC)
     else:
         return None
 
@@ -318,7 +320,7 @@ def new_entry(request):
     if request.method == 'POST':
         try:
             entry_data = consolidateEntryData(request)
-            contacts = entry_data['contacts'];
+            contacts = entry_data['contacts']
             tags = entry_data['tags']
             print(f'Creating new Entry for {entry_data["user"]}: {json.loads(request.body)}')
 
