@@ -12,43 +12,96 @@ The salesman needs to keep track of what's been happening in his territory.  Thi
 This app aims to help address the common sales problem of tracking sales activity by providing a persistent, easy to use, secure and accessible centralized database for all sales "events" (phonecalls, new opportunities, new ideas, failed initiatives, photos, roledex of customers and contacts, etc).  It will also act as a hub to track KPIs across time (opportuntities generated, conversion rate, new customers engaged/clinched, etc).
 
 ## TODO
+#### General
+- [ ] Add a favicon
+
 #### Landing Page
 - [ ] 
 
 #### Registration Page
-- [ ] 
+- [ ] Remove need to enter username - register via email instead
 
 #### Welcome Tutorial Page
 - [ ] 
 
 #### Login Page
-- [ ] 
+- [ ] Sign in via email instead of username
 
 #### Sales Entry Page
-- [ ] When adding an entry with a customer or contact that doesn't exist, prompt user if they'd like to create a new one
+- [x] When adding an entry with a customer or contact that doesn't exist, prompt user if they'd like to create a new one
 - [ ] Add frontend checks for required fields (create, edit)
 - [ ] Add backend checks for required fields (create, edit)
 - [ ] Allow uploading pictures when creating or editing an entry
-- [ ] Implement search bar to filter entries
-- [ ] Allow user to edit existing entry in place
-- [ ] Allow user to delete existing entry (display warning first)
-- [ ] Implement custom filtering of entries by adding tags (list of customers, contacts, tags, dollar value, date)
+- [x] Implement search bar to filter entries
+- [x] Show dynamic dropdown of available choices when typing in input field
+- [x] Allow user to edit existing entry in place
+- [x] Allow user to delete existing entry 
+- [x] Allow user to edit existing entries
+- [x] Allow user to flag existing entries
+- [x] Allow user to change status of existing entries
+- [ ] Display warning before deleting entry
+- [x] Implement custom filtering of entries by adding tags (matching ANY criteria)
+- [x] Implement custom filtering (matching ALL criteria)
+- [x] Implement sorting of entries by at least one criteria.  
+- [ ] Display user friendly error message if any console error
+- [ ] Display user friendly success message if task completed successfully
+- [ ] Display dollar value on entries
+- [ ] Add urgency and/or likelihood values to entries
+- [ ] Auto calculate priority rank based on urgency/likelihood and dollar value
+- [ ] Allow suggestion dropdown list to be navigatable by arrow keys/enter
+- [x] Make text in entry description wrap before increasing entry width
+- [x] Show contact card when hovering over contact name
+- [ ] Allow tag deletion by clicking 'x' inside suggestion dropdown
+- [ ] Make filter and sort buttons to show modals, instead of dropdowns. Have an indicator for when a filter or sort is active.
+- [ ] Separate page into "Active", "Complete", "Archived"
+- [ ] Add large ? icon with message when no entries to display
+- [ ] 
+##### Filter Functionality
+- [ ] Change filter date selection into a sliding range bar
 - [ ] Allow user to save custom filters for later date
-- [ ] Implement sorting of entries by at least one criteria.  Sorting preference should be saved in user preferences each time
+- [ ] Only allow one customer instance if filtering by "ALL"
+- [ ] Change checkboxes to radio buttons if filtering by "ALL"
+- [ ] Populate filter dropdown with available custom filters
+- [ ] Build filter by adding criteria one by one
+- [ ] Filter by date edited range
+- [ ] Filter by date flagged range
+- [ ] Easily remove all filters
 - [ ] 
-- [ ] 
-- [ ] 
+##### Sort Functionality
+- [ ] Allow sorting preference to be saved in user preferences each time
+- [x] Sort by date created
+- [x] Sort by customer name
+- [x] Sort by flagged status
+- [ ] Sort by dollar amount
+- [ ] Sort by date completed
+- [ ] Sort by date archived
+- [ ] Sort by date edited
+- [ ] Sort by date flagged
+- [ ] Sort by has pictures
+- [ ] Add secondary sort criteria
+- [ ] Sort by rank/priority
+- [ ] Easily remove all sorting criteria
 - [ ] 
 
 #### Roledex Page
+##### General
+- [ ] Add large ? icon and message when no content to display
+- [ ] 
+##### Customers Sub-page
 - [ ] Display all customers (companies)
-- [ ] Display all contacts
+- [ ] Group contacts by company
+- [ ] Group customers (companies) by tags
+- [ ] Show customers on map
 - [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
+##### Contacts Sub-page
+- [x] Display all contacts
+- [x] Search contacts with search bar
+- [x] Ability to create new contacts
+- [x] Ability to delete contacts
+- [x] Ability to edit existing contacts
+- [x] Automatically create new customers if a contact is associated with a customer that doesn't yet exist
+- [ ]
+
 
 #### KPIs Page
 - [ ] Show User's profile info (picture, name, email, date joined, company)
@@ -69,7 +122,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] 
 
 
-#### General
+#### Bonus
 - [ ] Create alternative theme 1
 - [ ] Create alternative theme 2
 - [ ] Create alternative theme 3
