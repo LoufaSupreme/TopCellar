@@ -493,7 +493,6 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 3;
     width: 60px;
     height: 60px;
     /* box-shadow:  3px 3px 10px rgba(0, 0, 0, 0.2),
@@ -545,7 +544,8 @@ body {
 .entry-customer {
 }
 
-.entry-contacts {
+.entry-contacts:hover {
+    cursor: help;
 }
 
 .description-wrapper {

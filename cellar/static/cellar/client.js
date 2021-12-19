@@ -20,6 +20,7 @@ const root = document.getElementById("root");
 // render html:
 const render = async (root, state) => {
   root.innerHTML = await App(state);
+  initializeTooltip();
 };
 
 // create content
@@ -188,10 +189,10 @@ const makeContactCard = (contact, regex = null) => {
                 </div>
             </div>
             <div class='accent-rect-container'>
-                <div class='accent-rect'><i class="bi bi-person-circle"></i></div>
-                <div class='accent-rect'><i class="bi bi-globe"></i></div>
-                <div class='accent-rect'><i class="bi bi-telephone"></i></div>
-                <div class='accent-rect'><i class="bi bi-card-list"></i></div>
+                <div class='accent-rect'><i class='bi bi-person-circle'></i></div>
+                <div class='accent-rect'><i class='bi bi-globe'></i></div>
+                <div class='accent-rect'><i class='bi bi-telephone'></i></div>
+                <div class='accent-rect'><i class='bi bi-card-list'></i></div>
             </div>
             <div class='info-container'>
                 <div class='info'>
@@ -217,70 +218,86 @@ const makeContactCard = (contact, regex = null) => {
 
 // generate HTML for one entry:
 const makeEntryHTML = (entry, regex = null) => {
-  let contacts = entry.contacts.map((c) => `${c.first_name}${c.last_name !== null ? " " + c.last_name : ""}`);
-  let tags = entry.tags.map((t) => makeTagElement("tags", t.id, t.name));
-  let customerName = entry.customer ? entry.customer.name : null;
-  let description = entry.description;
-  
-  let flagBtn;
-  if (entry.flagged) {
-    flagBtn = `
-        <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn inset' data-id='${entry.id}'>
-            <i class="bi bi-flag-fill"></i>
-        </button>
-    `;
-  }
-  else {
-    flagBtn = `
-        <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn' data-id='${entry.id}'>
-            <i class="bi bi-flag"></i>
-        </button>
-    `;
-  }
 
-  // if a regular expression was given to filter the entries,
-  // then find and replace that regex with a highlight span
-  if (regex) {
-    contacts = contacts.map((c) => {
-      c = c.replace(regex, (match) => {
-        return `<span class='hl'>${match}</span>`;
-      });
-      return c;
+    let contacts = entry.contacts.map(c => {
+        return {
+            html: `${c.first_name}${c.last_name !== null ? ' ' + c.last_name : ''}`,
+            id: c.id,
+        };
     });
-
-    tags = tags.map((t) => {
-      t.innerHTML = t.innerHTML.replace(regex, (match) => {
-        return `<span class='hl'>${match}</span>`;
-      });
-      return t;
-    });
-
-    description = description.replace(regex, (match) => {
-      return `<span class='hl'>${match}</span>`;
-    });
-
-    if (customerName) {
-      customerName = customerName.replace(regex, (match) => `<span class='hl'>${match}</span>`);
+    let tags = entry.tags.map(t => makeTagElement('tags', t.id, t.name));
+    let customerName = entry.customer ? entry.customer.name : null;
+    let description = entry.description;
+    
+    let flagBtn;
+    if (entry.flagged) {
+        flagBtn = `
+            <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn inset' data-id='${entry.id}'>
+                <i class="bi bi-flag-fill"></i>
+            </button>
+        `;
     }
-  }
+    else {
+        flagBtn = `
+            <button id='entry-${entry.id}-favourite-btn' class='neupho round-btn bg-dark fave-entry-btn' data-id='${entry.id}'>
+                <i class="bi bi-flag"></i>
+            </button>
+        `;
+    }
 
-  // convert the tags array into an array of HTML
-  tags = tags.map((t) => t.outerHTML);
+    // if a regular expression was given to filter the entries,
+    // then find and replace that regex with a highlight span
+    if (regex) {
+        contacts = contacts.map(c => {
+            c.html = c.html.replace(regex, (match) => {
+                return `<span class='hl'>${match}</span>`;
+            });
+            return c;
+        });
 
-  return `
+        tags = tags.map(t => {
+            t.innerHTML = t.innerHTML.replace(regex, (match) => {
+                return `<span class='hl'>${match}</span>`;
+            });
+            return t;
+        });
+
+        description = description.replace(regex, (match) => {
+            return `<span class='hl'>${match}</span>`;
+        });
+
+        if (customerName) {
+            customerName = customerName.replace(regex, (match) => `<span class='hl'>${match}</span>`);
+        }
+    }
+
+    // add bootstrap tooltip to contact names, to display contact card popup:
+    contacts = contacts.map(c => {
+        const contact = store.contacts.find(person => person.id === c.id);
+        return `
+            <span data-bs-toggle='tooltip' data-bs-placement='top' data-bs-html='true' title="${makeContactCard(contact)}">
+                ${c.html}
+            </span>
+        `;
+    })
+
+    // convert the tags array into an array of HTML
+    tags = tags.map((t) => t.outerHTML);
+
+    return `
         <div id='entry-${entry.id}' class=' neupho entry-container container bg-dark text-white'>
             <div class='fs-200 text-white'>${entry.timestamp.full}</div>
-            ${entry.customer !== null ? `<div class='entry-customer fs-500 text-accent'>${customerName}</div>` : ""}
-            ${contacts.length > 0 ? `<div class='entry-contacts fs-300 text-white'>${contacts.join("  &middot  ")}</div>`: ""}
+            ${entry.customer !== null ? `<div class='entry-customer fs-500 text-accent'>${customerName}</div>` : ''}
+            ${contacts.length > 0 ? `<div class='entry-contacts fs-300 text-white'>${contacts.join('  &middot  ')}</div>`: ''}
             <div class='description fs-300 neupho inset'>${description}</div>
-            ${entry.tags.length > 0 ? `<div class='fs-300 neupho tag-container inset flex'>${tags.join("")}</div>` : ""}
+            ${entry.tags.length > 0 ? `<div class='fs-300 neupho tag-container inset flex'>${tags.join('')}</div>` : ''}
             <div class='entry-btn-container flex'>
                 ${flagBtn}
                 <button id='entry-${entry.id}-edit-btn' class='neupho round-btn bg-dark edit-entry-btn' data-id='${entry.id}'>
                     <i class='bi bi-pencil-square'></i>
                 </button>
                 <button id='entry-${entry.id}-delete-btn' class='neupho round-btn bg-dark delete-entry-btn' data-id='${entry.id}'>
-                    <i class="bi bi-x-lg"></i>
+                    <i class='bi bi-x-lg'></i>
                 </button>
                 <div class='select-container'>
                     <select class='neupho text-accent bg-dark' onchange='statusChange(this, ${entry.id})'>
@@ -288,12 +305,13 @@ const makeEntryHTML = (entry, regex = null) => {
                         <option ${entry.completed ? 'selected' : ''} value='complete'>Complete</option>
                         <option ${entry.archived ? 'selected' : ''} value='archived'>Archived</option>
                     </select>
-                    <span class='select-arrow'><i class="bi bi-chevron-down"></i></span>
+                    <span class='select-arrow'><i class='bi bi-chevron-down'></i></span>
                 </div>
             </div>
         </div>
     `;
 };
+
 
 // generate HTML for suggestion dropdowns:
 // entry_ID is the ID of the entry div that this dropdown is associated with.  Null if not associated with one (e.g. making new entry)
@@ -666,6 +684,12 @@ const makeAddBtn = () => {
 // HELPER FUNCTIONS /////////////////
 //////////////////////////////////////
 
+// initialize all the tooltips on the page
+// https://getbootstrap.com/docs/5.0/components/tooltips/
+const initializeTooltip = () => {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tt => new bootstrap.Tooltip(tt));
+}
+
 // triggered via onfocusout event handler on .tag-input elements
 // hides the suggestion dropdown box if focus is lost
 const inputFocusOut = (input) => {
@@ -833,11 +857,13 @@ const updateCreateInstance = async (instanceData, instanceType, instance_ID = nu
             store.entries[oldEntryIndex] = newObject;
             // display it:
             objectsContainer.innerHTML = displayEntries(store.entries);
+            initializeTooltip();
         }
         else if (instanceType === 'contact') {
             oldContactIndex = store.contacts.findIndex(contact => contact.id === +instance_ID);
             store.contacts[oldContactIndex] = newObject;
             objectsContainer.innerHTML = displayContacts(store.contacts);
+            initializeTooltip();
         }
     }
     // otherwise, create a new instance:
@@ -850,10 +876,12 @@ const updateCreateInstance = async (instanceData, instanceType, instance_ID = nu
             store.entries.unshift(newObject);
             // display it:
             objectsContainer.innerHTML = displayEntries(store.entries);
+              initializeTooltip();
         }
         else if (instanceType === 'contact') {
             store.contacts.unshift(newObject);
             objectsContainer.innerHTML = displayContacts(store.contacts);
+            initializeTooltip();
         }
     }
 
@@ -1369,6 +1397,7 @@ const handleClicks = (e) => {
         const filteredEntries = filterEntries(store.entries, filterParams);
         const entriesContainer = document.querySelector('#cards-container');
         entriesContainer.innerHTML = displayEntries(filteredEntries);
+        initializeTooltip();
     }
 
     // fires when user clicks on "sort" btn within the sort container
@@ -1383,6 +1412,7 @@ const handleClicks = (e) => {
         const sortedEntries = sortEntries(store.entries, sortParams);
         const entriesContainer = document.querySelector('#cards-container');
         entriesContainer.innerHTML = displayEntries(sortedEntries, true);
+        initializeTooltip();
     }
 
     // fires when user clicks "filter" or "sort" beside the add btn
@@ -1462,6 +1492,7 @@ const handleSearchInput = (searchInput) => {
     // if only typed 1 letter, display the full set of entries: 
     if (targetValue.length < 1 && store.page === 'index') {
         cardsContainer.innerHTML = displayEntries(currentEntries);
+        initializeTooltip();
         searchCount.style.display = 'none';
     }
     // or the full set of contacts:
@@ -1472,6 +1503,7 @@ const handleSearchInput = (searchInput) => {
     else if (store.page === 'index') {
         const filtered = searchEntries(currentEntries, regex);
         cardsContainer.innerHTML = displayEntries(filtered, regex);
+        initializeTooltip();
         searchCount.style.display = 'block';
         if (filtered.length === 0) {
             searchCount.innerHTML = `No results found`;
