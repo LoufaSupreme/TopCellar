@@ -321,21 +321,6 @@ body {
     pointer-events: none;
 }
 
-/* #sidebar::after {
-    font-family: "Font Awesome 5 Free";
-    content: "\f0b0";
-    display: inline-block;
-    font-weight: 900;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 0.5em;
-    border-radius: 0 0.5em 0.5em 0;
-    color: hsl(var(--clr-light));
-    position: fixed;
-    top: 10%;
-    right: 0;
-    transform: translateX(100%)
-} */
-
 
 #main {
     display: flex;
@@ -521,6 +506,35 @@ body {
   pointer-events: none;
 } */
 
+/* ALERTS */
+
+#alert-container {
+    height: 0em;
+    transition: height 0.5s ease-in-out;
+    overflow: hidden;
+}
+
+#alert-container.show {
+    height: 1.5rem;
+}
+
+.alert {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: var(--fs-400);
+    color: hsl(var(--clr-dark));
+}
+
+.alert-success {
+    background: rgb(129, 243, 148);
+}
+
+.alert-danger {
+    background:rgb(243, 135, 102);
+}
+
+
 /* INDIVIDUAL ENTRY CONTAINERS ////////////*/
 
 #cards-container {
@@ -544,7 +558,7 @@ body {
 .entry-customer {
 }
 
-.entry-contacts:hover {
+.entry-contacts > span:hover {
     cursor: help;
 }
 

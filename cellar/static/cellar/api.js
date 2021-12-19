@@ -1,3 +1,7 @@
+///// HELPER FUNCTIONS
+function capitalizeFirstLetter(string) {
+    return string = string[0].toUpperCase() + string.substring(1);
+}
 
 // from Django docs - get CSRF token from cookies
 function getCookie(name) {
@@ -66,13 +70,15 @@ const updateInstance = async (details, keyword, id) => {
             throw `DJANGO: ${obj.error}`;
         }
         else {
-            console.log(`Success! ${keyword} ${id} updated.`);
+            console.log(`Success! ${capitalizeFirstLetter(keyword)} ${id} updated:`);
             console.log(obj);
+            displayAlert(`Success! ${capitalizeFirstLetter(keyword)} updated.`, 'success');
             return obj;
         }
     }
     catch (err) {
         console.error(err);
+        displayAlert(`Error: ${err}`, 'danger');
     }
 }
 
@@ -92,11 +98,13 @@ const deleteInstance = async (keyword, id) => {
             throw `DJANGO: ${obj.error}`;
         }
         else {
-            console.log(`Success! ${keyword} ${id} deleted.`);
+            console.log(`Success! ${capitalizeFirstLetter(keyword)} ${id} deleted.`);
+            displayAlert(`Success! ${capitalizeFirstLetter(keyword)} deleted.`, 'success');
         }
     }
     catch (err) {
         console.error(err);
+        displayAlert(`Error: ${err}`, 'danger');
     }
 }
 
@@ -134,12 +142,14 @@ const newInstance = async (details, keyword) => {
             throw `DJANGO: ${obj.error}`;
         }
         else {
-            console.log(`Success! ${keyword} created:`);
+            console.log(`Success! ${capitalizeFirstLetter(keyword)} created:`);
             console.log(obj);
+            displayAlert(`Success! ${capitalizeFirstLetter(keyword)} created.`, 'success');
             return obj;
         }
     }
     catch (err) {
         console.error(err);
+        displayAlert(`Error: ${err}`, 'danger');
     }
 }

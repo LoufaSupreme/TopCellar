@@ -39,6 +39,7 @@ const App = async (state) => {
             <div id='sort-accordion' class='accordion bottom-shadow'>
                 ${makeEntrySortBox()}
             </div>
+            <div id='alert-container' class=''></div>
         </section>
         <section id='main'>
             ${makeModal('new-entry-modal')}
@@ -134,8 +135,16 @@ const makeSearchBox = () => {
                 <i class="fas fa-search"></i>
             </div>
         </div>
-      `;
-  };
+    `;
+};
+
+const makeAlert = (message, type) => {
+    return `
+        <div class='alert alert-${type}'>
+            ${message}
+        </div>
+    `;
+}
   
 
 //// ROLODEX /////////////////////////////////
@@ -684,6 +693,18 @@ const makeAddBtn = () => {
 //////////////////////////////////////
 // HELPER FUNCTIONS /////////////////
 //////////////////////////////////////
+
+// display error or success alerts:
+const displayAlert = (msg, type) => {
+    const alertContainer = document.querySelector('#alert-container');
+    const alert = makeAlert(msg, type);
+    alertContainer.innerHTML = alert;
+    alertContainer.classList.toggle('show');
+
+    setTimeout(() => {
+        alertContainer.classList.toggle('show');
+    }, 3000);
+}
 
 // initialize all the tooltips on the page
 // https://getbootstrap.com/docs/5.0/components/tooltips/

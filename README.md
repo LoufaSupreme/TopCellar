@@ -43,8 +43,8 @@ This app aims to help address the common sales problem of tracking sales activit
 - [x] Implement custom filtering of entries by adding tags (matching ANY criteria)
 - [x] Implement custom filtering (matching ALL criteria)
 - [x] Implement sorting of entries by at least one criteria.  
-- [ ] Display user friendly error message if any console error
-- [ ] Display user friendly success message if task completed successfully
+- [x] Display user friendly error message if any console error
+- [x] Display user friendly success message if task completed successfully
 - [ ] Display dollar value on entries
 - [ ] Add urgency and/or likelihood values to entries
 - [ ] Auto calculate priority rank based on urgency/likelihood and dollar value
