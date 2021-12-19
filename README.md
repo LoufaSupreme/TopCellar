@@ -131,4 +131,3 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] 
 - [ ] 
 - [ ] 
-

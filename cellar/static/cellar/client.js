@@ -311,6 +311,7 @@ const makeEntryHTML = (entry, regex = null) => {
     `;
 };
 
+
 // generate HTML for suggestion dropdowns:
 // entry_ID is the ID of the entry div that this dropdown is associated with.  Null if not associated with one (e.g. making new entry)
 const makeSuggestionDiv = (type, entry_ID = null) => {
@@ -1801,7 +1802,7 @@ const filterEntries = (entries, criteria) => {
                 "first_name": first_name,
                 "last_name": last_name,
             })
-        });
+        };
     const tags = tagElements.filter(tag => tag.dataset.list === 'tags')
         .forEach(tag => {
             newEntryDetails.tags.push({
