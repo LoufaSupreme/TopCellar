@@ -12,22 +12,22 @@ The salesman needs to keep track of what's been happening in his territory.  Thi
 This app aims to help address the common sales problem of tracking sales activity by providing a persistent, easy to use, secure and accessible centralized database for all sales "events" (phonecalls, new opportunities, new ideas, failed initiatives, photos, roledex of customers and contacts, etc).  It will also act as a hub to track KPIs across time (opportuntities generated, conversion rate, new customers engaged/clinched, etc).
 
 ## TODO
-#### General
+### General
 - [ ] Add a favicon
 
-#### Landing Page
+### Landing Page
 - [ ] 
 
-#### Registration Page
+### Registration Page
 - [ ] Remove need to enter username - register via email instead
 
-#### Welcome Tutorial Page
+### Welcome Tutorial Page
 - [ ] 
 
-#### Login Page
+### Login Page
 - [ ] Sign in via email instead of username
 
-#### Sales Entry Page
+### Sales Entry Page
 - [x] When adding an entry with a customer or contact that doesn't exist, prompt user if they'd like to create a new one
 - [ ] Add frontend checks for required fields (create, edit)
 - [ ] Add backend checks for required fields (create, edit)
@@ -55,8 +55,12 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] Make filter and sort buttons to show modals, instead of dropdowns. Have an indicator for when a filter or sort is active.
 - [ ] Separate page into "Active", "Complete", "Archived"
 - [ ] Add large ? icon with message when no entries to display
+- [ ] Use 3rd party API to lazy-load customer logos
+- [ ] Use Google Maps API to map to customer locations
+- [ ] Use LinkedIn API (?) to get contact pictures?
 - [ ] 
-##### Filter Functionality
+- [ ] 
+#### Filter Functionality
 - [ ] Change filter date selection into a sliding range bar
 - [ ] Allow user to save custom filters for later date
 - [ ] Only allow one customer instance if filtering by "ALL"
@@ -67,7 +71,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] Filter by date flagged range
 - [ ] Easily remove all filters
 - [ ] 
-##### Sort Functionality
+#### Sort Functionality
 - [ ] Allow sorting preference to be saved in user preferences each time
 - [x] Sort by date created
 - [x] Sort by customer name
@@ -83,17 +87,17 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] Easily remove all sorting criteria
 - [ ] 
 
-#### Roledex Page
-##### General
+### Roledex Page
+#### General
 - [ ] Add large ? icon and message when no content to display
 - [ ] 
-##### Customers Sub-page
+#### Customers Sub-page
 - [ ] Display all customers (companies)
 - [ ] Group contacts by company
 - [ ] Group customers (companies) by tags
 - [ ] Show customers on map
 - [ ] 
-##### Contacts Sub-page
+#### Contacts Sub-page
 - [x] Display all contacts
 - [x] Search contacts with search bar
 - [x] Ability to create new contacts
@@ -103,7 +107,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ]
 
 
-#### KPIs Page
+### KPIs Page
 - [ ] Show User's profile info (picture, name, email, date joined, company)
 - [ ] Ability to print page?
 - [ ]
@@ -113,7 +117,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ]
 - [ ]
 
-#### User Preferences Page
+### User Preferences Page
 - [ ] Custom filters
 - [ ] Chosen theme
 - [ ] Profile picture and info
@@ -122,7 +126,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] 
 
 
-#### Bonus
+### Bonus
 - [ ] Create alternative theme 1
 - [ ] Create alternative theme 2
 - [ ] Create alternative theme 3

@@ -13,6 +13,9 @@ class Profile(models.Model):
     # done_tutorial
     # theme
     # sorting_preference
+    #first_name
+    #last_name
+    #company (onetoone)
     
     def __str__(self):
         return f'{self.user.username} Profile' 

@@ -219,6 +219,7 @@ const makeContactCard = (contact, regex = null) => {
 // generate HTML for one entry:
 const makeEntryHTML = (entry, regex = null) => {
 
+    // create object with ID, b/c we need it to create the bootstrap tooltip popup
     let contacts = entry.contacts.map(c => {
         return {
             html: `${c.first_name}${c.last_name !== null ? ' ' + c.last_name : ''}`,
