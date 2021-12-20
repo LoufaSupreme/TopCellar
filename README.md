@@ -29,8 +29,8 @@ This app aims to help address the common sales problem of tracking sales activit
 
 ### Sales Entry Page
 - [x] When adding an entry with a customer or contact that doesn't exist, prompt user if they'd like to create a new one
-- [ ] Add frontend checks for required fields (create, edit)
-- [ ] Add backend checks for required fields (create, edit)
+- [x] Add frontend checks for required fields (create, edit)
+- [x] Add backend checks for required fields (create, edit)
 - [ ] Allow uploading pictures when creating or editing an entry
 - [x] Implement search bar to filter entries
 - [x] Show dynamic dropdown of available choices when typing in input field
