@@ -58,6 +58,7 @@ const App = async (state) => {
             <div class="navbar flex">
                 ${makeNavBar()}
             </div>
+            <div id='alert-container' class=''></div>
         </section>
         <section id='main'>
             ${makeModal('new-entry-modal')}
@@ -367,11 +368,15 @@ const makeEntryForm = () => {
                 ${makeSuggestionDiv("contacts")}
             </div>
             <div class='description-wrapper flex'>
-                <textarea class='description neupho inset bg-dark' placeholder="Description" cols="10" rows="1"></textarea>
+                <div id='description-error' class='input-error'>Error</div>
+                <textarea class='description neupho inset bg-dark' placeholder="Description" cols="10" rows="1" required></textarea>
             </div>
             <div class='flex'>
                 <input class='neupho inset' type="date" value="${now.getFullYear()}-${month}-${day}">
-                <input class='neupho inset' type="number" placeholder="Rank">
+                <div class='rank-wrapper flex'>
+                    <div id='rank-error' class='input-error'>Error</div>
+                    <input class='neupho inset' type="number" placeholder="Rank">
+                </div>
             </div>
             <div class="tag-container neupho inset flex">
                 <input id="new-entry-tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags" onfocusout='inputFocusOut(this)'>
@@ -410,8 +415,11 @@ const makeContactForm = (contact = null) => {
     return `
         <div class="prompt-container neupho container bg-dark text-white" id="contact-form-container">
             <div class='text-accent fs-700'>${title}</div>
-            <div class="neupho inset">
-                <input id="first-name-input" type="text" placeholder="First Name" value='${first_name}'required>
+            <div class='name-wrapper flex'>
+                <div id='name-error' class='input-error'>Error</div>
+                <div class="neupho inset">
+                    <input id="first-name-input" type="text" placeholder="First Name" value='${first_name}'required>
+                </div>
             </div>
             <div class="neupho inset">
                 <input id="last-name-input" type="text" placeholder="Last Name" value='${last_name}'>
@@ -478,11 +486,15 @@ const makeEditForm = async (entryContainer) => {
             ${makeSuggestionDiv("contacts", entry_ID)}
         </div>
         <div class='description-wrapper flex'>
+            <div id='description-error' class='input-error'>Error</div>
             <textarea class='description neupho inset bg-dark' placeholder="Description" cols="10" rows="1">${entry.description}</textarea>
         </div>
         <div class='flex'>
             <input class='neupho inset' type="date" value="${entry.timestamp.year}-${month}-${day}">
-            <input class='neupho inset' type="number" placeholder="Rank" value='${entry.rank}'>
+            <div class='rank-wrapper flex'>
+                <div id='rank-error' class='input-error'>Error</div>
+                <input class='neupho inset' type="number" placeholder="Rank" value='${entry.rank}'>
+            </div>
         </div>
         <div class="neupho tag-container inset flex">
             ${tagTags}
@@ -827,34 +839,39 @@ const makePromptModal = (newObjects) => {
 const initiateNewEntry = (form) => {
     console.log("Initiating new entry...");
 
-    // get all the inputted data from the entry form
-    const newEntryData = getFormData(form);
+    try {
+        // get all the inputted data from the entry form
+        const newEntryData = getFormData(form);
 
-    // check if the form contains new customers or contacts:
-    const newObjects = checkNewInstances(newEntryData, {mode:'create', type: 'entry'});
+        // check if the form contains new customers or contacts:
+        const newObjects = checkNewInstances(newEntryData, {mode:'create', type: 'entry'});
 
-    // if there are some new objects, let the user know:
-    if (newObjects.customer !== null || newObjects.contacts !== null) {
-        console.log("Found new Customer or Contact instances. Prompting user...");
+        // if there are some new objects, let the user know:
+        if (newObjects.customer !== null || newObjects.contacts !== null) {
+            console.log("Found new Customer or Contact instances. Prompting user...");
 
-        // load new objects into store so they can be created if the user wishes
-        store.uncreated = newObjects;
+            // load new objects into store so they can be created if the user wishes
+            store.uncreated = newObjects;
 
-        // create a modal user prompt to ask them if they want to create the new objects
-        makePromptModal(newObjects);
-    } 
-    // otherwise send post request to DB to make new entry:
-    else {
-        console.log('Creating new entry...');
-        const newEntry = updateCreateInstance(newEntryData, 'entry');
+            // create a modal user prompt to ask them if they want to create the new objects
+            makePromptModal(newObjects);
+        } 
+        // otherwise send post request to DB to make new entry:
+        else {
+            console.log('Creating new entry...');
+            const newEntry = updateCreateInstance(newEntryData, 'entry');
 
-        // if a new object is returned:
-        if (newEntry) {
-            // grab the modal of the form:
-            const modal = document.querySelector('#new-entry-modal');
-            // remove its visibility:
-            modal.classList.remove('open');
+            // if a new object is returned:
+            if (newEntry) {
+                // grab the modal of the form:
+                const modal = document.querySelector('#new-entry-modal');
+                // remove its visibility:
+                modal.classList.remove('open');
+            }
         }
+    }
+    catch (errorArray) {
+        errorArray.forEach(err => console.error(err));
     }
 };
 
@@ -913,48 +930,53 @@ const updateCreateInstance = async (instanceData, instanceType, instance_ID = nu
 // fired when the "create" or "accept" btn is clicked to make/edit a contact:
 const initiateNewContact = async (form, contact_id = null) => {
 
-    // get all the inputted data from the entry form
-    const newContactData = getContactFormData(form);
-    let newObjects;
+    try {
+        // get all the inputted data from the entry form
+        const newContactData = getContactFormData(form);
+        let newObjects;
 
-    if (contact_id) {
-        console.log(`Initiating edit of contact ${contact_id}`);
-        newObjects = checkNewInstances(newContactData, {mode:'update', type: 'contact'});
-        newObjects.data.id = contact_id;
-    }
-    else {
-        console.log('Initiating new contact...');
-        newObjects = checkNewInstances(newContactData, {mode:'create', type: 'contact'});
-    }
-
-    // if there are some new objects, let the user know:
-    if (newObjects.customer !== null) {
-        console.log("Found new Customer instance. Prompting user...");
-        store.uncreated = newObjects; // load new objects into store so they can be created if the user wishes
-        makePromptModal(newObjects); // create a modal user prompt to ask them if they want to create the new objects        
-    }
-    else {
-        // otherwise send post/put request to DB to create/edit:
-        let newContactInfo;
-        if (!contact_id) {
-            console.log('Sending request to create new contact...')
-            newContactInfo = updateCreateInstance(newContactData, "contact"); 
+        if (contact_id) {
+            console.log(`Initiating edit of contact ${contact_id}`);
+            newObjects = checkNewInstances(newContactData, {mode:'update', type: 'contact'});
+            newObjects.data.id = contact_id;
         }
-
         else {
-            console.log(`Sending request to update contact ${contact_id}...`)
-            newContactInfo = updateCreateInstance(newContactData, 'contact', contact_id);
+            console.log('Initiating new contact...');
+            newObjects = checkNewInstances(newContactData, {mode:'create', type: 'contact'});
         }
 
-        // if a new object is returned:
-        if (newContactInfo) {
-            // grab the modal of the form:
-            const modal = document.querySelector('#new-entry-modal');
-            // remove its visibility:
-            modal.classList.remove('open');
+        // if there are some new objects, let the user know:
+        if (newObjects.customer !== null) {
+            console.log("Found new Customer instance. Prompting user...");
+            store.uncreated = newObjects; // load new objects into store so they can be created if the user wishes
+            makePromptModal(newObjects); // create a modal user prompt to ask them if they want to create the new objects        
         }
-        else console.error('Something went wrong. No new contact info returned.');
-      }
+        else {
+            // otherwise send post/put request to DB to create/edit:
+            let newContactInfo;
+            if (!contact_id) {
+                console.log('Sending request to create new contact...')
+                newContactInfo = updateCreateInstance(newContactData, "contact"); 
+            }
+
+            else {
+                console.log(`Sending request to update contact ${contact_id}...`)
+                newContactInfo = updateCreateInstance(newContactData, 'contact', contact_id);
+            }
+
+            // if a new object is returned:
+            if (newContactInfo) {
+                // grab the modal of the form:
+                const modal = document.querySelector('#new-entry-modal');
+                // remove its visibility:
+                modal.classList.remove('open');
+            }
+            else console.error('Something went wrong. No new contact info returned.');
+        }
+    }
+    catch (errorArray) {
+        errorArray.forEach(err => console.error(err));
+    }
 }
 
 const initiateEdit = (form, entry_id) => {
@@ -1040,74 +1062,101 @@ const contactExists = (contacts) => {
 
 // capture the inputted values for new entry:
 const getFormData = (form) => {
-  const tagElements = Array.from(form.querySelectorAll(".tag")); // grab all of the tag elements
+    // reset all error messages:
+    const errorMsgs = form.querySelectorAll('.input-error');
+    errorMsgs.forEach(msg => msg.classList.remove('active'));
+    
+    const tagElements = Array.from(form.querySelectorAll(".tag")); // grab all of the tag elements
 
-  const customer = tagElements
-    .filter((tag) => tag.dataset.list === "customers")
-    .map((cust) => {
-      return {
-        id: parseInt(cust.dataset.id),
-        name: cust.innerText,
-      };
-    })[0];
+    const customer = tagElements
+        .filter((tag) => tag.dataset.list === "customers")
+        .map((cust) => {
+        return {
+            id: parseInt(cust.dataset.id),
+            name: cust.innerText,
+        };
+        })[0];
 
-  const contacts = tagElements
-    .filter((tag) => tag.dataset.list === "contacts")
-    .map((cont) => {
-      const names = cont.innerText.trim().split(" ");
-      const first_name = names[0];
-      const last_name = names.length > 1 ? names[1] : null;
+    const contacts = tagElements
+        .filter((tag) => tag.dataset.list === "contacts")
+        .map((cont) => {
+        const names = cont.innerText.trim().split(" ");
+        const first_name = names[0];
+        const last_name = names.length > 1 ? names[1] : null;
 
-      return {
-        id: parseInt(cont.dataset.id),
-        first_name: first_name,
-        last_name: last_name,
-      };
-    });
+        return {
+            id: parseInt(cont.dataset.id),
+            first_name: first_name,
+            last_name: last_name,
+        };
+        });
 
-  const tags = tagElements
-    .filter((tag) => tag.dataset.list === "tags")
-    .map((tag) => {
-      return {
-        id: tag.dataset.id !== undefined ? parseInt(tag.dataset.id) : -1,
-        name: tag.innerText,
-      };
-    });
+    const tags = tagElements
+        .filter((tag) => tag.dataset.list === "tags")
+        .map((tag) => {
+            return {
+                id: tag.dataset.id !== undefined ? parseInt(tag.dataset.id) : -1,
+                name: tag.innerText,
+            };
+        });
 
-  const description = form.querySelector("textarea").value;
-  const rank = form.querySelector('input[type="number"]').value;
-  const date = form.querySelector('input[type="date"]').value.split("-");
-  const time = new Date();
+    // array to catch any validation errors:
+    const errorBucket = [];
+    const description = form.querySelector("textarea").value;
+    if (description === '') {
+        errorBucket.push("Description can't be blank");
+        const descriptionError = form.querySelector('#description-error');
+        descriptionError.innerText = "Description can't be blank";
+        descriptionError.classList.add('active');
+    }
+    const rank = form.querySelector('input[type="number"]').value;
+    // check if rank is a number
+    if (!(rank.match(/^\d+$/) && rank !== '')) {
+        errorBucket.push('Only numbers accepted');
+        const rankError = form.querySelector('#rank-error');
+        rankError.innerText = "Only numbers accepted";
+        rankError.classList.add('active');
+    }
+    const date = form.querySelector('input[type="date"]').value.split("-");
+    const time = new Date();
 
-  // create details for new entry:
-  const newEntryDetails = {
-    customer: customer,
-    contacts: contacts,
-    tags: tags,
-    description: description,
-    rank: rank,
-    timestamp: {
-      year: parseInt(date[0]),
-      month: parseInt(date[1]),
-      day: parseInt(date[2]),
-      hour: time.getHours(),
-      minute: time.getMinutes(),
-      second: time.getSeconds(),
-    },
-    flagged: false,
-    archived: false,
-    completed: false,
-  };
+    // create details for new entry:
+    const newEntryDetails = {
+        customer: customer,
+        contacts: contacts,
+        tags: tags,
+        description: description,
+        rank: rank,
+        timestamp: {
+        year: parseInt(date[0]),
+        month: parseInt(date[1]),
+        day: parseInt(date[2]),
+        hour: time.getHours(),
+        minute: time.getMinutes(),
+        second: time.getSeconds(),
+        },
+        flagged: false,
+        archived: false,
+        completed: false,
+    };
 
-  console.log("Got form data:");
-  console.log(newEntryDetails);
+    console.log("Got form data:");
+    console.log(newEntryDetails);
 
-  return newEntryDetails;
+    // if validation errors occured, throw an array of those errors:
+    if (errorBucket.length > 0) throw errorBucket;
+    // otherwise return the entry details:
+    return newEntryDetails;
 };
 
 // get the data from the new contact form:
 const getContactFormData = (form) => {
-    const tagElements = Array.from(form.querySelectorAll(".tag")); // grab all of the tag elements
+    // reset any error msgs:
+    const errorMsgs = form.querySelectorAll('.input-error');
+    errorMsgs.forEach(msg => msg.classList.remove('active'));
+    
+    // grab all of the tag elements
+    const tagElements = Array.from(form.querySelectorAll(".tag")); 
 
     const company = tagElements
         .filter((tag) => tag.dataset.list === "customers")
@@ -1126,6 +1175,15 @@ const getContactFormData = (form) => {
     const office = form.querySelector('#office-input').value;
     const notes = form.querySelector('#notes-input').value;
 
+    // validation:
+    const errorBucket = [];
+    if (first_name === '') {
+        const errorMsg = form.querySelector('#name-error');
+        errorMsg.innerText = "First name can't be blank";
+        errorMsg.classList.add('active');
+        errorBucket.push("First name can't be blank");
+    }
+
     const newContactDetails = {
         first_name: first_name,
         last_name: last_name,
@@ -1138,6 +1196,11 @@ const getContactFormData = (form) => {
     };
     console.log('Got contact form data:');
     console.log(newContactDetails);
+
+    // if there were validation errors, throw the errorBucket
+    if (errorBucket.length > 0) throw errorBucket;
+
+    // otherwise, return the data:
     return newContactDetails;
 }
 

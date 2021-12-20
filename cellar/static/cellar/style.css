@@ -564,6 +564,8 @@ body {
 
 .description-wrapper {
     max-width: 100%;
+    flex-direction: column;
+    --gap: 0.2rem;
 }
 
 .description {
@@ -574,7 +576,53 @@ body {
   border-radius: 10px;
   white-space: pre-wrap; /* allows displaying content with line breaks*/ 
   padding: 0.5rem 1rem;
-  margin: 1rem 0 0.5rem 0;
+  margin: 0 0 0.5rem 0;
+}
+
+.input-error {
+    font-weight: lighter;
+    font-size: var(--fs-200);
+    color:rgb(243, 135, 102);
+    display: none;
+}
+
+.input-error.active {
+    display: block;
+    animation: wiggle 0.35s;
+}
+
+@keyframes wiggle {
+    0% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(10px);
+    }
+    40% {
+        transform: translateX(-18px);
+    }
+    60% {
+        transform: translateX(13px)
+    }
+    80% {
+        transform: translateX(-8);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+#description-error {
+    padding: 0 0 0.2rem 1rem;
+}
+
+.rank-wrapper {
+    flex-direction: column;
+    --gap: 0.2rem;
+}
+
+#rank-error {
+    padding: 0 0 0.2rem 0.2rem;
 }
 
 .tag-container {
@@ -934,4 +982,9 @@ button i {
 
 #contact-form-container input {
     padding: 0.2rem 0.4rem;
+}
+
+.name-wrapper {
+    flex-direction: column;
+    --gap: 0.2rem;
 }
