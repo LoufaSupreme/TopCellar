@@ -40,9 +40,6 @@ This app aims to help address the common sales problem of tracking sales activit
 - [x] Allow user to flag existing entries
 - [x] Allow user to change status of existing entries
 - [ ] Display warning before deleting entry
-- [x] Implement custom filtering of entries by adding tags (matching ANY criteria)
-- [x] Implement custom filtering (matching ALL criteria)
-- [x] Implement sorting of entries by at least one criteria.  
 - [x] Display user friendly error message if any console error
 - [x] Display user friendly success message if task completed successfully
 - [ ] Display dollar value on entries
@@ -61,6 +58,8 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] 
 - [ ] 
 #### Filter Functionality
+- [x] Implement custom filtering (matching ALL criteria)
+- [x] Implement custom filtering of entries by adding tags (matching ANY criteria)
 - [ ] Change filter date selection into a sliding range bar
 - [ ] Allow user to save custom filters for later date
 - [ ] Only allow one customer instance if filtering by "ALL"
@@ -72,6 +71,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] Easily remove all filters
 - [ ] 
 #### Sort Functionality
+- [x] Implement sorting of entries by at least one criteria.  
 - [ ] Allow sorting preference to be saved in user preferences each time
 - [x] Sort by date created
 - [x] Sort by customer name
@@ -90,7 +90,7 @@ This app aims to help address the common sales problem of tracking sales activit
 ### Roledex Page
 #### General
 - [ ] Add large ? icon and message when no content to display
-- [ ] 
+- [ ] Split page into Customers and Contacts display with buttons
 #### Customers Sub-page
 - [ ] Display all customers (companies)
 - [ ] Group contacts by company
@@ -106,13 +106,16 @@ This app aims to help address the common sales problem of tracking sales activit
 - [x] Automatically create new customers if a contact is associated with a customer that doesn't yet exist
 - [ ]
 
-
 ### KPIs Page
 - [ ] Show User's profile info (picture, name, email, date joined, company)
 - [ ] Ability to print page?
-- [ ]
-- [ ]
-- [ ]
+- [ ] Export data to excel or CSV
+- [ ] Tabulate total $ opportunities
+- [ ] Tabulute conversion rate
+- [ ] Graph # of opportunities over time
+- [ ] Pie chart opportunities by customer
+- [ ] Tabulate average close time
+- [ ] Tabulate avg monthly opportunity generation rate
 - [ ]
 - [ ]
 - [ ]
