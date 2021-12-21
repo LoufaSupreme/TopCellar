@@ -324,8 +324,11 @@ const makeEntryForm = () => {
         <div class="prompt-container neupho container bg-dark text-white" id="entry-form-container">
             <div class='text-accent fs-700'>New Entry</div>
             <div class="neupho tag-container inset flex">
-                <input id="new-entry-customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account">
-                ${makeSuggestionDiv("customers")}
+                <input id="new-entry-customers-input" class="tag-input" type="text" data-id="undefined" data-list="customers" placeholder="Account" onfocusout='inputFocusOut(this)' list='customerName'>
+                    <datalist id='customerName'>
+                        <option value='Test'>Test</option>
+                        <option value='Test'>Testing</option>
+                    </datalist>
             </div>
             <div class="neupho tag-container inset flex">
                 <input id="new-entry-contacts-input" class="tag-input" type="text" data-id="undefined" data-list="contacts" placeholder="Add Contacts">
@@ -1445,6 +1448,7 @@ const handleSearchInput = (searchInput) => {
 // handles keyup events anywhere on the document.  Called on window load.
 // this is to avoid having to make new event handlers for dynamic content (like the form)
 const handleKeyUp = (e) => {
+    // make suggestion dropdown
     if (e.target.classList.contains("tag-input")) {
         const inputBox = e.target;
         const parent = inputBox.parentElement;
@@ -1472,6 +1476,9 @@ const handleKeyUp = (e) => {
     if (e.target.classList.contains("tag-input") && e.key === "Enter") {
         addTag(e.target);
     }
+
+    // if (e.target.classList.contains('tag-input') && e.key === 'ArrowDown') {
+    // }
 
     if (e.target.id === "search") handleSearchInput(e.target);
 };
