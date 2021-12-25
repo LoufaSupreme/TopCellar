@@ -100,6 +100,7 @@ const deleteInstance = async (keyword, id) => {
         else {
             console.log(`Success! ${capitalizeFirstLetter(keyword)} ${id} deleted.`);
             displayAlert(`Success! ${capitalizeFirstLetter(keyword)} deleted.`, 'success');
+            return 'success';
         }
     }
     catch (err) {

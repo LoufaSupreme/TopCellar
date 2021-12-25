@@ -210,6 +210,26 @@ def customerDetail(request, pk):
     return JsonResponse(customer.serialize(), safe=False)
 
 
+def tagDetail(request, pk):
+    if request.method == 'DELETE':
+        print(f'Deleting Tag {pk}')
+
+        try:
+            tag = Tag.objects.get(id=pk)
+            tag.delete()
+            return JsonResponse({"success": f'Tag {pk} successfully deleted.'}, status=201)
+
+        except Exception as e:
+            print(f'{e.__class__.__name__}: {e}')
+            traceback.print_exc()
+
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
+    else:
+        return JsonResponse({"error": "Unsupported HTTP method."}, status=400)
+
+
+
 # API route
 # send list of all tags for the user
 def getTags(request):

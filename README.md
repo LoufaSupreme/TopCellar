@@ -48,8 +48,9 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] Allow suggestion dropdown list to be navigatable by arrow keys/enter
 - [x] Make text in entry description wrap before increasing entry width
 - [x] Show contact card when hovering over contact name
-- [ ] Allow tag deletion by clicking 'x' inside suggestion dropdown
+- [x] Allow tag deletion by clicking 'x' inside suggestion dropdown
 - [ ] Make filter and sort buttons to show modals, instead of dropdowns. Have an indicator for when a filter or sort is active.
+- [ ] Dynamically add instances to the store when they're created
 - [ ] Separate page into "Active", "Complete", "Archived"
 - [ ] Add large ? icon with message when no entries to display
 - [ ] Use 3rd party API to lazy-load customer logos

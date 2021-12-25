@@ -819,11 +819,25 @@ select {
 
 .suggestion-inner {
     justify-content: space-between;
-    pointer-events: none;
 }
 
 .suggestion-content {
     pointer-events: none;
+}
+
+.suggestion-exit {
+    z-index: 10;
+    transition: all 0.1s ease-in-out;
+}
+
+.suggestion-exit i {
+    pointer-events: none;
+}
+
+.suggestion-exit:hover {
+    font-weight: bold;
+    transform: scale(1.5);
+    background:rgba(0, 0, 0, 0.2);
 }
 
 input {

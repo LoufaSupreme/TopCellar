@@ -345,7 +345,7 @@ const displaySuggestions = (inputID, options, type) => {
                     <li class="suggestion ${type}-suggestion fs-300" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">
                         <div class='flex suggestion-inner'>
                             <div class='suggestion-content'>${option.suggestion.name}</div>
-                            <div class='suggestion-exit'>
+                            <div class='suggestion-exit' data-id="${option.suggestion.id}">
                                 <i class="bi bi-x"></i>
                             </div>
                         </div>
@@ -1453,8 +1453,20 @@ const handleClicks = (e) => {
     }
 
     // fires when a dropdown suggestion is clicked:
-    else if (e.target.classList.contains("suggestion")) {
-        handleSuggestionClicked(e.target);
+    else if (e.target.classList.contains("suggestion-inner")) {
+        handleSuggestionClicked(e.target.parentElement);
+    }
+
+    // fires when 'x' is clicked inside tag suggestion
+    // deletes a tag element from the db and store:
+    else if (e.target.classList.contains('suggestion-exit')) {
+        const suggestion_id = +e.target.dataset.id;
+        const deleteStatus = deleteInstance('tag', suggestion_id);
+        // if delete was successful, then remove it from the store as well:
+        if (deleteStatus) {
+            const tagIndex = store.tags.findIndex(t => t.id === suggestion_id);
+            store.tags.splice(tagIndex, 1);
+        }
     }
 
     // cancel or accept changes btn on user prompt modal to add customers and contacts:
