@@ -337,11 +337,32 @@ const makeSuggestionDiv = (type, entry_ID = null) => {
 const displaySuggestions = (inputID, options, type) => {
     options = options
         .map((option) => {
-            return `
-                <li class="suggestion ${type}-suggestion fs-300" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">
-                    ${option.suggestion.name}
-                </li>
-            `;
+            let suggestion = '';
+
+            // if it's a "tag" element, add an "x" button to allow it to be deleted directly from the dropdown:
+            if (type === 'tags') {
+                suggestion = `
+                    <li class="suggestion ${type}-suggestion fs-300" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">
+                        <div class='flex suggestion-inner'>
+                            <div class='suggestion-content'>${option.suggestion.name}</div>
+                            <div class='suggestion-exit'>
+                                <i class="bi bi-x"></i>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            }
+
+            // otherwise if it's a 'customer' or 'contact' suggestion, don't make a 'x' btn:
+            else {
+                suggestion = `
+                    <li class="suggestion ${type}-suggestion fs-300" data-type="${type}" data-inputID='${inputID}' data-id="${option.suggestion.id}">
+                        ${option.suggestion.name}
+                    </li>
+                `;
+            }
+
+            return suggestion;
         })
         .join("");
         
@@ -559,6 +580,7 @@ const generateModalText = (customer, contacts) => {
 
 // create the html for a new tag div:
 // type = customers, contacts, tags
+// status = 'locked' means it will not be rendered with an 'x' btn to allow it to be removed
 const makeTagElement = (type, id, content, status = 'locked') => {
     const tag = document.createElement("div"); // make new tag div
     tag.classList.add("tag"); // add "tag" to classname list
@@ -1110,8 +1132,10 @@ const getFormData = (form) => {
         descriptionError.classList.add('active');
     }
     const rank = form.querySelector('input[type="number"]').value;
+    console.log(rank, !rank.match(/^\d+$/), rank !== '')
+
     // check if rank is a number
-    if (!(rank.match(/^\d+$/) && rank !== '')) {
+    if (!rank.match(/^\d+$/) && rank !== '') {
         errorBucket.push('Only numbers accepted');
         const rankError = form.querySelector('#rank-error');
         rankError.innerText = "Only numbers accepted";
@@ -1289,7 +1313,7 @@ const getFilterFormData = (form) => {
 const handleSuggestionClicked = (suggestion) => {
     // get the input associated with that suggestion (has id = suggestion.dataset.inputid):
     const input = document.querySelector(`#${suggestion.dataset.inputid}`);
-    input.value = suggestion.innerHTML; // load the input
+    input.value = suggestion.innerText; // load the input
     input.dataset.id = suggestion.dataset.id; // set the data-id of the input to the same as the value object
 
     addTag(input);

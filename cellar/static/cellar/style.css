@@ -817,6 +817,15 @@ select {
     background: hsl(var(--clr-white) / 0.2);
 }
 
+.suggestion-inner {
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.suggestion-content {
+    pointer-events: none;
+}
+
 input {
     background-color: transparent;
     border: none;
