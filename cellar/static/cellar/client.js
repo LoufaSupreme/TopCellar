@@ -443,7 +443,7 @@ const makeContactForm = (contact = null) => {
     let company = "";
     if (contact) {
         if (contact.company) {
-            company = makeTagElement('customer', contact.company.id, contact.company.name, 'unlocked').outerHTML;
+            company = makeTagElement('customers', contact.company.id, contact.company.name, 'unlocked').outerHTML;
         }
     }
     
@@ -1189,7 +1189,7 @@ const getFormData = (form) => {
 
 // get the data from the new contact form:
 const getContactFormData = (form) => {
-    // reset any error msgs:
+    // reset any form validation error msgs:
     const errorMsgs = form.querySelectorAll('.input-error');
     errorMsgs.forEach(msg => msg.classList.remove('active'));
     
@@ -1466,7 +1466,13 @@ const handleClicks = (e) => {
         initiateNewContact(form, +e.target.dataset.id);
     }
 
-    // fires when a dropdown suggestion is clicked:
+    // fires when a customer or contact suggestion is clicked:
+    else if (e.target.classList.contains('suggestion')) {
+        handleSuggestionClicked(e.target);
+    }
+
+    // fires when a tag type dropdown suggestion is clicked:
+    // tag suggetsions are more complicated b/c they contain an 'x' btn
     else if (e.target.classList.contains("suggestion-inner")) {
         handleSuggestionClicked(e.target.parentElement);
     }

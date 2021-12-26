@@ -57,6 +57,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [ ] Use Google Maps API to map to customer locations
 - [ ] Use LinkedIn API (?) to get contact pictures?
 - [ ] Replace background with nice gradient
+- [ ] Simulate "enter" on all form inputs on submit to create tags if user forgot
 - [ ] 
 #### Filter Functionality
 - [x] Implement custom filtering (matching ALL criteria)
@@ -105,7 +106,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [x] Ability to delete contacts
 - [x] Ability to edit existing contacts
 - [x] Automatically create new customers if a contact is associated with a customer that doesn't yet exist
-- [ ] Show customer notes on click or hover
+- [x] Show customer notes on click or hover
 - [ ]
 
 ### KPIs Page
