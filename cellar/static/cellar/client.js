@@ -227,12 +227,10 @@ const makeContactCard = (contact, regex = null) => {
 // display the notes for a contact:
 const makeContactNotes = (contact) => {
     return `
-        <div class="prompt-container neupho container bg-dark text-white flex" id="contact-notes-container">
+        <div class="prompt-container neupho container bg-dark text-white" id="contact-notes-container">
             <span class='text-accent fs-400'>${contact.name}</span>
             <span>Notes:</span>
-            <div class='description fs-300 neupho inset'>
-                ${contact.notes}
-            </div>
+            <div class='description fs-300 neupho inset'>${contact.notes}</div>
             <button id='contact-notes-btn' class='neupho bg-dark'>Close</button>
         </div>
     `;
