@@ -12,7 +12,9 @@ The salesman needs to keep track of what's been happening in his territory.  Thi
 This app aims to help address the common sales problem of tracking sales activity by providing a persistent, easy to use, secure and accessible centralized database for all sales "events" (phonecalls, new opportunities, new ideas, failed initiatives, photos, roledex of customers and contacts, etc).  It will also act as a hub to track KPIs across time (opportuntities generated, conversion rate, new customers engaged/clinched, etc).
 
 ## How To Run
-Navigate to the app's root folder "TopCellar" and enter `python3 manage.py runserver` into the terminal.
+Navigate to the app's root folder "TopCellar" and enter 
+    `python3 manage.py runserver` 
+into the terminal.
 
 ## How it Works
 Django models are outlined in models.py, which describe the main classes of objects in the app.  Entries, which represent a sales entry input by the user to capture sales activity, can be linked via foreign keys or many-to-many relationships to Customer and Contact models, which represent a company and a person, respectively. An Entry can also be linked to a Tag, which is a keyword used to help sort entries. Customers are also linked to Tags, as well as Addresses which, predictably, store the addresses of the company. Contacts can also be linked to Customers (i.e. their place of work).  In this way, a sales entry can be connected to tags, customers, contacts and addresses.  There are also models outlined for User and Profile, but these are not yet fleshed out.
@@ -25,7 +27,7 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 
 ## TODO
 ### General
-- [ ] Add a favicon
+- [x] Add a favicon
 
 ### Landing Page
 - [ ] 
