@@ -50,13 +50,13 @@ This app aims to help address the common sales problem of tracking sales activit
 - [x] Show contact card when hovering over contact name
 - [x] Allow tag deletion by clicking 'x' inside suggestion dropdown
 - [ ] Make filter and sort buttons to show modals, instead of dropdowns. Have an indicator for when a filter or sort is active.
-- [ ] Dynamically add instances to the store when they're created
+- [ ] Dynamically add tags to the store when they're created
 - [ ] Separate page into "Active", "Complete", "Archived"
 - [ ] Add large ? icon with message when no entries to display
 - [ ] Use 3rd party API to lazy-load customer logos
 - [ ] Use Google Maps API to map to customer locations
 - [ ] Use LinkedIn API (?) to get contact pictures?
-- [ ] 
+- [ ] Replace background with nice gradient
 - [ ] 
 #### Filter Functionality
 - [x] Implement custom filtering (matching ALL criteria)
@@ -105,6 +105,7 @@ This app aims to help address the common sales problem of tracking sales activit
 - [x] Ability to delete contacts
 - [x] Ability to edit existing contacts
 - [x] Automatically create new customers if a contact is associated with a customer that doesn't yet exist
+- [ ] Show customer notes on click or hover
 - [ ]
 
 ### KPIs Page

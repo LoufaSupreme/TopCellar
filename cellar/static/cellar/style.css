@@ -272,8 +272,10 @@
 
 
 body {
-    background-image: linear-gradient(to bottom right, hsl(var(--clr-dark)), hsl(var(--clr-dark) / 0.95));
-    /* background-color: hsl(var(--clr-dark)); */
+    /* background-image: linear-gradient(to bottom right, hsl(var(--clr-dark)), hsl(var(--clr-dark) / 0.95)); */
+    /* background-color: #000000; */
+    /* background-image: linear-gradient(147deg, #000000 0%, #2c3e50 74%); */
+    background-color: hsl(var(--clr-dark));
     color: hsl(var(--clr-white));  
     /* max-height: 100vh; */
     overflow-x: hidden;
@@ -995,6 +997,15 @@ button i {
     padding: 0 0 0.1em 4.5em;
     /* overflow: hidden; */
     transform: rotate(20deg) translateY(15px);    
+}
+
+.info > .notes {
+    cursor: pointer;
+}
+
+/* modal to read contact notes */
+#contact-notes-container {
+    flex-direction: column;
 }
 
 /* NEW CONTACT FORM */

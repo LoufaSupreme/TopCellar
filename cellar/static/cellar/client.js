@@ -158,7 +158,7 @@ const makeContactCard = (contact, regex = null) => {
     let email = contact.email ? contact.email : "";
     let phone_cell = contact.phone_cell ? contact.phone_cell : "";
     let phone_office = contact.phone_office ? contact.phone_office : "";
-    let notes = contact.notes ? 'Notes...' : 'No Notes'; 
+    let notes = contact.notes ? 'Read Notes' : ''; 
     
     // if a regular expression was given to filter the contacts,
     // then find and replace that regex with a highlight span
@@ -217,9 +217,23 @@ const makeContactCard = (contact, regex = null) => {
                     <div class='office'>${phone_office}</div>
                 </div>
                 <div class='info'>
-                    <div class='notes'>${notes}</div>
+                    <div class='notes' data-id='${contact.id}'>${notes}</div>
                 </div>
             </div>
+        </div>
+    `;
+}
+
+// display the notes for a contact:
+const makeContactNotes = (contact) => {
+    return `
+        <div class="prompt-container neupho container bg-dark text-white flex" id="contact-notes-container">
+            <span class='text-accent fs-400'>${contact.name}</span>
+            <span>Notes:</span>
+            <div class='description fs-300 neupho inset'>
+                ${contact.notes}
+            </div>
+            <button id='contact-notes-btn' class='neupho bg-dark'>Close</button>
         </div>
     `;
 }
@@ -1563,12 +1577,27 @@ const handleClicks = (e) => {
         handleContactDelete(contact_id);
     }
 
+    // click on 'edit' btn inside contact card:
     else if (e.target.classList.contains('contact-card-edit')) {
         const contact = store.contacts.find(el => el.id === +e.target.dataset.id);
         const contactForm = makeContactForm(contact);
         const modal = document.querySelector('#new-entry-modal');
         modal.innerHTML = contactForm;
         modal.classList.add('open');
+    }
+
+    // click on notes section of contact card:
+    else if (e.target.classList.contains('notes')) {
+        const contact = store.contacts.find(el => el.id === +e.target.dataset.id);
+        const modal = document.querySelector('#new-entry-modal');
+        modal.innerHTML = makeContactNotes(contact);
+        modal.classList.add('open');
+    }
+
+    // click on close btn in contact notes modal:
+    else if (e.target.id === 'contact-notes-btn') {
+        const modal = document.querySelector('#new-entry-modal');
+        modal.classList.remove('open');
     }
 };
 
