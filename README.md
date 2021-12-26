@@ -11,6 +11,18 @@ The salesman needs to keep track of what's been happening in his territory.  Thi
 ## OBJECTIVE
 This app aims to help address the common sales problem of tracking sales activity by providing a persistent, easy to use, secure and accessible centralized database for all sales "events" (phonecalls, new opportunities, new ideas, failed initiatives, photos, roledex of customers and contacts, etc).  It will also act as a hub to track KPIs across time (opportuntities generated, conversion rate, new customers engaged/clinched, etc).
 
+## How To Run
+Navigate to the app's root folder "TopCellar" and enter `python3 manage.py runserver` into the terminal.
+
+## How it Works
+Django models are outlined in models.py, which describe the main classes of objects in the app.  Entries, which represent a sales entry input by the user to capture sales activity, can be linked via foreign keys or many-to-many relationships to Customer and Contact models, which represent a company and a person, respectively. An Entry can also be linked to a Tag, which is a keyword used to help sort entries. Customers are also linked to Tags, as well as Addresses which, predictably, store the addresses of the company. Contacts can also be linked to Customers (i.e. their place of work).  In this way, a sales entry can be connected to tags, customers, contacts and addresses.  There are also models outlined for User and Profile, but these are not yet fleshed out.
+
+The purpose of the Django backend is to act as an API to provide and interface to the Javascript frontend. The views.py file outlines the functions it can do, such as creating, modifying, or deleting any of the above models, serializing one or many instances of a model and sending as JSON, registering a new user and logging in/authenticating a new user.  Only 3 server-rendered html pages are sent from the backend: login, register and index (which extends the layout.html template).  The rest is handled by dynamic Javascript. These views are accessed via the routes outlined in urls.py.
+
+The frontend is created by two JS files: api.js and client.js. The api.js file houses any functions that make fetch API calls to the Django backend to send or retrieve data.  Those functions are called by other functions in the client.js file, which is responsible for generating and displaying all the dynamic HTML, and managing all user interactions.  Interaction such as clicks or key inputs are most often handled by event delegation - checking the target of the input and passing it to the relevant function for further processing. In this way, the application acts primarily as a SPA (single page app), with a single global variable ('store') to manage the state of the app.  The store variable is also what stores any information returned from the API calls (such as lists of entry data, etc).
+
+Styling is handled by two CSS files: style.css and resets.css.  The resets.css file contains several common and helpful resets to make further styling more predictable.  The main style.css file is responsible for styling of all the components on the page.  It makes good use of CSS variables and utility classes to aid in this. 
+
 ## TODO
 ### General
 - [ ] Add a favicon
