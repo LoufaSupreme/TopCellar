@@ -138,6 +138,10 @@ class Contact(models.Model):
 
         return serialized
 
+class Photo(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(null=False, blank=False, upload_to='entry_images')
+
 
 class Entry(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='entries')
@@ -146,7 +150,6 @@ class Entry(models.Model):
     date_edited = models.DateTimeField(null=True, default=None)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, related_name='entries')
     contacts = models.ManyToManyField(Contact, blank=True, related_name='entries')
-    rank = models.PositiveIntegerField(null=True, default='', blank=True)
     completed = models.BooleanField(default=False)
     date_completed = models.DateTimeField(null=True, default=None)
     archived = models.BooleanField(default=False)
@@ -154,6 +157,10 @@ class Entry(models.Model):
     flagged = models.BooleanField(default=False)
     date_flagged = models.DateTimeField(null=True, default=None)
     tags = models.ManyToManyField(Tag, blank=True, related_name="entries")
+    # photos = models.ManyToManyField(Photo, blank=True, related_name="entries")
+    # likelihood = models.PositiveIntegerField(null=True, default=0, blank=True)
+    # dollar_value = models.PositiveIntegerField(null=True, default=0, blank=True)
+    rank = models.PositiveIntegerField(null=True, default='', blank=True)
 
     def __str__(self):
         return f'{self.id} - {self.description[0:10]}...({self.author.username})'

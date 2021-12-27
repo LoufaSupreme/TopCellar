@@ -415,6 +415,7 @@ const makeEntryForm = () => {
                 <input id="new-entry-tags-input" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags" onfocusout='inputFocusOut(this)'>
                 ${makeSuggestionDiv("tags")}
             </div>
+            <input type='file' name='entry-images' multiple>
             <div class='form-btn-container flex'>
                 <button type="buton" class='neupho bg-dark' id="submit-new-btn">CREATE</button>
                 <button type="buton" class='neupho bg-dark' id="cancel-new-btn">CANCEL</button>
@@ -1096,33 +1097,34 @@ const contactExists = (contacts) => {
 
 // capture the inputted values for new entry:
 const getFormData = (form) => {
-    // reset all error messages:
+    // reset all form validation error messages:
     const errorMsgs = form.querySelectorAll('.input-error');
     errorMsgs.forEach(msg => msg.classList.remove('active'));
     
-    const tagElements = Array.from(form.querySelectorAll(".tag")); // grab all of the tag elements
+    // grab all of the tag elements:
+    const tagElements = Array.from(form.querySelectorAll(".tag")); 
 
     const customer = tagElements
         .filter((tag) => tag.dataset.list === "customers")
         .map((cust) => {
-        return {
-            id: parseInt(cust.dataset.id),
-            name: cust.innerText,
-        };
+            return {
+                id: parseInt(cust.dataset.id),
+                name: cust.innerText,
+            };
         })[0];
 
     const contacts = tagElements
         .filter((tag) => tag.dataset.list === "contacts")
         .map((cont) => {
-        const names = cont.innerText.trim().split(" ");
-        const first_name = names[0];
-        const last_name = names.length > 1 ? names[1] : null;
+            const names = cont.innerText.trim().split(" ");
+            const first_name = names[0];
+            const last_name = names.length > 1 ? names[1] : null;
 
-        return {
-            id: parseInt(cont.dataset.id),
-            first_name: first_name,
-            last_name: last_name,
-        };
+            return {
+                id: parseInt(cont.dataset.id),
+                first_name: first_name,
+                last_name: last_name,
+            };
         });
 
     const tags = tagElements
@@ -1144,7 +1146,6 @@ const getFormData = (form) => {
         descriptionError.classList.add('active');
     }
     const rank = form.querySelector('input[type="number"]').value;
-    console.log(rank, !rank.match(/^\d+$/), rank !== '')
 
     // check if rank is a number
     if (!rank.match(/^\d+$/) && rank !== '') {
@@ -1155,6 +1156,12 @@ const getFormData = (form) => {
     }
     const date = form.querySelector('input[type="date"]').value.split("-");
     const time = new Date();
+
+    const images = form.querySelector('input[type="file"]').files;
+    let imageFormData = new FormData();
+    for (let i = 0; i < images.length; i++) {
+        imageFormData.append('photo'+1, images.item(i));
+    }
 
     // create details for new entry:
     const newEntryDetails = {
@@ -1174,6 +1181,7 @@ const getFormData = (form) => {
         flagged: false,
         archived: false,
         completed: false,
+        photos: imageFormData,
     };
 
     console.log("Got form data:");

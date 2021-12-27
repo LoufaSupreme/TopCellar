@@ -1,6 +1,10 @@
 from django.urls import path
 from . import views
 
+# for images:
+from django.conf.urls.static import static
+from django.conf import settings
+
 
 """ naming the app like below is good for organizing when there's multiple apps in the same proj.  You must 
 use url 'app_name:view_name' format in html pages and views to access it properly"""
@@ -29,3 +33,6 @@ urlpatterns = [
     path('api/new_customer/', views.new_customer, name='new_customer'),
     path('api/new_contact/', views.new_contact, name='new_contact'),
 ]
+
+# for images:
+urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
