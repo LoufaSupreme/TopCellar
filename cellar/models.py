@@ -138,10 +138,6 @@ class Contact(models.Model):
 
         return serialized
 
-class Photo(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='photos')
-    image = models.ImageField(null=False, blank=False, upload_to='entry_images')
-
 
 class Entry(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='entries')
@@ -157,7 +153,6 @@ class Entry(models.Model):
     flagged = models.BooleanField(default=False)
     date_flagged = models.DateTimeField(null=True, default=None)
     tags = models.ManyToManyField(Tag, blank=True, related_name="entries")
-    photos = models.ManyToManyField(Photo, blank=True, related_name="entries")
     # likelihood = models.PositiveIntegerField(null=True, default=0, blank=True)
     # dollar_value = models.PositiveIntegerField(null=True, default=0, blank=True)
     rank = models.PositiveIntegerField(null=True, default='', blank=True)
@@ -211,3 +206,7 @@ class Entry(models.Model):
         return serialized;
 
 
+class Photo(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(null=False, blank=False, upload_to='entry_images')
+    entry = models.ForeignKey(Entry, null=True, on_delete=models.PROTECT, related_name='photos')

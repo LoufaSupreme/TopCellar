@@ -63,15 +63,16 @@ def addFiles(request, pk):
         try:
             entry = Entry.objects.get(id=pk)
             user = request.user
+            # get all uploaded images and create a new Photo instance:
             for image in request.FILES.getlist('images'):
-                Photo.objects.create(user=user, image=image)
-                entry.photos.add(image)
+                Photo.objects.create(user=user, image=image, entry=entry)
             return JsonResponse({"success": f'Added files to Entry {pk}.'}, status=201)
 
         except Exception as e:
             print(f'{e.__class__.__name__}: {e}')
             traceback.print_exc()
             return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
 
 # API route
 # send details of just one entry or update one entry:
