@@ -1102,7 +1102,7 @@ const getFormData = (form) => {
     errorMsgs.forEach(msg => msg.classList.remove('active'));
     
     // grab all of the tag elements:
-    const tagElements = Array.from(form.querySelectorAll(".tag")); 
+    const tagElements = Array.from(form.querySelectorAll(".tag"));
 
     const customer = tagElements
         .filter((tag) => tag.dataset.list === "customers")
@@ -1158,7 +1158,8 @@ const getFormData = (form) => {
     const time = new Date();
 
     const images = form.querySelector('input[type="file"]').files;
-    let imageFormData = new FormData();
+    const imageFormData = new FormData();
+    // append images to FormData object:
     for (let i = 0; i < images.length; i++) {
         imageFormData.append('photo'+1, images.item(i));
     }

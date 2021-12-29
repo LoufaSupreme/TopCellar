@@ -129,7 +129,7 @@ const getList = async (target) => {
 const newInstance = async (details, keyword) => {
 
     console.log(`Creating new ${keyword} instance...`)
-    // get csrf token for put request
+    // get csrf token for post request
     const csrf_token = getCookie('csrftoken');
 
     try {
@@ -147,6 +147,35 @@ const newInstance = async (details, keyword) => {
             console.log(obj);
             displayAlert(`Success! ${capitalizeFirstLetter(keyword)} created.`, 'success');
             return obj;
+        }
+    }
+    catch (err) {
+        console.error(err);
+        displayAlert(`Error: ${err}`, 'danger');
+    }
+}
+
+// takes FormData object as parameter
+const addFiles = async (formData, entry_id) => {
+    console.log(`Adding files to Entry ${entry_id}`);
+    // get csrf token for put request
+    const csrf_token = getCookie('csrftoken');
+
+    try {
+        const res = await fetch(`api/addFiles/${entry_id}`, {
+            method: 'PUT',
+            body: formData,
+            headers: { "X-CSRFToken": csrf_token }
+        });
+        const response = await res.json();
+        if (response.error) {
+            throw `DJANGO: ${obj.error}`;
+        }
+        else {
+            console.log(`Success! Files added to Entry ${entry_id}.`);
+            console.log(response);
+            displayAlert(`Success! Files added to Entry ${entry_id}.`, 'success');
+            return response;
         }
     }
     catch (err) {

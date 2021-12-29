@@ -10,7 +10,7 @@ import json, datetime
 import traceback
 import pytz
 
-from .models import User, Profile, Entry, Address, Customer, Contact, Tag
+from .models import User, Profile, Entry, Address, Customer, Contact, Tag, Photo
 
 
 @login_required

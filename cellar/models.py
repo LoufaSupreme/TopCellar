@@ -157,7 +157,7 @@ class Entry(models.Model):
     flagged = models.BooleanField(default=False)
     date_flagged = models.DateTimeField(null=True, default=None)
     tags = models.ManyToManyField(Tag, blank=True, related_name="entries")
-    # photos = models.ManyToManyField(Photo, blank=True, related_name="entries")
+    photos = models.ManyToManyField(Photo, blank=True, related_name="entries")
     # likelihood = models.PositiveIntegerField(null=True, default=0, blank=True)
     # dollar_value = models.PositiveIntegerField(null=True, default=0, blank=True)
     rank = models.PositiveIntegerField(null=True, default='', blank=True)
