@@ -155,6 +155,7 @@ const newInstance = async (details, keyword) => {
     }
 }
 
+// add files (such as images) to an existing entry
 // takes FormData object as parameter
 const addFiles = async (formData, entry_id) => {
     console.log(`Adding files to Entry ${entry_id}`);
@@ -163,13 +164,15 @@ const addFiles = async (formData, entry_id) => {
 
     try {
         const res = await fetch(`api/addFiles/${entry_id}`, {
-            method: 'PUT',
+            method: 'POST',
             body: formData,
-            headers: { "X-CSRFToken": csrf_token }
+            headers: { "X-CSRFToken": csrf_token },
+            contentType: false,
+            processData: false,
         });
         const response = await res.json();
         if (response.error) {
-            throw `DJANGO: ${obj.error}`;
+            throw `DJANGO: ${response.error}`;
         }
         else {
             console.log(`Success! Files added to Entry ${entry_id}.`);

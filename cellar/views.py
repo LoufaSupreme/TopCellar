@@ -53,6 +53,27 @@ def getEntries(request):
 
 
 # API route
+# add files (images) to existing entry
+# '/api/addFiles/pk'
+def addFiles(request, pk):
+    # Note: sending images via FormData must be sent with POST.  PUT will not work for some reason:
+    if request.method != 'POST':
+        return JsonResponse({"error": "Post method required"}, status=400)
+    else:
+        try:
+            entry = Entry.objects.get(id=pk)
+            user = request.user
+            for image in request.FILES.getlist('images'):
+                Photo.objects.create(user=user, image=image)
+                entry.photos.add(image)
+            return JsonResponse({"success": f'Added files to Entry {pk}.'}, status=201)
+
+        except Exception as e:
+            print(f'{e.__class__.__name__}: {e}')
+            traceback.print_exc()
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+
+# API route
 # send details of just one entry or update one entry:
 def entryDetail(request, pk):
 

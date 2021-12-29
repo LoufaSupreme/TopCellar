@@ -1161,8 +1161,10 @@ const getFormData = (form) => {
     const imageFormData = new FormData();
     // append images to FormData object:
     for (let i = 0; i < images.length; i++) {
-        imageFormData.append('photo'+1, images.item(i));
+        imageFormData.append('images', images.item(i));
     }
+
+    addFiles(imageFormData, 1);
 
     // create details for new entry:
     const newEntryDetails = {

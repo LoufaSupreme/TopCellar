@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/new_entry/', views.new_entry, name='new_entry'),
     path('api/new_customer/', views.new_customer, name='new_customer'),
     path('api/new_contact/', views.new_contact, name='new_contact'),
+    path('api/addFiles/<str:pk>', views.addFiles, name='addFiles'),
 ]
 
 # for images:
