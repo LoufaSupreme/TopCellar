@@ -307,9 +307,9 @@ const makeEntryHTML = (entry, regex = null) => {
     // convert the tags array into an array of HTML
     tags = tags.map((t) => t.outerHTML);
 
-    const photos = entry.photos.map(url => {
+    const photos = entry.photos.map(photo => {
         return `
-            <img src="${url}" alt="entry ${entry.id} image" class="entry-img">
+            <img src="${photo.url}" alt="entry ${entry.id} image" class="entry-img" data-id='${photo.id}'>
         `;
     })
 
@@ -952,6 +952,12 @@ const updateCreateInstance = async (instanceData, instanceType, instance_ID = nu
     // otherwise, create a new instance:
     else {
         newObject = await newInstance(instanceData, instanceType);
+        
+        // if there's image data, add it to the new entry:
+        if (instanceData.photos) {
+            console.log('Images found...');
+            newObject.photos = await addFiles(instanceData.photos, newObject.id);
+        }
 
         // display the new object instance:
         if (instanceType === 'entry') {
@@ -1173,6 +1179,7 @@ const getFormData = (form) => {
     for (let i = 0; i < images.length; i++) {
         imageFormData.append('images', images.item(i));
     }
+    if (images.length === 0) imageFormData = null;
 
     // create details for new entry:
     const newEntryDetails = {

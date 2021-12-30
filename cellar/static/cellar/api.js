@@ -157,6 +157,7 @@ const newInstance = async (details, keyword) => {
 
 // add files (such as images) to an existing entry
 // takes FormData object as parameter
+// returns the updated entry, including array of image urls
 const addFiles = async (formData, entry_id) => {
     console.log(`Adding files to Entry ${entry_id}`);
     // get csrf token for put request
@@ -177,7 +178,7 @@ const addFiles = async (formData, entry_id) => {
         else {
             console.log(`Success! Files added to Entry ${entry_id}.`);
             console.log(response);
-            displayAlert(`Success! Files added to Entry ${entry_id}.`, 'success');
+            // displayAlert(`Success! Files added to Entry ${entry_id}.`, 'success');
             return response;
         }
     }

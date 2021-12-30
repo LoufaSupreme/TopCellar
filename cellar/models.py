@@ -198,7 +198,7 @@ class Entry(models.Model):
             "flagged": self.flagged,
             "date_flagged": self.serialize_dateTime(self.date_flagged) if self.date_flagged != None else None,
             "tags": [{"id": tag.id, "name": tag.name} for tag in self.tags.all()],
-            "photos": [photo.image.url for photo in self.photos.all()],
+            "photos": [photo.serialize() for photo in self.photos.all()],
         }
 
         if self.customer != None:
@@ -213,4 +213,11 @@ class Entry(models.Model):
 class Photo(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='photos')
     image = models.ImageField(null=False, blank=False, upload_to='entry_images')
-    entry = models.ForeignKey(Entry, null=True, on_delete=models.PROTECT, related_name='photos')
+    entry = models.ForeignKey(Entry, null=True, on_delete=models.CASCADE, related_name='photos')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "url": self.image.url,
+            "associated_entry": self.entry.id,
+        }

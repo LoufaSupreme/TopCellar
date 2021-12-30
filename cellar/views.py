@@ -63,10 +63,15 @@ def addFiles(request, pk):
         try:
             entry = Entry.objects.get(id=pk)
             user = request.user
+            
+            photos = [];
             # get all uploaded images and create a new Photo instance:
             for image in request.FILES.getlist('images'):
-                Photo.objects.create(user=user, image=image, entry=entry)
-            return JsonResponse({"success": f'Added files to Entry {pk}.'}, status=201)
+                photo = Photo(user=user, image=image, entry=entry)
+                photo.save()
+                photos.append(photo)
+            # return JsonResponse(entry.serialize(), safe=False)
+            return JsonResponse([photo.serialize() for photo in photos], safe=False)
 
         except Exception as e:
             print(f'{e.__class__.__name__}: {e}')
