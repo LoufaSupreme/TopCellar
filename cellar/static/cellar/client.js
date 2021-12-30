@@ -544,6 +544,7 @@ const makeEditForm = async (entryContainer) => {
             <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags" onfocusout='inputFocusOut(this)'>
             ${makeSuggestionDiv("tags", entry_ID)}
         </div>
+        <input type='file' name='entry-images' multiple>
         <div class='form-btn-container flex'>
             <button id='accept-edit-btn' class='neupho bg-dark' data-id="${entry_ID}">Accept Changes</button>
             <button id='cancel-edit-btn' class='neupho bg-dark' data-id='${entry_ID}'>Cancel</button>
@@ -932,6 +933,12 @@ const updateCreateInstance = async (instanceData, instanceType, instance_ID = nu
     if (instance_ID) {
         newObject = await updateInstance(instanceData, instanceType, instance_ID);
 
+        // if there's image data, add it to the new entry:
+        if (instanceData.photos) {
+            console.log('Images found...');
+            newObject.photos = await addFiles(instanceData.photos, newObject.id);
+        }
+        
         // display the updated object instance:
         if (instanceType === 'entry') {
             // find it:
