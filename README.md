@@ -101,9 +101,8 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [x] Sort by date archived
 - [x] Sort by date edited
 - [x] Sort by date flagged
-- [ ] Sort by has pictures
 - [ ] Add secondary sort criteria
-- [ ] Sort by rank/priority
+- [x] Sort by rank/priority
 - [ ] Easily remove all sorting criteria
 - [ ] 
 

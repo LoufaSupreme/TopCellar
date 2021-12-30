@@ -720,7 +720,6 @@ const makeEntrySortBox = () => {
                         <option value='date-archived'>Date Archived</option>
                         <option value='date-edited'>Date Edited</option>
                         <option value='priority'>Priority</option>
-                        <option value='has-pictures'>Includes Pictures</option>
                         <option value='dollars'>Dollar Value</option>
                     </select>
                     <span class='select-arrow'><i class="bi bi-chevron-down"></i></span>
@@ -2177,7 +2176,6 @@ const sortEntries = (entries, criteria) => {
             else return a_date > b_date ? 1 : -1;
         });
     }
-
     
     else if (criteria.sortBy === 'customer-name') {
         entries = entries.sort((a, b) => {
@@ -2189,12 +2187,12 @@ const sortEntries = (entries, criteria) => {
             else return a_customer_name > b_customer_name ? 1 : -1;
         })
     }
-    else if (criteria.sortBy === 'flagged') {
+    else if (criteria.sortBy === 'priority') {
         entries = entries.sort((a, b) => {
             if (criteria.sortDirection === 'descending') {
-                return a.flagged > b.flagged ? 1 : -1;
+                return a.rank > b.rank ? 1 : -1;
             }
-            else return a.flagged > b.flagged ? -1 : 1;
+            else return a.rank > b.rank ? -1 : 1;
         })
     }
 
