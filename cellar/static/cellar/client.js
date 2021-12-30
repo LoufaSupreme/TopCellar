@@ -307,6 +307,12 @@ const makeEntryHTML = (entry, regex = null) => {
     // convert the tags array into an array of HTML
     tags = tags.map((t) => t.outerHTML);
 
+    const photos = entry.photos.map(url => {
+        return `
+            <img src="${url}" alt="entry ${entry.id} image" class="entry-img">
+        `;
+    })
+
     return `
         <div id='entry-${entry.id}' class=' neupho entry-container container bg-dark text-white'>
             <div class='fs-200 text-white'>${entry.timestamp.full}</div>
@@ -314,6 +320,9 @@ const makeEntryHTML = (entry, regex = null) => {
             ${contacts.length > 0 ? `<div class='entry-contacts fs-300 text-white'>${contacts.join('  &middot  ')}</div>`: ''}
             <div class='description fs-300 neupho inset'>${description}</div>
             ${entry.tags.length > 0 ? `<div class='fs-300 neupho tag-container inset flex'>${tags.join('')}</div>` : ''}
+            <div class='image-container'>
+                ${photos}
+            </div>
             <div class='entry-btn-container flex'>
                 ${flagBtn}
                 <button id='entry-${entry.id}-edit-btn' class='neupho round-btn bg-dark edit-entry-btn' data-id='${entry.id}'>
@@ -1157,14 +1166,13 @@ const getFormData = (form) => {
     const date = form.querySelector('input[type="date"]').value.split("-");
     const time = new Date();
 
+    // get all the images uploaded to the form and add to FormData instance:
     const images = form.querySelector('input[type="file"]').files;
     const imageFormData = new FormData();
     // append images to FormData object:
     for (let i = 0; i < images.length; i++) {
         imageFormData.append('images', images.item(i));
     }
-
-    addFiles(imageFormData, 1);
 
     // create details for new entry:
     const newEntryDetails = {

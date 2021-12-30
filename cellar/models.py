@@ -186,7 +186,10 @@ class Entry(models.Model):
             "timestamp": self.serialize_dateTime(self.timestamp),
             "date_edited": self.serialize_dateTime(self.date_edited) if self.date_edited != None else None,
             "customer": None,
-            "contacts": [{"id": contact.id, "first_name": contact.first_name, "last_name": contact.last_name} for contact in self.contacts.all()],
+            "contacts": [
+                {"id": contact.id, 
+                "first_name": contact.first_name, 
+                "last_name": contact.last_name} for contact in self.contacts.all()],
             "rank": self.rank,
             "completed": self.completed,
             "date_completed": self.serialize_dateTime(self.date_completed) if self.date_completed != None else None,
@@ -195,6 +198,7 @@ class Entry(models.Model):
             "flagged": self.flagged,
             "date_flagged": self.serialize_dateTime(self.date_flagged) if self.date_flagged != None else None,
             "tags": [{"id": tag.id, "name": tag.name} for tag in self.tags.all()],
+            "photos": [photo.image.url for photo in self.photos.all()],
         }
 
         if self.customer != None:
