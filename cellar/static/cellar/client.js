@@ -307,11 +307,12 @@ const makeEntryHTML = (entry, regex = null) => {
     // convert the tags array into an array of HTML
     tags = tags.map((t) => t.outerHTML);
 
+    // make containers for each photo:
     const photos = entry.photos.map(photo => {
         return `
             <img src="${photo.url}" alt="entry ${entry.id} image" class="entry-img" data-id='${photo.id}'>
         `;
-    })
+    }).join('');
 
     return `
         <div id='entry-${entry.id}' class=' neupho entry-container container bg-dark text-white'>
@@ -933,10 +934,12 @@ const updateCreateInstance = async (instanceData, instanceType, instance_ID = nu
     if (instance_ID) {
         newObject = await updateInstance(instanceData, instanceType, instance_ID);
 
-        // if there's image data, add it to the new entry:
+        // if there's image data, add it to the new entry
+        // then append each serialized photo that's returned to the newObject
         if (instanceData.photos) {
             console.log('Images found...');
-            newObject.photos = await addFiles(instanceData.photos, newObject.id);
+            const newPhotos = await addFiles(instanceData.photos, newObject.id);
+            newPhotos.forEach(photo => newObject.photos.push(photo));
         }
         
         // display the updated object instance:

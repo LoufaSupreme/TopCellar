@@ -45,7 +45,8 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [x] When adding an entry with a customer or contact that doesn't exist, prompt user if they'd like to create a new one
 - [x] Add frontend checks for required fields (create, edit)
 - [x] Add backend checks for required fields (create, edit)
-- [ ] Allow uploading pictures when creating or editing an entry
+- [x] Allow uploading pictures when creating or editing an entry
+- [ ] Allow deleting of pictures when in edit mode
 - [x] Implement search bar to filter entries
 - [x] Show dynamic dropdown of available choices when typing in input field
 - [x] Allow user to edit existing entry in place
