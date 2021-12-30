@@ -713,9 +713,15 @@ const makeEntrySortBox = () => {
             <div class='flex'>
                 <div class='select-container'>
                     <select id='sortBy' class='neupho bg-dark'>
-                        <option value='date'>Date Created</option>
-                        <option value='customer_name'>Customer Name</option>
-                        <option value='flagged'>Flagged</option>
+                        <option value='date-created'>Date Created</option>
+                        <option value='customer-name'>Customer Name</option>
+                        <option value='date-flagged'>Date Flagged</option>
+                        <option value='date-completed'>Date Completed</option>
+                        <option value='date-archived'>Date Archived</option>
+                        <option value='date-edited'>Date Edited</option>
+                        <option value='priority'>Priority</option>
+                        <option value='has-pictures'>Includes Pictures</option>
+                        <option value='dollars'>Dollar Value</option>
                     </select>
                     <span class='select-arrow'><i class="bi bi-chevron-down"></i></span>
                 </div>  
@@ -2135,31 +2141,45 @@ const filterEntries = (entries, criteria) => {
 const sortEntries = (entries, criteria) => {
     console.log(`Sorting entries by ${criteria.sortBy} in ${criteria.sortDirection} order...`);
 
-    if (criteria.sortBy === 'date') {
+    if (criteria.sortBy.includes('date')) {
+        let dateCategory = '';
+        if (criteria.sortBy.includes('created')) dateCategory = 'timestamp';
+        else if (criteria.sortBy.includes('completed')) dateCategory = 'date_completed';
+        else if (criteria.sortBy.includes('edited')) dateCategory = 'date_edited';
+        else if (criteria.sortBy.includes('archived')) dateCategory = 'date_archived';
+        else if (criteria.sortBy.includes('flagged')) dateCategory = 'date_flagged';
+
         entries = entries.sort((a, b) => {
+            console.log('count')
+            if (a[dateCategory] === b[dateCategory]) return 0;
+            if (!a[dateCategory]) return 1;
+            if (!b[dateCategory]) return -1;
+            
             const a_date = new Date(
-                a.timestamp.year, 
-                a.timestamp.month - 1, 
-                a.timestamp.day, 
-                a.timestamp.hour,
-                a.timestamp.minute,
-                a.timestamp.second
+                a[dateCategory].year, 
+                a[dateCategory].month - 1, 
+                a[dateCategory].day, 
+                a[dateCategory].hour,
+                a[dateCategory].minute,
+                a[dateCategory].second
             );
             const b_date = new Date(
-                b.timestamp.year, 
-                b.timestamp.month - 1, 
-                b.timestamp.day, 
-                b.timestamp.hour,
-                b.timestamp.minute,
-                b.timestamp.second
+                b[dateCategory].year, 
+                b[dateCategory].month - 1, 
+                b[dateCategory].day, 
+                b[dateCategory].hour,
+                b[dateCategory].minute,
+                b[dateCategory].second
             );
             if (criteria.sortDirection === 'descending') {
                 return a_date > b_date ? -1 : 1;
             }
             else return a_date > b_date ? 1 : -1;
-        })
+        });
     }
-    else if (criteria.sortBy === 'customer_name') {
+
+    
+    else if (criteria.sortBy === 'customer-name') {
         entries = entries.sort((a, b) => {
             const a_customer_name = a.customer ? a.customer.name : null;
             const b_customer_name = b.customer ? b.customer.name : null;

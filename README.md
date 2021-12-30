@@ -47,6 +47,8 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [x] Add backend checks for required fields (create, edit)
 - [x] Allow uploading pictures when creating or editing an entry
 - [ ] Allow deleting of pictures when in edit mode
+- [ ] Expand pictures when clicked
+- [ ] Present pictures in a carousel
 - [x] Implement search bar to filter entries
 - [x] Show dynamic dropdown of available choices when typing in input field
 - [x] Allow user to edit existing entry in place
@@ -86,6 +88,7 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [ ] Filter by date edited range
 - [ ] Filter by date flagged range
 - [ ] Easily remove all filters
+- [ ] Filter by has pictures
 - [ ] 
 #### Sort Functionality
 - [x] Implement sorting of entries by at least one criteria.  
@@ -94,10 +97,10 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [x] Sort by customer name
 - [x] Sort by flagged status
 - [ ] Sort by dollar amount
-- [ ] Sort by date completed
-- [ ] Sort by date archived
-- [ ] Sort by date edited
-- [ ] Sort by date flagged
+- [x] Sort by date completed
+- [x] Sort by date archived
+- [x] Sort by date edited
+- [x] Sort by date flagged
 - [ ] Sort by has pictures
 - [ ] Add secondary sort criteria
 - [ ] Sort by rank/priority
