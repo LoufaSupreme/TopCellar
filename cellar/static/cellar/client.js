@@ -1189,7 +1189,7 @@ const getFormData = (form) => {
 
     // get all the images uploaded to the form and add to FormData instance:
     const images = form.querySelector('input[type="file"]').files;
-    const imageFormData = new FormData();
+    let imageFormData = new FormData();
     // append images to FormData object:
     for (let i = 0; i < images.length; i++) {
         imageFormData.append('images', images.item(i));

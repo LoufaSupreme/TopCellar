@@ -40,6 +40,8 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 
 ### Login Page
 - [ ] Sign in via email instead of username
+- [ ] Email for forgotten password
+- [ ] 
 
 ### Sales Entry Page
 - [x] When adding an entry with a customer or contact that doesn't exist, prompt user if they'd like to create a new one
@@ -62,6 +64,7 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [ ] Display dollar value on entries
 - [ ] Add urgency and/or likelihood values to entries
 - [ ] Auto calculate priority rank based on urgency/likelihood and dollar value
+- [ ] Display priority/rank on entries
 - [ ] Allow suggestion dropdown list to be navigatable by arrow keys/enter
 - [x] Make text in entry description wrap before increasing entry width
 - [x] Show contact card when hovering over contact name
@@ -70,9 +73,6 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [ ] Dynamically add tags to the store when they're created
 - [ ] Separate page into "Active", "Complete", "Archived"
 - [ ] Add large ? icon with message when no entries to display
-- [ ] Use 3rd party API to lazy-load customer logos
-- [ ] Use Google Maps API to map to customer locations
-- [ ] Use LinkedIn API (?) to get contact pictures?
 - [ ] Replace background with nice gradient
 - [ ] Simulate "enter" on all form inputs on submit to create tags if user forgot
 - [ ] 
@@ -89,6 +89,7 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [ ] Filter by date flagged range
 - [ ] Easily remove all filters
 - [ ] Filter by has pictures
+- [ ] Fix issue where blank filter returns no results
 - [ ] 
 #### Sort Functionality
 - [x] Implement sorting of entries by at least one criteria.  
@@ -110,11 +111,16 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 #### General
 - [ ] Add large ? icon and message when no content to display
 - [ ] Split page into Customers and Contacts display with buttons
+- [ ] Use 3rd party API to lazy-load customer logos
+- [ ] Use Google Maps API to map to customer locations
+- [ ] Use LinkedIn API (?) to get contact pictures?
 #### Customers Sub-page
 - [ ] Display all customers (companies)
 - [ ] Group contacts by company
 - [ ] Group customers (companies) by tags
 - [ ] Show customers on map
+- [ ] Allow editing of customer details
+- [ ] 
 - [ ] 
 #### Contacts Sub-page
 - [x] Display all contacts
@@ -131,7 +137,7 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [ ] Ability to print page?
 - [ ] Export data to excel or CSV
 - [ ] Tabulate total $ opportunities
-- [ ] Tabulute conversion rate
+- [ ] Tabulate conversion rate
 - [ ] Graph # of opportunities over time
 - [ ] Pie chart opportunities by customer
 - [ ] Tabulate average close time
@@ -145,7 +151,8 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [ ] Chosen theme
 - [ ] Profile picture and info
 - [ ] Sorting criteria for entries, customers and contacts
-- [ ] 
+- [ ] Option to change email
+- [ ] Option to change password
 - [ ] 
 
 
