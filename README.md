@@ -113,7 +113,6 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [ ] Split page into Customers and Contacts display with buttons
 - [ ] Use 3rd party API to lazy-load customer logos
 - [ ] Use Google Maps API to map to customer locations
-- [ ] Use LinkedIn API (?) to get contact pictures?
 #### Customers Sub-page
 - [ ] Display all customers (companies)
 - [ ] Group contacts by company
@@ -130,6 +129,7 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [x] Ability to edit existing contacts
 - [x] Automatically create new customers if a contact is associated with a customer that doesn't yet exist
 - [x] Show customer notes on click or hover
+- [ ] Use LinkedIn API (?) to get contact pictures?
 - [ ]
 
 ### KPIs Page
