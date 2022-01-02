@@ -764,7 +764,7 @@ const makeAddBtn = () => {
 //////////////////////////////////////
 
 // auto calculates rank/priority when the value or likelihood inputs change
-const rankCalc = () => {
+const rankCalc = async () => {
     const form = document.querySelector('#entry-form-container');
     const entryValue = +form.querySelector('#entry-value').value;
     const entryLikelihood = +form.querySelector('#entry-likelihood').value;
@@ -773,6 +773,8 @@ const rankCalc = () => {
     const suggestedRank = entryValue * entryLikelihood; 
     if (suggestedRank <= 0) rankInput.value = '';
     else rankInput.value = suggestedRank;
+    const valueData = await entryValueKPI();
+    console.log(valueData)
     console.log(`Suggested Rank: ${rankInput.value}`);
 }
 

@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
+from django.db.models import Sum
 import json, datetime
 import traceback
 import pytz
@@ -576,14 +577,22 @@ def kpi_entry_value(request):
     if request.method == 'GET':
         try:
             user = request.user
-            all_values = Entry.objects.values_list('dollar_value', flat=True.order_by('dollar_value'))
+            entries = Entry.objects.filter(author=user)
+
+            all_values = entries.values_list('dollar_value', flat=True).order_by('dollar_value')
+            min_value = all_values[0]
+            max_value = all_values[all_values.count()-1]
+            total_value = entries.aggregate(Sum('dollar_value'))['dollar_value__sum']
+            avg_value = total_value / all_values.count()
+            median_value = all_values[round(all_values.count()/2)]
 
             data = {
-                "all_values": all_values,
-                # "min_value": min_value,
-                # "max_value": max_value,
-                # "avg_value": avg_value,
-                # "median_value": median_value,
+                "all_values": [v for v in all_values],
+                "min_value": min_value,
+                "max_value": max_value,
+                "avg_value": avg_value,
+                "median_value": median_value,
+                "total_value": total_value,
                 # "last_closed": last_closed,
                 # "max_closed": max_closed,
             }

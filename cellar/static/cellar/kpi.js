@@ -1,5 +1,5 @@
 const entryValueKPI = async () => {
-    console.log('Calculating data based on estimated entry values...');
+    console.log("Calculating value KPI's");
 
     try {
         const res = await fetch(`kpi/entry_value/`);

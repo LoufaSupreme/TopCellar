@@ -34,7 +34,7 @@ urlpatterns = [
     path('api/addFiles/<str:pk>', views.addFiles, name='addFiles'),
 
     # KPI ROUTES (also API routes, but for KPI info):
-    path('kpi/entry_value', views.kpi_entry_value, name='kpi_entry_value'),
+    path('kpi/entry_value/', views.kpi_entry_value, name='kpi_entry_value'),
 
 ]
 
