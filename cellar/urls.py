@@ -18,7 +18,6 @@ urlpatterns = [
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
 
-    
     # API ROUTES
     path('api/allEntries/', views.getEntries, name='allEntries'),
     path('api/allContacts/', views.getContacts, name='allContacts'),
@@ -33,6 +32,10 @@ urlpatterns = [
     path('api/new_customer/', views.new_customer, name='new_customer'),
     path('api/new_contact/', views.new_contact, name='new_contact'),
     path('api/addFiles/<str:pk>', views.addFiles, name='addFiles'),
+
+    # KPI ROUTES (also API routes, but for KPI info):
+    path('kpi/entry_value', views.kpi_entry_value, name='kpi_entry_value'),
+
 ]
 
 # for images:

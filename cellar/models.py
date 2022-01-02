@@ -153,8 +153,8 @@ class Entry(models.Model):
     flagged = models.BooleanField(default=False)
     date_flagged = models.DateTimeField(null=True, default=None)
     tags = models.ManyToManyField(Tag, blank=True, related_name="entries")
-    # likelihood = models.PositiveIntegerField(null=True, default=0, blank=True)
-    # dollar_value = models.PositiveIntegerField(null=True, default=0, blank=True)
+    likelihood = models.PositiveIntegerField(null=True, default=0, blank=True)
+    dollar_value = models.PositiveIntegerField(null=True, default=0, blank=True)
     rank = models.PositiveIntegerField(null=True, default='', blank=True)
 
     def __str__(self):
@@ -190,6 +190,8 @@ class Entry(models.Model):
                 {"id": contact.id, 
                 "first_name": contact.first_name, 
                 "last_name": contact.last_name} for contact in self.contacts.all()],
+            "likelihood": self.likelihood,
+            "dollar_value": self.dollar_value,
             "rank": self.rank,
             "completed": self.completed,
             "date_completed": self.serialize_dateTime(self.date_completed) if self.date_completed != None else None,

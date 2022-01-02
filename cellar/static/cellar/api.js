@@ -187,3 +187,4 @@ const addFiles = async (formData, entry_id) => {
         displayAlert(`Error: ${err}`, 'danger');
     }
 }
+

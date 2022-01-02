@@ -414,11 +414,17 @@ const makeEntryForm = () => {
                 <div id='description-error' class='input-error'>Error</div>
                 <textarea class='description neupho inset bg-dark' placeholder="Description" cols="10" rows="1" required></textarea>
             </div>
-            <div class='flex'>
-                <input class='neupho inset' type="date" value="${now.getFullYear()}-${month}-${day}">
-                <div class='rank-wrapper flex'>
+            <input class='neupho inset' type="date" value="${now.getFullYear()}-${month}-${day}">
+            <div class='flex form-input-flex'>
+                <div class='input-wrapper flex'>
+                    <input id='entry-value' class='neupho inset' type="number" placeholder="$ Value" oninput='rankCalc()'>
+                </div>
+                <div class='input-wrapper flex'>
+                    <input id='entry-likelihood' class='neupho inset' type="number" placeholder="Likelihood" oninput='rankCalc()'>
+                </div>
+                <div class='input-wrapper flex'>
                     <div id='rank-error' class='input-error'>Error</div>
-                    <input class='neupho inset' type="number" placeholder="Rank">
+                    <input id='entry-rank' class='neupho inset' type="number" placeholder="Rank">
                 </div>
             </div>
             <div class="tag-container neupho inset flex">
@@ -756,6 +762,19 @@ const makeAddBtn = () => {
 //////////////////////////////////////
 // HELPER FUNCTIONS /////////////////
 //////////////////////////////////////
+
+// auto calculates rank/priority when the value or likelihood inputs change
+const rankCalc = () => {
+    const form = document.querySelector('#entry-form-container');
+    const entryValue = +form.querySelector('#entry-value').value;
+    const entryLikelihood = +form.querySelector('#entry-likelihood').value;
+    const rankInput = form.querySelector('#entry-rank');
+
+    const suggestedRank = entryValue * entryLikelihood; 
+    if (suggestedRank <= 0) rankInput.value = '';
+    else rankInput.value = suggestedRank;
+    console.log(`Suggested Rank: ${rankInput.value}`);
+}
 
 // display error or success alerts:
 const displayAlert = (msg, type) => {

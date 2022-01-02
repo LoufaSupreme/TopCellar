@@ -567,3 +567,31 @@ def register(request):
         
     else:
         return render(request, "cellar/register.html")
+
+
+# KPI VIEWS
+# Views that send summary of data back
+
+def kpi_entry_value(request):
+    if request.method == 'GET':
+        try:
+            user = request.user
+            all_values = Entry.objects.values_list('dollar_value', flat=True.order_by('dollar_value'))
+
+            data = {
+                "all_values": all_values,
+                # "min_value": min_value,
+                # "max_value": max_value,
+                # "avg_value": avg_value,
+                # "median_value": median_value,
+                # "last_closed": last_closed,
+                # "max_closed": max_closed,
+            }
+
+            return JsonResponse(data, safe=False, status=201)
+
+        except Exception as e:
+            traceback.print_exc()
+            return JsonResponse({"error": f'{e.__class__.__name__}: {e}'}, status=500)
+    else:
+        return JsonResponse({"error": "Post method required"}, status=400)

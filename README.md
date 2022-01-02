@@ -62,8 +62,8 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [x] Display user friendly error message if any console error
 - [x] Display user friendly success message if task completed successfully
 - [ ] Display dollar value on entries
-- [ ] Add urgency and/or likelihood values to entries
-- [ ] Auto calculate priority rank based on urgency/likelihood and dollar value
+- [ ] Add likelihood of success values to entries
+- [ ] Auto calculate priority rank based on likelihood and dollar value
 - [ ] Display priority/rank on entries
 - [ ] Allow suggestion dropdown list to be navigatable by arrow keys/enter
 - [x] Make text in entry description wrap before increasing entry width

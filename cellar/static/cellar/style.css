@@ -618,7 +618,7 @@ body {
     padding: 0 0 0.2rem 1rem;
 }
 
-.rank-wrapper {
+.input-wrapper {
     flex-direction: column;
     --gap: 0.2rem;
 }
@@ -659,6 +659,12 @@ body {
     pointer-events: none;
 }
 
+/* used in entry form */
+/* date, likelihood, rank area */
+.form-input-flex {
+    --gap: 0.5rem;
+}
+
 input[type='date'] {
     border-radius: var(--border-radius);
     padding: 0.2rem 0.6rem;
@@ -667,6 +673,7 @@ input[type='date'] {
 input[type='number'] {
     border-radius: var(--border-radius);
     padding: 0.2rem 0.6rem;
+    max-width: 120px; /* auto width isn't supported */
 }
 
 .select-container {
