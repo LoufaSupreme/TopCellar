@@ -115,6 +115,8 @@ def entryDetail(request, pk):
                 date_completed=entry_data['date_completed'],
                 date_archived=entry_data['date_archived'],
                 date_flagged=entry_data['date_flagged'],
+                dollar_value=entry_data['dollar_value'],
+                likelihood=entry_data['likelihood'],
                 rank=entry_data['rank'],
                 flagged=entry_data['flagged'],
                 archived=entry_data['archived'],

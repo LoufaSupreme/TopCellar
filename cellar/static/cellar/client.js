@@ -539,13 +539,19 @@ const makeEditForm = async (entryContainer) => {
             <div id='description-error' class='input-error'>Error</div>
             <textarea class='description neupho inset bg-dark' placeholder="Description" cols="10" rows="1">${entry.description}</textarea>
         </div>
-        <div class='flex'>
             <input class='neupho inset' type="date" value="${entry.timestamp.year}-${month}-${day}">
-            <div class='rank-wrapper flex'>
-                <div id='rank-error' class='input-error'>Error</div>
-                <input class='neupho inset' type="number" placeholder="Rank" value='${entry.rank}'>
+            <div class='flex form-input-flex'>
+                <div class='input-wrapper flex'>
+                    <input id='entry-value' class='neupho inset' type="number" placeholder="$ Value" oninput='rankCalc(${entry_ID})' value='${entry.dollar_value}'>
+                </div>
+                <div class='input-wrapper flex'>
+                    <input id='entry-likelihood' class='neupho inset' type="number" placeholder="Likelihood" oninput='rankCalc(${entry_ID})' value='${entry.likelihood}'>
+                </div>
+                <div class='input-wrapper flex'>
+                    <div id='rank-error' class='input-error'>Error</div>
+                    <input id='entry-rank' class='neupho inset' type="number" placeholder="Rank" value='${entry.rank}'>
+                </div>
             </div>
-        </div>
         <div class="neupho tag-container inset flex">
             ${tagTags}
             <input id="tags-input-${entry_ID}" class="tag-input" type="text" data-id="undefined" data-list="tags" placeholder="Add Tags" onfocusout='inputFocusOut(this)'>
@@ -764,8 +770,11 @@ const makeAddBtn = () => {
 //////////////////////////////////////
 
 // auto calculates rank/priority when the value or likelihood inputs change
-const rankCalc = async () => {
-    const form = document.querySelector('#entry-form-container');
+const rankCalc = async (entry_id = null) => {
+    let form;
+    if (entry_id) form = document.querySelector(`#entry-${entry_id}`);
+    else form = document.querySelector('#entry-form-container');
+    
     const entryValue = +form.querySelector('#entry-value').value;
     const entryLikelihood = +form.querySelector('#entry-likelihood').value;
     const rankInput = form.querySelector('#entry-rank');
