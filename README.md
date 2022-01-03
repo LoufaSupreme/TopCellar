@@ -97,7 +97,7 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [x] Sort by date created
 - [x] Sort by customer name
 - [x] Sort by flagged status
-- [ ] Sort by dollar amount
+- [x] Sort by dollar amount
 - [x] Sort by date completed
 - [x] Sort by date archived
 - [x] Sort by date edited
