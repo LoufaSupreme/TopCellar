@@ -557,6 +557,18 @@ body {
   padding: 1rem;
 }
 
+.entry-names-container {
+    flex-direction: column;
+    --gap: 0.1rem;
+}
+
+.entry-stats-container {
+    flex-direction: column;
+    --gap: 0.1rem;
+    align-items: flex-end;
+    flex: 1;
+}
+
 .entry-customer {
 }
 

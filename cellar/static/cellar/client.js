@@ -314,11 +314,22 @@ const makeEntryHTML = (entry, regex = null) => {
         `;
     }).join('');
 
+    const rank = entry.rank !== null ? entry.rank : 0;
+    const dollar_value = `$${formatNumber(entry.dollar_value)}`;
+
     return `
-        <div id='entry-${entry.id}' class=' neupho entry-container container bg-dark text-white'>
-            <div class='fs-200 text-white'>${entry.timestamp.full}</div>
-            ${entry.customer !== null ? `<div class='entry-customer fs-500 text-accent'>${customerName}</div>` : ''}
-            ${contacts.length > 0 ? `<div class='entry-contacts fs-300 text-white'>${contacts.join('  &middot  ')}</div>`: ''}
+        <div id='entry-${entry.id}' class='neupho entry-container container bg-dark text-white'>
+            <div class='flex'>
+                <div class='flex entry-names-container'>
+                    ${entry.customer !== null ? `<div class='entry-customer fs-500 text-accent'>${customerName}</div>` : ''}
+                    ${contacts.length > 0 ? `<div class='entry-contacts fs-300 text-white'>${contacts.join('  &middot  ')}</div>`: ''}
+                </div>
+                <div class='flex entry-stats-container'>
+                    <div class='fs-400 text-accent'>${rank}</div>
+                    <div class='fs-300 text-white'>${dollar_value}</div>
+                    <div class='fs-200 text-white'>${entry.timestamp.full}</div>
+                </div>
+            </div>
             <div class='description fs-300 neupho inset'>${description}</div>
             ${entry.tags.length > 0 ? `<div class='fs-300 neupho tag-container inset flex'>${tags.join('')}</div>` : ''}
             <div class='image-container'>
@@ -769,12 +780,21 @@ const makeAddBtn = () => {
 // HELPER FUNCTIONS /////////////////
 //////////////////////////////////////
 
+// inserts commas to separate thousands:
+// source: https://blog.abelotech.com/posts/number-currency-formatting-javascript/
+function formatNumber(num) {
+    return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+}
+
+
 // auto calculates rank/priority when the value or likelihood inputs change
 const rankCalc = async (entry_id = null) => {
     let form;
+    // if an entry ID was passed, then this is an edit:
     if (entry_id) form = document.querySelector(`#entry-${entry_id}`);
+    // otherwise it's a new entry:
     else form = document.querySelector('#entry-form-container');
-    
+
     const entryValue = +form.querySelector('#entry-value').value;
     const entryLikelihood = +form.querySelector('#entry-likelihood').value;
     const rankInput = form.querySelector('#entry-rank');
