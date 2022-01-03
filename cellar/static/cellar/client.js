@@ -25,53 +25,66 @@ const render = async (root, state) => {
 
 // create content
 const App = async (state) => {
-  if (state.page === "index") {
-    await loadStore(state);
+    if (state.page === "index") {
+        await loadStore(state);
 
-    return `
-        <section id='header'>
-            <div class="navbar flex bottom-shadow">
-                ${makeNavBar()}
-            </div>
-            <div id='filter-accordion' class='accordion bottom-shadow'>
-                ${makeEntryFilterBox()}
-            </div>
-            <div id='sort-accordion' class='accordion bottom-shadow'>
-                ${makeEntrySortBox()}
-            </div>
-            <div id='alert-container' class=''></div>
-        </section>
-        <section id='main'>
-            ${makeModal('new-entry-modal')}
-            ${makeModal('add-objects-modal')}
-            ${makeAddBtn()}
+        return `
+            <section id='header'>
+                <div class="navbar flex bottom-shadow">
+                    ${makeNavBar()}
+                </div>
+                <div id='filter-accordion' class='accordion bottom-shadow'>
+                    ${makeEntryFilterBox()}
+                </div>
+                <div id='sort-accordion' class='accordion bottom-shadow'>
+                    ${makeEntrySortBox()}
+                </div>
+                <div id='alert-container' class=''></div>
+            </section>
+            <section id='main'>
+                ${makeModal('new-entry-modal')}
+                ${makeModal('add-objects-modal')}
+                ${makeAddBtn()}
 
-            <div class='container flex' id='cards-container'>
-                ${displayEntries(state.entries)}
-            </div>
-        </section>
-    `;
-  }
-  else if (state.page === 'rolodex') {
-      return `
-        <section id='header'>
-            <div class="navbar flex">
-                ${makeNavBar()}
-            </div>
-            <div id='alert-container' class=''></div>
-        </section>
-        <section id='main'>
-            ${makeModal('new-entry-modal')}
-            ${makeModal('add-objects-modal')}
-            ${makeAddBtn()}
+                <div class='container flex' id='cards-container'>
+                    ${displayEntries(state.entries)}
+                </div>
+            </section>
+        `;
+    }
+    else if (state.page === 'rolodex') {
+        return `
+            <section id='header'>
+                <div class="navbar flex">
+                    ${makeNavBar()}
+                </div>
+                <div id='alert-container' class=''></div>
+            </section>
+            <section id='main'>
+                ${makeModal('new-entry-modal')}
+                ${makeModal('add-objects-modal')}
+                ${makeAddBtn()}
 
-            <div class='container flex' id='cards-container'>
-                ${displayContacts(state.contacts)}
-            </div>
-        </section>
-  
-      `;
-  }
+                <div class='container flex' id='cards-container'>
+                    ${displayContacts(state.contacts)}
+                </div>
+            </section>
+        `;
+    }
+    else if (state.page === "kpi") {
+        return `
+            <section id='header'>
+                <div class="navbar flex">
+                    ${makeNavBar()}
+                </div>
+                <div id='alert-container' class=''></div>
+            </section>
+            <section id='main'>
+                <canvas id="myChart" width="400" height="400"></canvas>
+            </section>
+            
+        `;
+    }
 };
 
 // loads relevant user data into the global store:
@@ -116,7 +129,7 @@ const makeNavBar = () => {
                     <a id='rolodex-link' class="nav-link" href="#">Rolodex</a>
                 </li>    
                 <li class="nav-item">
-                    <a class="nav-link" href="#">KPIs</a>
+                    <a id='kpi-link' class="nav-link" href="#">KPIs</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Log Out</a>
@@ -1674,6 +1687,13 @@ const handleClicks = (e) => {
     else if (e.target.id === 'rolodex-link') {
         e.preventDefault();
         store.page = 'rolodex';
+        render(root, store);
+    }
+
+    // click on KPI nav link - switch page
+    else if (e.target.id === 'kpi-link') {
+        e.preventDefault();
+        store.page = 'kpi';
         render(root, store);
     }
 
