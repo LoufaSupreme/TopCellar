@@ -2248,12 +2248,22 @@ const sortEntries = (entries, criteria) => {
             else return a_customer_name > b_customer_name ? 1 : -1;
         })
     }
+
     else if (criteria.sortBy === 'priority') {
         entries = entries.sort((a, b) => {
-            if (criteria.sortDirection === 'descending') {
+            if (criteria.sortDirection === 'ascending') {
                 return a.rank > b.rank ? 1 : -1;
             }
             else return a.rank > b.rank ? -1 : 1;
+        })
+    }
+
+    else if (criteria.sortBy === 'dollars') {
+        entries = entries.sort((a, b) => {
+            if (criteria.sortDirection === 'ascending') {
+                return a.dollar_value > b.dollar_value ? 1 : -1;
+            }
+            else return a.dollar_value > b.dollar_value ? -1 : 1;
         })
     }
 
