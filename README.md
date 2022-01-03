@@ -143,7 +143,7 @@ Styling is handled by two CSS files: style.css and resets.css.  The resets.css f
 - [ ] Pie chart opportunities by customer
 - [ ] Tabulate average close time
 - [ ] Tabulate avg monthly opportunity generation rate
-- [ ]
+- [ ] Graph # of opportunities by industry
 - [ ]
 - [ ]
 

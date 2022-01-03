@@ -12,16 +12,26 @@ const entryValueKPI = async () => {
     }
 }
 
+const clearCanvas = () => {
+    const canvas = document.getElementById('myChart');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+}
+
+const destroyChart = (chart) => {
+    chart.destroy();
+}
+
 // make chart.js bar chart:
-const barChart = () => {
+const barChart = (dataArray, labelArray) => {
     const ctx = document.getElementById('myChart').getContext('2d');
     const myChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
-            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+            labels: labelArray,
             datasets: [{
                 label: '# of Votes',
-                data: [12, 19, 3, 5, 2, 3],
+                data: dataArray,
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
                     'rgba(54, 162, 235, 0.2)',
@@ -49,4 +59,5 @@ const barChart = () => {
             }
         }
     });
+    return myChart;
 }
