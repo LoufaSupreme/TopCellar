@@ -770,11 +770,16 @@ const rankCalc = async () => {
     const entryLikelihood = +form.querySelector('#entry-likelihood').value;
     const rankInput = form.querySelector('#entry-rank');
 
-    const suggestedRank = entryValue * entryLikelihood; 
+    // fetch a summary of the existing entries dollar values:
+    const valueData = await entryValueKPI();
+    // normalize the inputted entry value b/w 0 and 10:
+    const valueRange = valueData.max_value - valueData.min_value;
+    const normalizedValue = Math.round((entryValue - valueData.min_value) / valueRange * 10);
+
+    // calculate a suggested rank based on normalized dollar value and estimate of likelihood:
+    const suggestedRank = normalizedValue * entryLikelihood; 
     if (suggestedRank <= 0) rankInput.value = '';
     else rankInput.value = suggestedRank;
-    const valueData = await entryValueKPI();
-    console.log(valueData)
     console.log(`Suggested Rank: ${rankInput.value}`);
 }
 
