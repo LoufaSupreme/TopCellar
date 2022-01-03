@@ -311,12 +311,20 @@ def consolidateEntryData(request):
     date_completed = parse_JSONdate(data.get('date_completed'))
     date_archived = parse_JSONdate(data.get('date_archived'))
 
-    # entry_date = datetime.datetime(entry_date["year"], entry_date["month"], entry_date["day"], entry_date["hour"], entry_date["minute"], entry_date["second"])
-
     # get description:
     descrip = data.get('description').strip()
     if descrip == "":
         raise ValidationError('Description is blank')
+
+    # get dollar_value:
+    dollar_value = data.get('dollar_value')
+    if dollar_value == '':
+        dollar_value = None
+
+    # get likelihood:
+    likelihood = data.get('likelihood')
+    if likelihood == '':
+        likelihood = None
 
     # get rank:
     rank = data.get('rank')
@@ -347,6 +355,8 @@ def consolidateEntryData(request):
         'customer': customer,
         'contacts': contacts,
         'description': descrip,
+        'dollar_value': dollar_value,
+        'likelihood': likelihood,
         'rank': rank,
         'timestamp': entry_date,
         'flagged' : flagged, 
@@ -378,6 +388,8 @@ def new_entry(request):
                 customer=entry_data['customer'],
                 description=entry_data['description'],
                 timestamp=entry_data['timestamp'],
+                dollar_value=entry_data['dollar_value'],
+                likelihood=entry_data['likelihood'],
                 rank=entry_data['rank'],
             )
             entry.save()

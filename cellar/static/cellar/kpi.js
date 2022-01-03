@@ -1,3 +1,4 @@
+// get summary of existing entries' dollar value stats:
 const entryValueKPI = async () => {
     console.log("Calculating value KPI's");
 

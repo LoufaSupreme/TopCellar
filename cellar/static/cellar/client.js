@@ -1201,8 +1201,11 @@ const getFormData = (form) => {
         descriptionError.innerText = "Description can't be blank";
         descriptionError.classList.add('active');
     }
-    const rank = form.querySelector('input[type="number"]').value;
 
+    const dollar_value = form.querySelector('#entry-value').value;
+    const likelihood = form.querySelector('#entry-likelihood').value;
+
+    const rank = form.querySelector('#entry-rank').value;
     // check if rank is a number
     if (!rank.match(/^\d+$/) && rank !== '') {
         errorBucket.push('Only numbers accepted');
@@ -1210,6 +1213,7 @@ const getFormData = (form) => {
         rankError.innerText = "Only numbers accepted";
         rankError.classList.add('active');
     }
+
     const date = form.querySelector('input[type="date"]').value.split("-");
     const time = new Date();
 
@@ -1228,6 +1232,8 @@ const getFormData = (form) => {
         contacts: contacts,
         tags: tags,
         description: description,
+        dollar_value: dollar_value,
+        likelihood: likelihood,
         rank: rank,
         timestamp: {
         year: parseInt(date[0]),
