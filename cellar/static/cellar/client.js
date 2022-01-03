@@ -803,7 +803,7 @@ const rankCalc = async (entry_id = null) => {
     const valueData = await entryValueKPI();
     // normalize the inputted entry value b/w 0 and 10:
     const valueRange = valueData.max_value - valueData.min_value;
-    const normalizedValue = Math.round((entryValue - valueData.min_value) / valueRange * 10);
+    const normalizedValue = Math.ceil((entryValue - valueData.min_value) / valueRange * 10);
 
     // calculate a suggested rank based on normalized dollar value and estimate of likelihood:
     const suggestedRank = normalizedValue * entryLikelihood; 
